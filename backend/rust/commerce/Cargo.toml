@@ -1,0 +1,48 @@
+[package]
+name = "olympus-commerce"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Local dependencies
+olympus-shared = { path = "../shared" }
+
+# Web framework
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+# Async
+tokio.workspace = true
+futures.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Database
+sqlx.workspace = true
+
+# Utils
+uuid.workspace = true
+chrono.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Validation
+validator.workspace = true
+
+# Commerce specific
+rust_decimal = "1.33"
+rust_decimal_macros = "1.33"
+
+[dev-dependencies]
+rstest.workspace = true
+mockall.workspace = true
