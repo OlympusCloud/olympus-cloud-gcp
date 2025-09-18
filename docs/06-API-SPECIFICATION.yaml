@@ -743,6 +743,13 @@ paths:
       summary: Get dashboard metrics
       operationId: getDashboardMetrics
       parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          description: Tenant identifier (UUID)
+          schema:
+            type: string
+            format: uuid
         - name: location_id
           in: query
           schema:
@@ -750,9 +757,21 @@ paths:
             format: uuid
         - name: date_range
           in: query
+          description: Predefined timeframe selector; aliases like 'week' are mapped to canonical values.
           schema:
             type: string
-            enum: [today, yesterday, week, month, quarter, year, custom]
+            enum:
+              - today
+              - yesterday
+              - this_week
+              - last_week
+              - this_month
+              - last_month
+              - this_quarter
+              - this_year
+              - year_to_date
+              - custom
+              - all_time
         - name: from_date
           in: query
           schema:
@@ -770,6 +789,74 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DashboardMetrics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+  /analytics/recommendations:
+    get:
+      tags:
+        - Analytics
+      summary: Get AI-generated recommendations
+      operationId: getRecommendations
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          description: Tenant identifier (UUID)
+          schema:
+            type: string
+            format: uuid
+        - name: date_range
+          in: query
+          description: Predefined timeframe selector; aliases like 'week' are mapped to canonical values.
+          schema:
+            type: string
+            enum:
+              - today
+              - yesterday
+              - this_week
+              - last_week
+              - this_month
+              - last_month
+              - this_quarter
+              - this_year
+              - year_to_date
+              - custom
+              - all_time
+        - name: location_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+          description: Maximum number of recommendations to return
+      responses:
+        '200':
+          description: Recommendation set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 
   /analytics/reports/{reportType}:
     get:
@@ -1649,6 +1736,61 @@ components:
             efficiency:
               type: number
 
+    RecommendationCategory:
+      type: string
+      enum:
+        - inventory
+        - staffing
+        - marketing
+        - operations
+
+    RecommendationPriority:
+      type: string
+      enum:
+        - high
+        - medium
+        - low
+
+    RecommendationInsight:
+      type: object
+      properties:
+        metric:
+          type: string
+        value:
+          type: string
+        context:
+          type: string
+
+    Recommendation:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          $ref: '#/components/schemas/RecommendationCategory'
+        priority:
+          $ref: '#/components/schemas/RecommendationPriority'
+        action:
+          type: string
+        impact:
+          type: string
+        rationale:
+          type: string
+        insights:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendationInsight'
+
+    RecommendationResponse:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+          format: uuid
+        recommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
     Report:
       type: object
       properties:

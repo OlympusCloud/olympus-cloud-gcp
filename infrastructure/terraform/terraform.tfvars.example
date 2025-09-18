@@ -1,0 +1,25 @@
+# Example variables for local Terraform execution.
+# Rename this file to "terraform.tfvars" and fill in the values.
+# DO NOT commit terraform.tfvars to version control.
+
+# The GCP project ID to deploy to.
+# project_id = "olympus-cloud-gcp"
+
+# The GCP region to deploy resources in.
+# region = "us-central1"
+
+# The password for the Cloud SQL database user.
+# This is a sensitive value and should be treated with care.
+db_password = "a-very-strong-and-secret-password"
+
+# The deployment environment (e.g., dev, staging, prod).
+# environment = "dev"
+
+# The custom domain name for the services.
+# domain_name = "dev.olympuscloud.io"
+
+# The Zone ID of the domain in Cloudflare.
+# cloudflare_zone_id = "your-cloudflare-zone-id"
+
+# The API token for Cloudflare.
+# cloudflare_api_token = "your-cloudflare-api-token"

@@ -61,6 +61,7 @@
   - OpenAI Codex (Python) - analytics endpoints
   - GitHub Copilot (Flutter) - API consumption patterns
 - **API Specification**: `docs/06-API-SPECIFICATION.yaml`
+- **Latest Update**: Python analytics service now exposes `/api/analytics/recommendations`; documented in the spec for Go gateway consumption.
 - **Technology Stack**:
   - Gin framework with middleware pipeline
   - GraphQL with gqlgen for complex queries

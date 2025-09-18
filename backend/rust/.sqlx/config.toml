@@ -1,0 +1,2 @@
+[database]
+url = "postgresql://olympus:devpassword@localhost:5432/olympus"

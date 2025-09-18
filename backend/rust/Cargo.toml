@@ -12,7 +12,7 @@ license = "Proprietary"
 # Web framework
 axum = { version = "0.7", features = ["macros", "multipart"] }
 tower = { version = "0.4", features = ["full"] }
-tower-http = { version = "0.5", features = ["cors", "trace", "compression"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip"] }
 hyper = { version = "1.0", features = ["full"] }
 
 # Async runtime
@@ -39,6 +39,7 @@ jsonwebtoken = "9"
 argon2 = "0.5"
 uuid = { version = "1", features = ["v4", "serde"] }
 rand = "0.8"
+base64 = "0.21"
 
 # Time handling
 chrono = { version = "0.4", features = ["serde"] }
