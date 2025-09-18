@@ -30,10 +30,8 @@ class AppTheme {
       primary: _primaryColor,
       secondary: _secondaryColor,
       error: _errorColor,
-      background: _lightBackground,
-      surface: _lightSurface,
-      onBackground: _lightOnBackground,
-      onSurface: _lightOnSurface,
+      surface: _lightBackground,
+      onSurface: _lightOnBackground,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onError: Colors.white,
@@ -64,10 +62,8 @@ class AppTheme {
       primary: _primaryColor,
       secondary: _secondaryColor,
       error: _errorColor,
-      background: _darkBackground,
-      surface: _darkSurface,
-      onBackground: _darkOnBackground,
-      onSurface: _darkOnSurface,
+      surface: _darkBackground,
+      onSurface: _darkOnBackground,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onError: Colors.white,
@@ -311,8 +307,8 @@ class AppTheme {
   }
 
   /// Card theme
-  static CardTheme _getCardTheme(Brightness brightness) {
-    return CardTheme(
+  static CardThemeData _getCardTheme(Brightness brightness) {
+    return CardThemeData(
       elevation: 2,
       shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(
@@ -325,8 +321,8 @@ class AppTheme {
   }
 
   /// Dialog theme
-  static DialogTheme _getDialogTheme() {
-    return DialogTheme(
+  static DialogThemeData _getDialogTheme() {
+    return DialogThemeData(
       elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),

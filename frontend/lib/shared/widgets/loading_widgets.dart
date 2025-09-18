@@ -88,7 +88,7 @@ class LoadingButton extends StatelessWidget {
 }
 
 /// Outlined loading button
-class _OutlinedLoadingButton extends StatelessWidget {
+class _OutlinedLoadingButton extends LoadingButton {
   final bool isLoading;
   final VoidCallback? onPressed;
   final Widget child;
@@ -128,7 +128,7 @@ class _OutlinedLoadingButton extends StatelessWidget {
 }
 
 /// Text loading button
-class _TextLoadingButton extends StatelessWidget {
+class _TextLoadingButton extends LoadingButton {
   final bool isLoading;
   final VoidCallback? onPressed;
   final Widget child;
