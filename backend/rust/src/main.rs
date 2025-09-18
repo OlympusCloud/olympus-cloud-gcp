@@ -11,6 +11,7 @@ use olympus_shared::database::Database;
 use olympus_shared::events::EventPublisher;
 
 mod config;
+mod health;
 use config::Config;
 
 #[tokio::main]
@@ -68,11 +69,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let platform_router = olympus_platform::create_router(platform_service);
     let commerce_router = olympus_commerce::create_router(commerce_service);
 
+    // Initialize health monitoring
+    health::init_health_monitoring();
+
     // Combine all routers
     let app = Router::new()
         .nest("/api/v1/auth", auth_router)
         .nest("/api/v1/platform", platform_router)
         .nest("/api/v1/commerce", commerce_router)
+        // Health monitoring endpoints
+        .route("/health", axum::routing::get(health::health_check))
+        .route("/ready", axum::routing::get(health::readiness_check))
+        .route("/live", axum::routing::get(health::liveness_check))
+        .route("/metrics", axum::routing::get(health::metrics_handler))
         .layer(
             ServiceBuilder::new()
                 .layer(
@@ -80,10 +89,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .on_request(DefaultOnRequest::new().level(Level::INFO))
                         .on_response(DefaultOnResponse::new().level(Level::INFO)),
                 )
-                .layer(CorsLayer::permissive()),
-        )
-        // Health check endpoint
-        .route("/health", axum::routing::get(health_check));
+                .layer(CorsLayer::permissive())
+                .layer(axum::Extension(database.clone()))
+                .layer(axum::Extension(event_publisher.clone())),
+        );
 
     // Start server
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
@@ -94,13 +103,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     Ok(())
-}
-
-async fn health_check() -> axum::Json<serde_json::Value> {
-    axum::Json(serde_json::json!({
-        "status": "healthy",
-        "service": "olympus-rust",
-        "timestamp": chrono::Utc::now(),
-        "version": env!("CARGO_PKG_VERSION"),
-    }))
 }
