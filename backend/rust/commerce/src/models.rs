@@ -300,6 +300,13 @@ pub struct Discount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AdjustmentType {
+    Add,
+    Remove,
+    Set,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum DiscountType {
     Percentage,
     FixedAmount,

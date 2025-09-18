@@ -62,7 +62,7 @@ pub struct Money {
     pub currency: Currency,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum Currency {
     USD,
     EUR,
@@ -128,7 +128,7 @@ pub struct Address {
 pub struct PhoneNumber {
     #[validate(length(min = 1, max = 5))]
     pub country_code: String,
-    #[validate(phone)]
+    #[validate(length(min = 7, max = 15))]
     pub number: String,
     pub extension: Option<String>,
 }

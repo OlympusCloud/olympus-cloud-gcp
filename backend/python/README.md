@@ -1,21 +1,20 @@
 # Python Business Logic - OpenAI Codex Agent
 
 ## Overview
-This is the Python service responsible for analytics, AI/ML capabilities, natural language processing, and business intelligence features.
+This service delivers Olympus Cloud's analytics, AI/ML, and natural language experiences. It aggregates operational data, powers dashboards, and interprets conversational queries for decision makers.
 
 ## Owner
-**OpenAI Codex** - Responsible for Python business logic and analytics
+**OpenAI Codex** – Python business logic & analytics
 
 ## Features
-- Real-time analytics engine
-- Natural language processing
-- Recommendation system
-- Predictive analytics
-- BigQuery integration
-- Event-driven analytics
+- Real-time analytics pipelines
+- Natural language query interpretation
+- Recommendation and forecasting foundations
+- BigQuery data warehousing integrations
+- Event-driven architecture (Redis pub/sub)
+- Async PostgreSQL access with SQLAlchemy
 
 ## Quick Start
-
 ```bash
 # Create virtual environment
 python3 -m venv venv
@@ -27,35 +26,35 @@ pip install -r requirements.txt
 # Run in development
 uvicorn main:app --reload --port 8001
 
-# Run tests
-pytest
+# Run tests (ensure pytest is installed)
+python -m pytest
 ```
 
 ## Service Ports
-- **Python Analytics**: 8001
-- **API Docs**: 8001/docs
+- **Python Analytics API**: 8001
+- **OpenAPI docs**: 8001/docs
 
 ## Integration Points
-- **PostgreSQL**: Direct connection for analytics queries
-- **BigQuery**: Data warehousing and batch analytics
-- **Redis**: Subscribe to domain events
-- **Go API Gateway**: Receives forwarded analytics requests
+- **PostgreSQL** via async SQLAlchemy engine (operational analytics)
+- **BigQuery** for warehousing and long-term analytics
+- **Redis** pub/sub for domain event ingestion
+- **Go API Gateway** (port 8080) as upstream consumer
 
 ## Directory Structure
 ```
 backend/python/
 ├── app/
-│   ├── api/               # API endpoints
-│   ├── core/              # Core configuration
-│   ├── models/            # Data models
-│   ├── services/          # Business logic
-│   │   ├── analytics/     # Analytics engine
-│   │   ├── ml/           # Machine learning
-│   │   └── nlp/          # Natural language
-│   └── utils/            # Utilities
-├── tests/                # Test files
-├── alembic/             # Database migrations
-├── main.py              # Entry point
+│   ├── api/               # API routers and dependency wiring
+│   ├── core/              # Config, logging, lifespan, database helpers
+│   ├── models/            # Pydantic schemas (events, DTOs)
+│   ├── services/          # Business logic modules
+│   │   ├── analytics/     # Metric aggregation & BigQuery helpers
+│   │   ├── events/        # Redis subscriber orchestration
+│   │   ├── ml/            # ML & forecasting pipelines (future)
+│   │   └── nlp/           # Natural language query service
+│   └── utils/             # Shared utilities (placeholder)
+├── tests/                # Async API and service tests
+├── main.py               # FastAPI entry point
 └── requirements.txt
 ```
 
@@ -70,15 +69,27 @@ OPENAI_API_KEY=your-api-key
 ```
 
 ## Analytics Events to Process
-- `events.user.logged_in` - Track user sessions
-- `events.order.created` - Order analytics
-- `events.payment.processed` - Revenue tracking
-- `events.inventory.updated` - Inventory analytics
+- `events.user.logged_in` – Session analytics
+- `events.order.created` – Commerce metrics
+- `events.payment.processed` – Revenue tracking
+- `events.inventory.updated` – Stock health monitoring
+
+## Analytics Dashboard Filters
+- `GET /api/analytics/dashboard/{tenant_id}?timeframe=` supports `all_time`, `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `year_to_date`.
+
+## Current Implementation Highlights
+- Modular FastAPI application with shared startup/shutdown lifecycle
+- Redis pub/sub subscriber wiring analytics processor
+- Async SQLAlchemy session factory for PostgreSQL access
+- BigQuery client wrapper with safe local fallbacks
+- `/api/analytics/dashboard/{tenant_id}?timeframe=…` returns timeframe-aware metrics
+- `/api/analytics/nlp/query` endpoint providing heuristic natural language interpretation
+- `/api/health` endpoint exposing runtime status including Redis connectivity
 
 ## Next Steps for OpenAI Codex
-1. Set up FastAPI application structure
-2. Create analytics data models
-3. Implement Redis event subscriber
-4. Build NLP service for natural language queries
-5. Create recommendation engine foundation
-6. Set up BigQuery connection
+1. Model concrete analytics schemas and persistence strategy
+2. Persist events in PostgreSQL and stream to BigQuery for warehousing
+3. Expand Redis processing pipelines with background workers
+4. Integrate Vertex AI / OpenAI for advanced NLP interpretation
+5. Implement recommendation and forecasting services
+6. Add integration tests covering event ingestion and cross-service flows

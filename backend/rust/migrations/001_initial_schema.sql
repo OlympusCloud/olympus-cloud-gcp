@@ -38,10 +38,12 @@ CREATE TABLE tenants (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
 
-    CONSTRAINT valid_slug CHECK (slug ~ '^[a-z0-9-]+$'),
-    INDEX idx_tenants_slug (slug),
-    INDEX idx_tenants_active (is_active) WHERE deleted_at IS NULL
+    CONSTRAINT valid_slug CHECK (slug ~ '^[a-z0-9-]+$')
 );
+
+-- Create indexes for tenants
+CREATE INDEX idx_tenants_slug ON tenants(slug);
+CREATE INDEX idx_tenants_active ON tenants(is_active) WHERE deleted_at IS NULL;
 
 -- Users table (authentication)
 CREATE TABLE users (
@@ -69,11 +71,13 @@ CREATE TABLE users (
     deleted_at TIMESTAMPTZ,
 
     CONSTRAINT unique_email_per_tenant UNIQUE(tenant_id, email),
-    CONSTRAINT unique_username_per_tenant UNIQUE(tenant_id, username),
-    INDEX idx_users_tenant (tenant_id),
-    INDEX idx_users_email (email),
-    INDEX idx_users_status (status) WHERE deleted_at IS NULL
+    CONSTRAINT unique_username_per_tenant UNIQUE(tenant_id, username)
 );
+
+-- Create indexes for users
+CREATE INDEX idx_users_tenant ON users(tenant_id);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_status ON users(status) WHERE deleted_at IS NULL;
 
 -- Sessions table (JWT refresh tokens)
 CREATE TABLE sessions (
@@ -85,12 +89,13 @@ CREATE TABLE sessions (
     user_agent TEXT,
     expires_at TIMESTAMPTZ NOT NULL,
     revoked_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    INDEX idx_sessions_user (user_id),
-    INDEX idx_sessions_token (refresh_token),
-    INDEX idx_sessions_expires (expires_at)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create indexes for sessions
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX idx_sessions_token ON sessions(refresh_token);
+CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 
 -- Locations table (multi-location support)
 CREATE TABLE locations (
@@ -113,10 +118,12 @@ CREATE TABLE locations (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
 
-    CONSTRAINT unique_location_code UNIQUE(tenant_id, code),
-    INDEX idx_locations_tenant (tenant_id),
-    INDEX idx_locations_active (is_active) WHERE deleted_at IS NULL
+    CONSTRAINT unique_location_code UNIQUE(tenant_id, code)
 );
+
+-- Create indexes for locations
+CREATE INDEX idx_locations_tenant ON locations(tenant_id);
+CREATE INDEX idx_locations_active ON locations(is_active) WHERE deleted_at IS NULL;
 
 -- Roles table (RBAC)
 CREATE TABLE roles (
@@ -131,10 +138,12 @@ CREATE TABLE roles (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT unique_role_name UNIQUE(tenant_id, name),
-    INDEX idx_roles_tenant (tenant_id),
-    INDEX idx_roles_active (is_active)
+    CONSTRAINT unique_role_name UNIQUE(tenant_id, name)
 );
+
+-- Create indexes for roles
+CREATE INDEX idx_roles_tenant ON roles(tenant_id);
+CREATE INDEX idx_roles_active ON roles(is_active);
 
 -- User roles junction table
 CREATE TABLE user_roles (
@@ -143,10 +152,12 @@ CREATE TABLE user_roles (
     assigned_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     assigned_by UUID REFERENCES users(id),
 
-    PRIMARY KEY (user_id, role_id),
-    INDEX idx_user_roles_user (user_id),
-    INDEX idx_user_roles_role (role_id)
+    PRIMARY KEY (user_id, role_id)
 );
+
+-- Create indexes for user_roles
+CREATE INDEX idx_user_roles_user ON user_roles(user_id);
+CREATE INDEX idx_user_roles_role ON user_roles(role_id);
 
 -- Categories table (product organization)
 CREATE TABLE categories (
@@ -164,11 +175,13 @@ CREATE TABLE categories (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
 
-    CONSTRAINT unique_category_slug UNIQUE(tenant_id, slug),
-    INDEX idx_categories_tenant (tenant_id),
-    INDEX idx_categories_parent (parent_id),
-    INDEX idx_categories_slug (slug)
+    CONSTRAINT unique_category_slug UNIQUE(tenant_id, slug)
 );
+
+-- Create indexes for categories
+CREATE INDEX idx_categories_tenant ON categories(tenant_id);
+CREATE INDEX idx_categories_parent ON categories(parent_id);
+CREATE INDEX idx_categories_slug ON categories(slug);
 
 -- Products table
 CREATE TABLE products (
@@ -199,12 +212,14 @@ CREATE TABLE products (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
 
-    CONSTRAINT unique_product_sku UNIQUE(tenant_id, sku),
-    INDEX idx_products_tenant (tenant_id),
-    INDEX idx_products_sku (sku),
-    INDEX idx_products_category (category_id),
-    INDEX idx_products_active (is_active) WHERE deleted_at IS NULL
+    CONSTRAINT unique_product_sku UNIQUE(tenant_id, sku)
 );
+
+-- Create indexes for products
+CREATE INDEX idx_products_tenant ON products(tenant_id);
+CREATE INDEX idx_products_sku ON products(sku);
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_products_active ON products(is_active) WHERE deleted_at IS NULL;
 
 -- Product variants table
 CREATE TABLE product_variants (
@@ -220,11 +235,12 @@ CREATE TABLE product_variants (
     weight_unit VARCHAR(20),
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    INDEX idx_variants_product (product_id),
-    INDEX idx_variants_sku (sku)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create indexes for product_variants
+CREATE INDEX idx_variants_product ON product_variants(product_id);
+CREATE INDEX idx_variants_sku ON product_variants(sku);
 
 -- Inventory table
 CREATE TABLE inventory (
@@ -241,11 +257,13 @@ CREATE TABLE inventory (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT unique_inventory UNIQUE(product_id, location_id),
-    CONSTRAINT unique_variant_inventory UNIQUE(variant_id, location_id) WHERE variant_id IS NOT NULL,
-    INDEX idx_inventory_product (product_id),
-    INDEX idx_inventory_location (location_id),
-    INDEX idx_inventory_available (quantity_available)
+    CONSTRAINT unique_variant_inventory UNIQUE(variant_id, location_id) WHERE variant_id IS NOT NULL
 );
+
+-- Create indexes for inventory
+CREATE INDEX idx_inventory_product ON inventory(product_id);
+CREATE INDEX idx_inventory_location ON inventory(location_id);
+CREATE INDEX idx_inventory_available ON inventory(quantity_available);
 
 -- Inventory adjustments log
 CREATE TABLE inventory_adjustments (
@@ -259,9 +277,11 @@ CREATE TABLE inventory_adjustments (
     user_id UUID REFERENCES users(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX idx_adjustments_inventory (inventory_id),
-    INDEX idx_adjustments_created (created_at)
 );
+
+-- Create indexes for inventory_adjustments
+CREATE INDEX idx_adjustments_inventory ON inventory_adjustments(inventory_id);
+CREATE INDEX idx_adjustments_created ON inventory_adjustments(created_at);
 
 -- Customers table
 CREATE TABLE customers (
@@ -286,10 +306,12 @@ CREATE TABLE customers (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
 
-    CONSTRAINT unique_customer_email UNIQUE(tenant_id, email),
-    INDEX idx_customers_tenant (tenant_id),
-    INDEX idx_customers_email (email)
+    CONSTRAINT unique_customer_email UNIQUE(tenant_id, email)
 );
+
+-- Create indexes for customers
+CREATE INDEX idx_customers_tenant ON customers(tenant_id);
+CREATE INDEX idx_customers_email ON customers(email);
 
 -- Orders table
 CREATE TABLE orders (
@@ -317,12 +339,14 @@ CREATE TABLE orders (
     cancelled_at TIMESTAMPTZ,
     fulfilled_at TIMESTAMPTZ,
 
-    CONSTRAINT unique_order_number UNIQUE(tenant_id, order_number),
-    INDEX idx_orders_tenant (tenant_id),
-    INDEX idx_orders_customer (customer_id),
-    INDEX idx_orders_status (status),
-    INDEX idx_orders_created (created_at DESC)
+    CONSTRAINT unique_order_number UNIQUE(tenant_id, order_number)
 );
+
+-- Create indexes for orders
+CREATE INDEX idx_orders_tenant ON orders(tenant_id);
+CREATE INDEX idx_orders_customer ON orders(customer_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_created ON orders(created_at DESC);
 
 -- Order items table
 CREATE TABLE order_items (
@@ -342,9 +366,11 @@ CREATE TABLE order_items (
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX idx_order_items_order (order_id),
-    INDEX idx_order_items_product (product_id)
 );
+
+-- Create indexes for order_items
+CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_order_items_product ON order_items(product_id);
 
 -- Payments table
 CREATE TABLE payments (
@@ -370,11 +396,13 @@ CREATE TABLE payments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX idx_payments_tenant (tenant_id),
-    INDEX idx_payments_order (order_id),
-    INDEX idx_payments_transaction (transaction_id),
-    INDEX idx_payments_status (status)
 );
+
+-- Create indexes for payments
+CREATE INDEX idx_payments_tenant ON payments(tenant_id);
+CREATE INDEX idx_payments_order ON payments(order_id);
+CREATE INDEX idx_payments_transaction ON payments(transaction_id);
+CREATE INDEX idx_payments_status ON payments(status);
 
 -- Audit log table
 CREATE TABLE audit_logs (
@@ -390,11 +418,13 @@ CREATE TABLE audit_logs (
     metadata JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX idx_audit_tenant (tenant_id),
-    INDEX idx_audit_user (user_id),
-    INDEX idx_audit_resource (resource_type, resource_id),
-    INDEX idx_audit_created (created_at DESC)
 );
+
+-- Create indexes for audit_logs
+CREATE INDEX idx_audit_tenant ON audit_logs(tenant_id);
+CREATE INDEX idx_audit_user ON audit_logs(user_id);
+CREATE INDEX idx_audit_resource ON audit_logs(resource_type, resource_id);
+CREATE INDEX idx_audit_created ON audit_logs(created_at DESC);
 
 -- Row Level Security Policies
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
