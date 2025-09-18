@@ -1,0 +1,1795 @@
+# 🌐 Olympus Cloud GCP - API Specification
+
+> **Complete OpenAPI 3.0 specification for the modular monolith API**
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Olympus Cloud API
+  description: |
+    Enterprise Cloud Business AI OS Platform API
+    
+    ## Authentication
+    All API requests require a valid JWT token in the Authorization header:
+    `Authorization: Bearer <token>`
+    
+    ## Multi-Tenancy
+    All requests are automatically scoped to the tenant identified in the JWT token.
+    
+    ## Rate Limiting
+    - Standard tier: 100 requests/minute
+    - Professional tier: 500 requests/minute
+    - Enterprise tier: Unlimited
+    
+  version: 1.0.0
+  contact:
+    name: NebusAI Support
+    email: support@nebusai.com
+    url: https://nebusai.com
+
+servers:
+  - url: https://api.olympuscloud.io/v1
+    description: Production
+  - url: https://staging-api.olympuscloud.io/v1
+    description: Staging
+  - url: http://localhost:8080/v1
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: Authentication and authorization
+  - name: Tenants
+    description: Tenant management
+  - name: Users
+    description: User management
+  - name: Commerce
+    description: Orders and payments
+  - name: Products
+    description: Product catalog
+  - name: Inventory
+    description: Inventory management
+  - name: Customers
+    description: Customer management
+  - name: Analytics
+    description: Analytics and reporting
+  - name: Natural Language
+    description: Natural language processing
+
+paths:
+  # ==========================================
+  # Authentication Endpoints
+  # ==========================================
+  
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - tenant_slug
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                tenant_slug:
+                  type: string
+                  pattern: '^[a-z0-9-]+$'
+                  example: acme-corp
+                device_id:
+                  type: string
+                  description: Optional device identifier
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      operationId: logout
+      responses:
+        '204':
+          description: Logout successful
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ==========================================
+  # Commerce Endpoints
+  # ==========================================
+  
+  /orders:
+    get:
+      tags:
+        - Commerce
+      summary: List orders
+      operationId: listOrders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, preparing, ready, completed, cancelled]
+        - name: location_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: customer_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Commerce
+      summary: Create order
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /orders/{orderId}:
+    get:
+      tags:
+        - Commerce
+      summary: Get order by ID
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Commerce
+      summary: Update order
+      operationId: updateOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrderRequest'
+      responses:
+        '200':
+          description: Order updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /orders/{orderId}/status:
+    put:
+      tags:
+        - Commerce
+      summary: Update order status
+      operationId: updateOrderStatus
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [confirmed, preparing, ready, completed, cancelled]
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+  /orders/{orderId}/payment:
+    post:
+      tags:
+        - Commerce
+      summary: Add payment to order
+      operationId: addPayment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+  # ==========================================
+  # Product Endpoints
+  # ==========================================
+  
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List products
+      operationId: listProducts
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: barcode
+          in: query
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Products
+      summary: Create product
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+  /products/{productId}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Products
+      summary: Update product
+      operationId: updateProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+
+    delete:
+      tags:
+        - Products
+      summary: Delete product
+      operationId: deleteProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Product deleted
+
+  # ==========================================
+  # Inventory Endpoints
+  # ==========================================
+  
+  /inventory/stock:
+    get:
+      tags:
+        - Inventory
+      summary: Get stock levels
+      operationId: getStockLevels
+      parameters:
+        - name: location_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: product_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: low_stock
+          in: query
+          schema:
+            type: boolean
+            description: Filter for items below reorder point
+      responses:
+        '200':
+          description: Stock levels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockLevel'
+
+    post:
+      tags:
+        - Inventory
+      summary: Adjust stock
+      operationId: adjustStock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockAdjustmentRequest'
+      responses:
+        '200':
+          description: Stock adjusted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockMovement'
+
+  /inventory/movements:
+    get:
+      tags:
+        - Inventory
+      summary: Get stock movements
+      operationId: getStockMovements
+      parameters:
+        - name: location_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: product_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [sale, purchase, transfer, adjustment, waste, return]
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Stock movements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StockMovement'
+
+  # ==========================================
+  # Customer Endpoints
+  # ==========================================
+  
+  /customers:
+    get:
+      tags:
+        - Customers
+      summary: List customers
+      operationId: listCustomers
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: email
+          in: query
+          schema:
+            type: string
+            format: email
+        - name: phone
+          in: query
+          schema:
+            type: string
+        - name: loyalty_tier
+          in: query
+          schema:
+            type: string
+            enum: [bronze, silver, gold, platinum]
+        - name: segment
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Customers
+      summary: Create customer
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+
+  /customers/{customerId}:
+    get:
+      tags:
+        - Customers
+      summary: Get customer by ID
+      operationId: getCustomer
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Customers
+      summary: Update customer
+      operationId: updateCustomer
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+
+  /customers/{customerId}/loyalty/points:
+    post:
+      tags:
+        - Customers
+      summary: Add/deduct loyalty points
+      operationId: adjustLoyaltyPoints
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - points
+                - type
+                - description
+              properties:
+                points:
+                  type: integer
+                  description: Positive to add, negative to deduct
+                type:
+                  type: string
+                  enum: [earn, redeem, expire, adjust]
+                description:
+                  type: string
+                order_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Points adjusted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyTransaction'
+
+  # ==========================================
+  # Analytics Endpoints
+  # ==========================================
+  
+  /analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get dashboard metrics
+      operationId: getDashboardMetrics
+      parameters:
+        - name: location_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: date_range
+          in: query
+          schema:
+            type: string
+            enum: [today, yesterday, week, month, quarter, year, custom]
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Dashboard metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardMetrics'
+
+  /analytics/reports/{reportType}:
+    get:
+      tags:
+        - Analytics
+      summary: Generate report
+      operationId: generateReport
+      parameters:
+        - name: reportType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [sales, inventory, customers, employees, financial]
+        - name: location_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv, pdf, excel]
+            default: json
+      responses:
+        '200':
+          description: Report data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /analytics/query:
+    post:
+      tags:
+        - Analytics
+      summary: Execute custom analytics query
+      operationId: executeAnalyticsQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query_type
+                - parameters
+              properties:
+                query_type:
+                  type: string
+                parameters:
+                  type: object
+                format:
+                  type: string
+                  enum: [json, csv]
+                  default: json
+      responses:
+        '200':
+          description: Query results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  metadata:
+                    type: object
+
+  # ==========================================
+  # Natural Language Endpoints
+  # ==========================================
+  
+  /nl/query:
+    post:
+      tags:
+        - Natural Language
+      summary: Process natural language query
+      operationId: processNaturalLanguageQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  example: "Show me today's sales"
+                context:
+                  type: object
+                  properties:
+                    location_id:
+                      type: string
+                      format: uuid
+                    time_range:
+                      type: string
+      responses:
+        '200':
+          description: Query response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                  data:
+                    type: object
+                  actions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        label:
+                          type: string
+                        action:
+                          type: string
+
+  /nl/command:
+    post:
+      tags:
+        - Natural Language
+      summary: Execute natural language command
+      operationId: executeNaturalLanguageCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+              properties:
+                command:
+                  type: string
+                  example: "Create an order for table 5 with 2 burgers and 2 cokes"
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Command executed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  result:
+                    type: object
+                  message:
+                    type: string
+
+  /nl/suggestions:
+    get:
+      tags:
+        - Natural Language
+      summary: Get AI suggestions
+      operationId: getAISuggestions
+      parameters:
+        - name: context
+          in: query
+          schema:
+            type: string
+            enum: [orders, inventory, customers, staff, general]
+      responses:
+        '200':
+          description: AI suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AISuggestion'
+
+# ==========================================
+# Components
+# ==========================================
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      description: Items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+
+  schemas:
+    # ==========================================
+    # Common Schemas
+    # ==========================================
+    
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    Money:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: USD
+
+    Address:
+      type: object
+      properties:
+        line1:
+          type: string
+        line2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postal_code:
+          type: string
+        country:
+          type: string
+
+    # ==========================================
+    # Authentication Schemas
+    # ==========================================
+    
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+        token_type:
+          type: string
+          default: Bearer
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        tenant:
+          $ref: '#/components/schemas/Tenant'
+        created_at:
+          type: string
+          format: date-time
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        industry:
+          type: string
+        tier:
+          type: string
+
+    # ==========================================
+    # Commerce Schemas
+    # ==========================================
+    
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_number:
+          type: string
+        status:
+          type: string
+          enum: [draft, pending, confirmed, preparing, ready, in_delivery, completed, cancelled, refunded]
+        customer:
+          $ref: '#/components/schemas/Customer'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        subtotal:
+          type: number
+        tax_amount:
+          type: number
+        total_amount:
+          type: number
+        payment_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateOrderRequest:
+      type: object
+      required:
+        - items
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - product_id
+              - quantity
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              quantity:
+                type: integer
+                minimum: 1
+              modifiers:
+                type: array
+                items:
+                  type: object
+              notes:
+                type: string
+        source:
+          type: string
+          enum: [pos, online, mobile, kiosk]
+        channel:
+          type: string
+          enum: [dine_in, takeout, delivery, pickup]
+        table_number:
+          type: string
+        scheduled_at:
+          type: string
+          format: date-time
+
+    UpdateOrderRequest:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        customer_notes:
+          type: string
+        internal_notes:
+          type: string
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+        modifiers:
+          type: array
+          items:
+            type: object
+        notes:
+          type: string
+        tax:
+          type: number
+        total:
+          type: number
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        method:
+          type: string
+          enum: [card, cash, wallet, bank_transfer]
+        status:
+          type: string
+          enum: [pending, processing, authorized, captured, failed, refunded]
+        gateway:
+          type: string
+        gateway_transaction_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    PaymentRequest:
+      type: object
+      required:
+        - amount
+        - method
+      properties:
+        amount:
+          type: number
+        method:
+          type: string
+          enum: [card, cash, wallet, bank_transfer]
+        card_token:
+          type: string
+        gateway:
+          type: string
+          enum: [stripe, square, paypal]
+
+    # ==========================================
+    # Product Schemas
+    # ==========================================
+    
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        barcode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        cost:
+          type: number
+        image_url:
+          type: string
+        is_active:
+          type: boolean
+        track_inventory:
+          type: boolean
+        variants:
+          type: array
+          items:
+            type: object
+        modifiers:
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          format: date-time
+
+    CreateProductRequest:
+      type: object
+      required:
+        - sku
+        - name
+        - price
+      properties:
+        sku:
+          type: string
+        barcode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        cost:
+          type: number
+        tax_rate:
+          type: number
+        image_url:
+          type: string
+        track_inventory:
+          type: boolean
+          default: true
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        cost:
+          type: number
+        is_active:
+          type: boolean
+
+    # ==========================================
+    # Inventory Schemas
+    # ==========================================
+    
+    StockLevel:
+      type: object
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Product'
+        location_id:
+          type: string
+          format: uuid
+        quantity_on_hand:
+          type: number
+        quantity_reserved:
+          type: number
+        quantity_available:
+          type: number
+        min_stock_level:
+          type: number
+        reorder_point:
+          type: number
+        is_low_stock:
+          type: boolean
+
+    StockMovement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [sale, purchase, transfer, adjustment, waste, return]
+        quantity:
+          type: number
+        unit_cost:
+          type: number
+        reason:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    StockAdjustmentRequest:
+      type: object
+      required:
+        - product_id
+        - location_id
+        - quantity
+        - type
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+        type:
+          type: string
+          enum: [adjustment, waste, damage, theft, found]
+        reason:
+          type: string
+
+    # ==========================================
+    # Customer Schemas
+    # ==========================================
+    
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_number:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        loyalty_tier:
+          type: string
+          enum: [bronze, silver, gold, platinum]
+        loyalty_points:
+          type: integer
+        lifetime_value:
+          type: number
+        total_orders:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateCustomerRequest:
+      type: object
+      required:
+        - email
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        preferences:
+          type: object
+        tags:
+          type: array
+          items:
+            type: string
+
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        preferences:
+          type: object
+
+    LoyaltyTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [earn, redeem, expire, adjust]
+        points:
+          type: integer
+        description:
+          type: string
+        order_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    # ==========================================
+    # Analytics Schemas
+    # ==========================================
+    
+    DashboardMetrics:
+      type: object
+      properties:
+        sales:
+          type: object
+          properties:
+            today:
+              type: object
+              properties:
+                revenue:
+                  type: number
+                orders:
+                  type: integer
+                avg_order:
+                  type: number
+            trend:
+              type: object
+              properties:
+                revenue:
+                  type: number
+                orders:
+                  type: number
+            forecast:
+              type: object
+              properties:
+                next_day:
+                  type: number
+                next_week:
+                  type: number
+        customers:
+          type: object
+          properties:
+            total:
+              type: integer
+            new_today:
+              type: integer
+            active:
+              type: integer
+        inventory:
+          type: object
+          properties:
+            low_stock_items:
+              type: integer
+            stockout_risk:
+              type: number
+            total_value:
+              type: number
+        staff:
+          type: object
+          properties:
+            on_duty:
+              type: integer
+            scheduled:
+              type: integer
+            efficiency:
+              type: number
+
+    Report:
+      type: object
+      properties:
+        type:
+          type: string
+        date_range:
+          type: object
+          properties:
+            from:
+              type: string
+              format: date
+            to:
+              type: string
+              format: date
+        data:
+          type: array
+          items:
+            type: object
+        summary:
+          type: object
+        generated_at:
+          type: string
+          format: date-time
+
+    AISuggestion:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [action, insight, warning, opportunity]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        title:
+          type: string
+        description:
+          type: string
+        action:
+          type: object
+          properties:
+            type:
+              type: string
+            label:
+              type: string
+            params:
+              type: object
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        impact:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+# ==========================================
+# Webhooks
+# ==========================================
+
+webhooks:
+  orderCreated:
+    post:
+      requestBody:
+        description: Order created event
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  enum: [order.created]
+                data:
+                  $ref: '#/components/schemas/Order'
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Webhook processed
+
+  orderStatusChanged:
+    post:
+      requestBody:
+        description: Order status changed event
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  enum: [order.status_changed]
+                data:
+                  type: object
+                  properties:
+                    order:
+                      $ref: '#/components/schemas/Order'
+                    previous_status:
+                      type: string
+                    new_status:
+                      type: string
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Webhook processed
+
+  inventoryLow:
+    post:
+      requestBody:
+        description: Low inventory alert
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  enum: [inventory.low]
+                data:
+                  type: object
+                  properties:
+                    product_id:
+                      type: string
+                      format: uuid
+                    location_id:
+                      type: string
+                      format: uuid
+                    current_quantity:
+                      type: number
+                    reorder_point:
+                      type: number
+                timestamp:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Webhook processed
+```

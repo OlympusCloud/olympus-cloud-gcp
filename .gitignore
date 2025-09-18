@@ -1,0 +1,250 @@
+# Olympus Cloud GCP - Git Ignore File
+
+# ============================================
+# Environment & Configuration
+# ============================================
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# Secrets and credentials
+credentials/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+service-account*.json
+gcp-credentials.json
+
+# ============================================
+# IDE & Editors
+# ============================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================
+# Language-Specific
+# ============================================
+
+# Rust
+backend/rust/target/
+backend/rust/**/target/
+backend/rust/Cargo.lock
+backend/rust/**/*.rs.bk
+backend/rust/.cargo/
+
+# Go
+backend/go/bin/
+backend/go/vendor/
+backend/go/*.exe
+backend/go/*.exe~
+backend/go/*.dll
+backend/go/*.so
+backend/go/*.dylib
+backend/go/*.test
+backend/go/*.out
+backend/go/.air.toml
+backend/go/tmp/
+
+# Python
+backend/python/__pycache__/
+backend/python/**/__pycache__/
+backend/python/*.py[cod]
+backend/python/*$py.class
+backend/python/*.so
+backend/python/.Python
+backend/python/venv/
+backend/python/env/
+backend/python/.venv/
+backend/python/.pytest_cache/
+backend/python/.coverage
+backend/python/htmlcov/
+backend/python/.mypy_cache/
+backend/python/.ruff_cache/
+backend/python/dist/
+backend/python/*.egg-info/
+
+# Flutter/Dart
+frontend/.dart_tool/
+frontend/.packages
+frontend/build/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.pub-cache/
+frontend/.pub/
+frontend/coverage/
+frontend/*.lock
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/app/debug/
+frontend/android/app/profile/
+frontend/android/app/release/
+frontend/ios/Pods/
+frontend/ios/.symlinks/
+frontend/ios/Flutter/Flutter.framework
+frontend/ios/Flutter/Flutter.podspec
+frontend/ios/Flutter/Generated.xcconfig
+frontend/ios/Flutter/app.flx
+frontend/ios/Flutter/app.zip
+frontend/ios/Flutter/flutter_assets/
+frontend/ios/Flutter/flutter_export_environment.sh
+frontend/ios/Runner/GeneratedPluginRegistrant.*
+frontend/macos/Flutter/ephemeral/
+frontend/windows/flutter/ephemeral/
+frontend/linux/flutter/ephemeral/
+
+# ============================================
+# Infrastructure
+# ============================================
+
+# Terraform
+infrastructure/terraform/.terraform/
+infrastructure/terraform/*.tfstate
+infrastructure/terraform/*.tfstate.*
+infrastructure/terraform/*.tfplan
+infrastructure/terraform/.terraform.lock.hcl
+infrastructure/terraform/terraform.tfvars
+infrastructure/terraform/*.auto.tfvars
+
+# ============================================
+# Docker & Containers
+# ============================================
+docker-compose.override.yml
+.dockerignore
+
+# ============================================
+# Database
+# ============================================
+*.sqlite
+*.sqlite3
+*.db
+data/
+postgres_data/
+redis_data/
+
+# ============================================
+# Logs & Temp Files
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.yarn
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============================================
+# Testing & Coverage
+# ============================================
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+junit.xml
+test-report.xml
+
+# ============================================
+# Build Artifacts
+# ============================================
+dist/
+build/
+out/
+bin/
+obj/
+*.o
+*.a
+*.lib
+*.dll
+*.dylib
+*.exe
+*.app
+*.ipa
+*.apk
+*.aab
+
+# ============================================
+# Documentation
+# ============================================
+docs/api/
+docs/_build/
+site/
+.docusaurus/
+
+# ============================================
+# Monitoring
+# ============================================
+prometheus_data/
+grafana_data/
+loki_data/
+
+# ============================================
+# Git Worktrees (for AI agents)
+# ============================================
+worktree-*/
+
+# ============================================
+# Miscellaneous
+# ============================================
+node_modules/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.env.test
+.env.production
+
+# Ignore everything in bin except shared packages
+bin/*
+!bin/shared-packages/
+
+# Keep these files
+!.gitignore
+!.gitkeep
+!README.md
+!Makefile
+!docker-compose.yml
+!.env.example

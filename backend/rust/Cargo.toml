@@ -1,0 +1,70 @@
+[workspace]
+members = ["auth", "platform", "commerce", "shared"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Claude Code <claude@olympuscloud.io>"]
+license = "Proprietary"
+
+[workspace.dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros", "multipart"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression"] }
+hyper = { version = "1.0", features = ["full"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Database
+sqlx = { version = "0.7", features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "postgres",
+    "uuid",
+    "chrono",
+    "json",
+    "migrate"
+] }
+
+# Authentication & Security
+jsonwebtoken = "9"
+argon2 = "0.5"
+uuid = { version = "1", features = ["v4", "serde"] }
+rand = "0.8"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+# Logging & Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+
+# Redis for caching/events
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+
+# Testing
+rstest = "0.18"
+mockall = "0.12"
+wiremock = "0.5"
+
+# Validation
+validator = { version = "0.16", features = ["derive"] }
+
+# HTTP client (for testing)
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }

@@ -1,0 +1,34 @@
+[package]
+name = "olympus-shared"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Core dependencies
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Database
+sqlx.workspace = true
+
+# Redis
+redis.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Validation
+validator.workspace = true
+
+# Authentication
+jsonwebtoken.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+rstest.workspace = true

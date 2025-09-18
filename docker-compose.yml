@@ -1,0 +1,226 @@
+version: '3.9'
+
+services:
+  # ============================================
+  # Database Services
+  # ============================================
+  
+  postgres:
+    image: postgres:15-alpine
+    container_name: olympus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: olympus
+      POSTGRES_USER: olympus
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docs/05-COMPLETE-DATABASE-SCHEMA.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seeds:/docker-entrypoint-initdb.d/02-seeds:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U olympus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - olympus-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: olympus-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfilename "appendonly.aof"
+      --appenddirname "appendonlydir"
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - olympus-network
+
+  # ============================================
+  # Application Services (for Docker development)
+  # ============================================
+  
+  # Uncomment these when Docker images are built
+  
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: backend/Dockerfile.api
+  #     target: development
+  #   container_name: olympus-api
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     DATABASE_URL: postgresql://olympus:devpassword@postgres:5432/olympus?sslmode=disable
+  #     REDIS_URL: redis://redis:6379
+  #     JWT_SECRET: dev-secret-change-in-production
+  #     ENVIRONMENT: development
+  #     LOG_LEVEL: debug
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/target  # Exclude Rust target directory
+  #     - /app/bin     # Exclude Go bin directory
+  #   networks:
+  #     - olympus-network
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile.dev
+  #   container_name: olympus-frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     API_URL: http://api:8080
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/build
+  #     - /app/node_modules
+  #   depends_on:
+  #     - api
+  #   networks:
+  #     - olympus-network
+
+  # ============================================
+  # Development Tools
+  # ============================================
+  
+  adminer:
+    image: adminer:latest
+    container_name: olympus-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha
+    networks:
+      - olympus-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: olympus-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8082:8081"
+    networks:
+      - olympus-network
+
+  # ============================================
+  # Testing Services
+  # ============================================
+  
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: olympus-postgres-test
+    environment:
+      POSTGRES_DB: olympus_test
+      POSTGRES_USER: olympus
+      POSTGRES_PASSWORD: testpassword
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./docs/05-COMPLETE-DATABASE-SCHEMA.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - olympus-network
+    profiles:
+      - test
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: olympus-redis-test
+    command: redis-server --appendonly no
+    ports:
+      - "6380:6379"
+    tmpfs:
+      - /data
+    networks:
+      - olympus-network
+    profiles:
+      - test
+
+  # ============================================
+  # Monitoring Stack (Optional)
+  # ============================================
+  
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: olympus-prometheus
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus_data:/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.enable-lifecycle'
+  #   networks:
+  #     - olympus-network
+  #   profiles:
+  #     - monitoring
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: olympus-grafana
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #     - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+  #     - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+  #   ports:
+  #     - "3001:3000"
+  #   environment:
+  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  #     GF_INSTALL_PLUGINS: redis-datasource
+  #   networks:
+  #     - olympus-network
+  #   profiles:
+  #     - monitoring
+
+# ============================================
+# Networks
+# ============================================
+
+networks:
+  olympus-network:
+    driver: bridge
+
+# ============================================
+# Volumes
+# ============================================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
