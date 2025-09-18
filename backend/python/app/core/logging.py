@@ -1,8 +1,11 @@
 import logging
 from logging.config import dictConfig
+from typing import Union
+
+LogLevel = Union[int, str]
 
 
-def configure_logging(level: int | str = "INFO") -> None:
+def configure_logging(level: LogLevel = "INFO") -> None:
     """Configure structured logging for the service."""
 
     dictConfig(

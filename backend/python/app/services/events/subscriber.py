@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Awaitable, Callable, Iterable
+from typing import Awaitable, Callable, Iterable, Optional
 
 from redis.asyncio import Redis
 
@@ -25,7 +25,7 @@ class EventSubscriber:
         self._channels = list(channels)
         self._handler = handler
         self._poll_interval = poll_interval
-        self._task: asyncio.Task | None = None
+        self._task: Optional[asyncio.Task] = None
         self._stop_event = asyncio.Event()
 
     @property
@@ -41,7 +41,7 @@ class EventSubscriber:
         self._task = asyncio.create_task(self._listen(), name="redis-event-subscriber")
 
     async def stop(self) -> None:
-        """Stop the subscriber background task and release Redis resources."""
+        """Stop the subscriber background task and release resources."""
 
         if not self._task:
             return
@@ -79,7 +79,6 @@ class EventSubscriber:
         except Exception as exc:  # noqa: BLE001
             logger.exception("analytics.redis.connection_error", extra={"error": str(exc)})
         finally:
-            await self._redis.close()
             logger.info("analytics.redis.unsubscribed", extra={"channels": self._channels})
 
     @asynccontextmanager

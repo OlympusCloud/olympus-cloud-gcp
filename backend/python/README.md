@@ -27,8 +27,8 @@ pip install -r requirements.txt
 # Run in development
 uvicorn main:app --reload --port 8001
 
-# Run tests
-pytest
+# Run tests (ensure pytest is installed in your environment)
+python -m pytest
 ```
 
 ## Service Ports
@@ -45,17 +45,17 @@ pytest
 ```
 backend/python/
 ├── app/
-│   ├── api/               # API endpoints
-│   ├── core/              # Core configuration
-│   ├── models/            # Data models
+│   ├── api/               # API endpoints (e.g. /api/health)
+│   ├── core/              # Configuration, logging, lifespan management
+│   ├── models/            # Pydantic models and schemas
 │   ├── services/          # Business logic
-│   │   ├── analytics/     # Analytics engine
-│   │   ├── ml/           # Machine learning
-│   │   └── nlp/          # Natural language
-│   └── utils/            # Utilities
-├── tests/                # Test files
-├── alembic/             # Database migrations
-├── main.py              # Entry point
+│   │   ├── analytics/     # Analytics engine and BigQuery helpers
+│   │   ├── events/        # Redis event subscribers
+│   │   ├── ml/            # Machine learning pipelines
+│   │   └── nlp/           # Natural language services
+│   └── utils/             # Shared utilities
+├── tests/                # Async API tests
+├── main.py              # FastAPI entry point
 └── requirements.txt
 ```
 
@@ -70,15 +70,24 @@ OPENAI_API_KEY=your-api-key
 ```
 
 ## Analytics Events to Process
-- `events.user.logged_in` - Track user sessions
-- `events.order.created` - Order analytics
-- `events.payment.processed` - Revenue tracking
-- `events.inventory.updated` - Inventory analytics
+- `events.user.logged_in` – Session analytics
+- `events.order.created` – Commerce metrics
+- `events.payment.processed` – Revenue tracking
+- `events.inventory.updated` – Stock health monitoring
+
+## Current Implementation Highlights
+- Modular FastAPI application with shared startup/shutdown lifecycle
+- Redis pub/sub subscriber wiring analytics processor
+- Async SQLAlchemy session factory for PostgreSQL access
+- BigQuery client wrapper with safe local fallbacks
+- `/api/analytics/dashboard/{tenant_id}?timeframe=…` returns timeframe-aware metrics
+- `/api/analytics/nlp/query` endpoint providing heuristic natural language interpretation
+- `/api/health` endpoint exposing runtime status including Redis connectivity
 
 ## Next Steps for OpenAI Codex
-1. Set up FastAPI application structure
-2. Create analytics data models
-3. Implement Redis event subscriber
+1. Expand analytics data models with concrete schema mappings
+2. Persist and aggregate events inside PostgreSQL and BigQuery
+3. Implement Redis event handler pipelines and background tasks
 4. Build NLP service for natural language queries
 5. Create recommendation engine foundation
-6. Set up BigQuery connection
+6. Add integration tests covering event ingestion and analytics APIs

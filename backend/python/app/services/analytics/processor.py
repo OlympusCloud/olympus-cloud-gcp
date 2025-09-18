@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Optional
 
 from app.core.logging import logger
 from app.models.events import AnalyticsEvent
+from app.services.analytics.service import AnalyticsService
 
 
 class EventProcessor:
     """Dispatch events to analytics pipelines."""
+
+    def __init__(self, analytics_service: Optional[AnalyticsService] = None) -> None:
+        self._analytics_service = analytics_service
 
     async def handle_raw_event(self, channel: str, message: Any) -> None:
         """Parse and process an event message from Redis."""
@@ -34,4 +38,5 @@ class EventProcessor:
             "analytics.event.received",
             extra={"event": event.name, "occurred_at": event.occurred_at.isoformat()},
         )
-        # TODO: Persist event data and trigger downstream analytics jobs.
+        if self._analytics_service is not None:
+            await self._analytics_service.process_event(event)
