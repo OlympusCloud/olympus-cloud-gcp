@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
+import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/business_setup/presentation/screens/business_setup_wizard.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../shared/presentation/screens/error_screen.dart';
@@ -33,6 +35,13 @@ class AppRouter {
         path: '/signup',
         name: 'signup',
         builder: (context, state) => const SignupScreen(),
+      ),
+
+      // Onboarding route
+      GoRoute(
+        path: '/onboarding',
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
 
       // Main app routes (protected)
@@ -84,9 +93,7 @@ class AppRouter {
       GoRoute(
         path: '/business-setup',
         name: 'business-setup',
-        builder: (context, state) => const Placeholder(
-          child: Text('Business Setup Screen'),
-        ),
+        builder: (context, state) => const BusinessSetupWizard(),
       ),
 
       // Profile routes
@@ -145,6 +152,7 @@ class RouteNames {
   static const String splash = 'splash';
   static const String login = 'login';
   static const String signup = 'signup';
+  static const String onboarding = 'onboarding';
   static const String dashboard = 'dashboard';
   static const String orders = 'orders';
   static const String inventory = 'inventory';
@@ -161,6 +169,7 @@ class RoutePaths {
   static const String splash = '/';
   static const String login = '/login';
   static const String signup = '/signup';
+  static const String onboarding = '/onboarding';
   static const String dashboard = '/dashboard';
   static const String orders = '/dashboard/orders';
   static const String inventory = '/dashboard/inventory';

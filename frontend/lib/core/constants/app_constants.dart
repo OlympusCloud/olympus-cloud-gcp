@@ -42,6 +42,8 @@ class AppConstants {
   static const String tenantDataKey = 'tenant_data';
   static const String settingsKey = 'app_settings';
   static const String firstTimeKey = 'first_time_user';
+  static const String themeKey = 'theme_mode';
+  static const String languageKey = 'language_code';
 
   // UI Constants
   static const double mobileBreakpoint = 600;

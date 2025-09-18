@@ -10,6 +10,7 @@ class CustomFormField extends StatelessWidget {
   final void Function(String?)? onSaved;
   final void Function(String)? onChanged;
   final void Function(String)? onFieldSubmitted;
+  final void Function()? onTap;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final bool obscureText;
@@ -35,6 +36,7 @@ class CustomFormField extends StatelessWidget {
     this.onSaved,
     this.onChanged,
     this.onFieldSubmitted,
+    this.onTap,
     this.keyboardType,
     this.textInputAction,
     this.obscureText = false,
@@ -86,6 +88,7 @@ class CustomFormField extends StatelessWidget {
           onSaved: onSaved,
           onChanged: onChanged,
           onFieldSubmitted: onFieldSubmitted,
+          onTap: onTap,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           obscureText: obscureText,
@@ -176,38 +179,6 @@ class CustomDropdownField<T> extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Switch form field with consistent styling
-class CustomSwitchField extends StatelessWidget {
-  final String? label;
-  final String? subtitle;
-  final bool value;
-  final void Function(bool)? onChanged;
-  final bool enabled;
-  final Widget? leading;
-
-  const CustomSwitchField({
-    super.key,
-    this.label,
-    this.subtitle,
-    required this.value,
-    this.onChanged,
-    this.enabled = true,
-    this.leading,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: label != null ? Text(label!) : null,
-      subtitle: subtitle != null ? Text(subtitle!) : null,
-      value: value,
-      onChanged: enabled ? onChanged : null,
-      secondary: leading,
-      contentPadding: EdgeInsets.zero,
     );
   }
 }
