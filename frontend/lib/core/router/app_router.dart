@@ -6,6 +6,9 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/business_setup/presentation/screens/business_setup_wizard.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/watch/presentation/screens/watch_devices_screen.dart';
+import '../../features/watch/presentation/screens/watch_complications_screen.dart';
+import '../../features/watch/presentation/screens/watch_notifications_test_screen.dart';
 import '../../shared/presentation/screens/error_screen.dart';
 
 /// App router configuration using GoRouter
@@ -89,6 +92,30 @@ class AppRouter {
         ],
       ),
 
+      // Watch routes
+      GoRoute(
+        path: '/watch',
+        name: 'watch',
+        redirect: (context, state) => '/watch/devices',
+        routes: [
+          GoRoute(
+            path: 'devices',
+            name: 'watch-devices',
+            builder: (context, state) => const WatchDevicesScreen(),
+          ),
+          GoRoute(
+            path: 'complications',
+            name: 'watch-complications',
+            builder: (context, state) => const WatchComplicationsScreen(),
+          ),
+          GoRoute(
+            path: 'notifications-test',
+            name: 'watch-notifications-test',
+            builder: (context, state) => const WatchNotificationsTestScreen(),
+          ),
+        ],
+      ),
+
       // Business setup routes
       GoRoute(
         path: '/business-setup',
@@ -162,6 +189,10 @@ class RouteNames {
   static const String businessSetup = 'business-setup';
   static const String profile = 'profile';
   static const String help = 'help';
+  static const String watch = 'watch';
+  static const String watchDevices = 'watch-devices';
+  static const String watchComplications = 'watch-complications';
+  static const String watchNotificationsTest = 'watch-notifications-test';
 }
 
 /// Route paths for easy reference
@@ -179,4 +210,8 @@ class RoutePaths {
   static const String businessSetup = '/business-setup';
   static const String profile = '/profile';
   static const String help = '/help';
+  static const String watch = '/watch';
+  static const String watchDevices = '/watch/devices';
+  static const String watchComplications = '/watch/complications';
+  static const String watchNotificationsTest = '/watch/notifications-test';
 }
