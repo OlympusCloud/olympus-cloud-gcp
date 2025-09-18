@@ -71,6 +71,7 @@
 
 ### Event-Driven Communication
 - **Status**: 📋 Architecture Defined
+- **Latest Update**: Analytics service now streams domain events to BigQuery for historical analysis.
 - **Medium**: Redis pub/sub channels
 - **Event Schema Owner**: Claude Code (Rust shared module)
 - **Publishers**: All services can publish domain events

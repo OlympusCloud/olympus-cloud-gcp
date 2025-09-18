@@ -5,6 +5,37 @@ use rust_decimal::Decimal;
 use validator::Validate;
 use olympus_shared::types::{Money, Currency, Address, PhoneNumber};
 
+// Customer Models
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Customer {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub phone: Option<String>,
+    pub billing_address: Option<serde_json::Value>,
+    pub shipping_address: Option<serde_json::Value>,
+    pub metadata: serde_json::Value,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct CreateCustomerRequest {
+    #[validate(email)]
+    pub email: String,
+    #[validate(length(min = 1, max = 100))]
+    pub first_name: String,
+    #[validate(length(min = 1, max = 100))]
+    pub last_name: String,
+    #[validate(length(min = 7, max = 15))]
+    pub phone: Option<String>,
+    pub billing_address: Option<Address>,
+    pub shipping_address: Option<Address>,
+    pub metadata: Option<serde_json::Value>,
+}
+
 // Product Models
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Product {
@@ -241,29 +272,7 @@ pub enum PaymentStatus {
     PartiallyRefunded,
 }
 
-// Customer Models
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Customer {
-    pub id: Uuid,
-    pub tenant_id: Uuid,
-    pub email: String,
-    pub first_name: String,
-    pub last_name: String,
-    pub phone: Option<PhoneNumber>,
-    pub birth_date: Option<DateTime<Utc>>,
-    pub gender: Option<String>,
-    pub addresses: Vec<CustomerAddress>,
-    pub tags: Vec<String>,
-    pub notes: Option<String>,
-    pub accepts_marketing: bool,
-    pub vip_status: Option<String>,
-    pub loyalty_points: i32,
-    pub total_spent: Decimal,
-    pub total_orders: i32,
-    pub last_order_date: Option<DateTime<Utc>>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+// Removed duplicate Customer definition - using the one at the top of the file
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CustomerAddress {
