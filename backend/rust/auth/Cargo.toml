@@ -52,6 +52,11 @@ redis.workspace = true
 # Validation
 validator.workspace = true
 
+# Additional dependencies
+base64.workspace = true
+sha2.workspace = true
+axum-extra.workspace = true
+
 [dev-dependencies]
 rstest.workspace = true
 mockall.workspace = true
