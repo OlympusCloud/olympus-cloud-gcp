@@ -63,13 +63,21 @@ class AnalyticsService:
         return AnalyticsDashboardResponse(tenant_id=tenant_id, metrics=metrics)
 
     async def process_event(self, event: AnalyticsEvent) -> None:
-        """Placeholder pipeline for ingesting analytics events."""
+        """Ingest analytics events and forward them to downstream systems."""
 
         logger.info(
             "analytics.service.process_event",
             extra={"event": event.name, "tenant": event.context.source},
         )
-        # Future: persist into Postgres, stream to BigQuery, update caches.
+
+        try:
+            self._bigquery.record_event(event)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "analytics.bigquery.record_event_error",
+                extra={"error": str(exc), "event": event.name},
+            )
+        # Future: persist into Postgres, update caches, trigger ML pipelines.
 
     async def _fetch_user_metrics(
         self,

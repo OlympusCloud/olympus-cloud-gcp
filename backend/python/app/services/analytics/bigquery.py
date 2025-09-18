@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Optional
 
 try:
@@ -9,6 +10,7 @@ except ImportError:  # pragma: no cover - optional dependency during local dev
 
 from app.core.logging import logger
 from app.core.settings import Settings, get_settings
+from app.models.events import AnalyticsEvent
 
 
 class BigQueryClient:
@@ -57,3 +59,36 @@ class BigQueryClient:
         errors = self.client.insert_rows_json(table_id, rows)
         if errors:
             logger.error("analytics.bigquery.insert_failed", extra={"errors": errors})
+
+    def record_event(self, event: AnalyticsEvent) -> None:
+        """Persist a domain analytics event to BigQuery."""
+
+        if bigquery is None:
+            logger.info(
+                "analytics.bigquery.event_skipped",
+                extra={"reason": "dependency not installed", "event": event.name},
+            )
+            return
+
+        payload = {
+            "name": event.name,
+            "occurred_at": event.occurred_at.isoformat(),
+            "ingested_at": datetime.utcnow().isoformat(),
+            "context": {
+                "request_id": event.context.request_id,
+                "source": event.context.source,
+            },
+            "payload": event.payload,
+        }
+
+        tenant_id = event.payload.get("tenant_id")
+        if tenant_id:
+            payload["tenant_id"] = tenant_id
+
+        try:
+            self.insert_rows("events", [payload])
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "analytics.bigquery.record_event_failed",
+                extra={"error": str(exc), "event": event.name},
+            )
