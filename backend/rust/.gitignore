@@ -1,0 +1,57 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+tarpaulin-report.html
+cobertura.xml
+coverage/
+
+# Profiling
+perf.data
+perf.data.old
+flamegraph.svg
+
+# Documentation build
+/target/doc/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+*.backup
+*.bak
+
+# Docker
+.dockerignore.local
