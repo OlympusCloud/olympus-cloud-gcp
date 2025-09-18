@@ -4,18 +4,14 @@ use axum::{
     middleware::Next,
     response::Response,
 };
-use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
-    TypedHeader,
-};
 use std::sync::Arc;
 use crate::services::AuthService;
 
-pub async fn auth_middleware<B>(
+pub async fn auth_middleware(
     Extension(auth_service): Extension<Arc<AuthService>>,
     headers: HeaderMap,
-    mut request: Request<B>,
-    next: Next<B>,
+    request: Request<axum::body::Body>,
+    next: Next,
 ) -> Result<Response, StatusCode> {
     let authorization = headers
         .get("authorization")
@@ -34,8 +30,7 @@ pub async fn auth_middleware<B>(
     };
 
     match auth_service.verify_token(token).await {
-        Ok(claims) => {
-            request.extensions_mut().insert(claims);
+        Ok(_claims) => {
             Ok(next.run(request).await)
         }
         Err(_) => Err(StatusCode::UNAUTHORIZED),

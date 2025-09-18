@@ -2,6 +2,13 @@
 members = ["auth", "platform", "commerce", "shared"]
 resolver = "2"
 
+[package]
+name = "olympus-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
@@ -73,3 +80,15 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 base64 = "0.22"
 sha2 = "0.10"
 axum-extra = { version = "0.9", features = ["typed-header"] }
+
+[dependencies]
+# Local crates
+olympus-auth = { path = "auth" }
+olympus-platform = { path = "platform" }
+olympus-commerce = { path = "commerce" }
+olympus-shared = { path = "shared" }
+
+# Runtime
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
