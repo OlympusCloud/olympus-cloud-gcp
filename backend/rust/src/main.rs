@@ -45,21 +45,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // Initialize services
+    let jwt_service = Arc::new(olympus_auth::services::JwtService::new(config.jwt_secret.clone()));
+    let password_service = Arc::new(olympus_auth::services::PasswordService::new());
     let auth_service = Arc::new(olympus_auth::services::AuthService::new(
         database.clone(),
-        config.jwt_secret.as_bytes(),
-        event_publisher.clone(),
+        jwt_service,
+        password_service,
+        event_publisher.clone().unwrap_or(Arc::new(tokio::sync::Mutex::new(EventPublisher::mock()))),
+    ));
+
+    let platform_service = Arc::new(olympus_platform::services::PlatformService::new(
+        database.clone(),
+    ));
+
+    let commerce_service = Arc::new(olympus_commerce::services::CommerceService::new(
+        database.clone(),
+        event_publisher.clone().unwrap_or(Arc::new(tokio::sync::Mutex::new(EventPublisher::mock()))),
     ));
 
     // Create routers
     let auth_router = olympus_auth::create_router(auth_service);
+    let platform_router = olympus_platform::create_router(platform_service);
+    let commerce_router = olympus_commerce::create_router(commerce_service);
 
     // Combine all routers
     let app = Router::new()
-        .nest("/auth", auth_router)
-        // Platform and commerce routers would be added here when services are implemented
-        // .nest("/platform", platform_router)
-        // .nest("/commerce", commerce_router)
+        .nest("/api/v1/auth", auth_router)
+        .nest("/api/v1/platform", platform_router)
+        .nest("/api/v1/commerce", commerce_router)
         .layer(
             ServiceBuilder::new()
                 .layer(

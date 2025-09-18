@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  rust-services:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: olympus-rust
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://olympus:devpassword@postgres:5432/olympus
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-development-secret-change-in-production}
+      - RUST_LOG=olympus=debug,tower_http=debug
+      - PORT=8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - olympus-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: olympus-postgres
+    environment:
+      - POSTGRES_USER=olympus
+      - POSTGRES_PASSWORD=devpassword
+      - POSTGRES_DB=olympus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U olympus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - olympus-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: olympus-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - olympus-network
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  olympus-network:
+    driver: bridge
