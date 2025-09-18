@@ -21,6 +21,12 @@ class AuthState with _$AuthState {
   /// Unauthenticated state - user is not logged in
   const factory AuthState.unauthenticated() = UnauthenticatedState;
   
+  /// Email verification required state
+  const factory AuthState.emailVerificationRequired({
+    required String email,
+    required String message,
+  }) = EmailVerificationRequiredState;
+  
   /// Error state - authentication failed
   const factory AuthState.error(String message) = ErrorState;
 }
@@ -35,6 +41,9 @@ extension AuthStateExtension on AuthState {
   
   /// Check if there's an error
   bool get hasError => this is ErrorState;
+  
+  /// Check if email verification is required
+  bool get requiresEmailVerification => this is EmailVerificationRequiredState;
   
   /// Get current user if authenticated
   User? get user => maybeWhen(
@@ -51,6 +60,18 @@ extension AuthStateExtension on AuthState {
   /// Get error message if in error state
   String? get errorMessage => maybeWhen(
         error: (message) => message,
+        orElse: () => null,
+      );
+  
+  /// Get email if verification is required
+  String? get verificationEmail => maybeWhen(
+        emailVerificationRequired: (email, message) => email,
+        orElse: () => null,
+      );
+  
+  /// Get verification message if verification is required
+  String? get verificationMessage => maybeWhen(
+        emailVerificationRequired: (email, message) => message,
         orElse: () => null,
       );
 }
