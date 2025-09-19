@@ -145,6 +145,27 @@ pub struct VerifyEmailRequest {
     pub token: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RevokeSessionRequest {
+    pub session_id: Uuid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionListResponse {
+    pub sessions: Vec<SessionSummary>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionSummary {
+    pub id: Uuid,
+    pub device_name: Option<String>,
+    pub ip_address: String,
+    pub user_agent: String,
+    pub created_at: DateTime<Utc>,
+    pub last_used_at: DateTime<Utc>,
+    pub is_current: bool,
+}
+
 // JWT Claims
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {

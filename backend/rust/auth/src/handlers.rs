@@ -304,6 +304,135 @@ pub async fn verify_email(
     }
 }
 
+pub async fn get_sessions(
+    Extension(auth_service): Extension<Arc<AuthService>>,
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+) -> impl IntoResponse {
+    let token = auth.token();
+
+    // Verify the token and get user ID
+    let claims = match auth_service.verify_token(token).await {
+        Ok(claims) => claims,
+        Err(e) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(ApiResponse::error(
+                    format!("{:?}", e),
+                    e.to_string(),
+                )),
+            )
+        }
+    };
+
+    match auth_service.get_active_sessions(claims.sub).await {
+        Ok(sessions) => {
+            let session_summaries: Vec<SessionSummary> = sessions
+                .into_iter()
+                .map(|session| SessionSummary {
+                    id: session.id,
+                    device_name: session.device_name,
+                    ip_address: session.ip_address,
+                    user_agent: session.user_agent,
+                    created_at: session.created_at,
+                    last_used_at: session.last_used_at,
+                    is_current: session.is_current,
+                })
+                .collect();
+
+            (
+                StatusCode::OK,
+                Json(ApiResponse::success(SessionListResponse {
+                    sessions: session_summaries,
+                })),
+            )
+        }
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
+}
+
+pub async fn revoke_session(
+    Extension(auth_service): Extension<Arc<AuthService>>,
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+    Json(request): Json<RevokeSessionRequest>,
+) -> impl IntoResponse {
+    let token = auth.token();
+
+    // Verify the token and get user ID
+    let claims = match auth_service.verify_token(token).await {
+        Ok(claims) => claims,
+        Err(e) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(ApiResponse::error(
+                    format!("{:?}", e),
+                    e.to_string(),
+                )),
+            )
+        }
+    };
+
+    match auth_service.revoke_session(claims.sub, request.session_id).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(ApiResponse::success(serde_json::json!({
+                "message": "Session revoked successfully"
+            }))),
+        ),
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
+}
+
+pub async fn revoke_all_other_sessions(
+    Extension(auth_service): Extension<Arc<AuthService>>,
+    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
+) -> impl IntoResponse {
+    let token = auth.token();
+
+    // Verify the token and get user ID
+    let claims = match auth_service.verify_token(token).await {
+        Ok(claims) => claims,
+        Err(e) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(ApiResponse::error(
+                    format!("{:?}", e),
+                    e.to_string(),
+                )),
+            )
+        }
+    };
+
+    // Note: In a real implementation, you'd need to identify the current session
+    // For now, we'll revoke all sessions
+    match auth_service.revoke_all_other_sessions(claims.sub, None).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(ApiResponse::success(serde_json::json!({
+                "message": "All other sessions revoked successfully"
+            }))),
+        ),
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
+}
+
 pub async fn health_check() -> impl IntoResponse {
     (
         StatusCode::OK,

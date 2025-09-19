@@ -241,6 +241,8 @@ mod tests {
 
     #[test]
     fn test_database_context_creation() {
+        use uuid::Uuid;
+
         let tenant_id = Uuid::new_v4();
         let user_id = Uuid::new_v4();
 

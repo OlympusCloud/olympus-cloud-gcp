@@ -6,13 +6,14 @@ pub use mock_repository::UserRepository;
 
 use std::sync::Arc;
 use uuid::Uuid;
-use chrono::{Duration, Utc};
+use chrono::{Duration, Utc, DateTime};
 use olympus_shared::database::DbPool;
 use olympus_shared::events::EventPublisher;
 use crate::error::{AuthError, Result};
 use crate::models::*;
 use jwt::{JwtService, DeviceInfo};
 use password::PasswordService;
+use serde::{Serialize, Deserialize};
 
 pub struct AuthService {
     db: Arc<DbPool>,
@@ -325,4 +326,61 @@ impl AuthService {
 
         Ok(())
     }
+
+    pub async fn get_active_sessions(&self, user_id: Uuid) -> Result<Vec<SessionInfo>> {
+        // Get all active refresh tokens for the user (which represent sessions)
+        let refresh_tokens = self.user_repo.find_active_refresh_tokens(user_id).await?;
+
+        let sessions = refresh_tokens
+            .into_iter()
+            .map(|token| SessionInfo {
+                id: token.id,
+                device_id: token.device_id,
+                device_name: token.device_name,
+                ip_address: token.ip_address,
+                user_agent: token.user_agent,
+                created_at: token.created_at,
+                last_used_at: token.created_at, // TODO: Track actual last usage
+                is_current: false, // TODO: Determine current session
+            })
+            .collect();
+
+        Ok(sessions)
+    }
+
+    pub async fn revoke_session(&self, user_id: Uuid, session_id: Uuid) -> Result<()> {
+        // Find the refresh token and verify it belongs to the user
+        let refresh_token = self.user_repo.find_refresh_token_by_id(session_id).await?;
+
+        if refresh_token.user_id != user_id {
+            return Err(AuthError::InvalidToken("Session does not belong to user".to_string()));
+        }
+
+        // Revoke the specific session
+        self.user_repo.revoke_refresh_token(session_id).await?;
+        Ok(())
+    }
+
+    pub async fn revoke_all_other_sessions(&self, user_id: Uuid, current_session_id: Option<Uuid>) -> Result<()> {
+        // Revoke all sessions except the current one
+        if let Some(current_id) = current_session_id {
+            self.user_repo.revoke_all_user_tokens_except(user_id, current_id).await?;
+        } else {
+            self.user_repo.revoke_all_user_tokens(user_id).await?;
+        }
+        Ok(())
+    }
+}
+
+// Session information for display to users
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionInfo {
+    pub id: Uuid,
+    pub device_id: Option<String>,
+    pub device_name: Option<String>,
+    pub ip_address: String,
+    pub user_agent: String,
+    pub created_at: DateTime<Utc>,
+    pub last_used_at: DateTime<Utc>,
+    pub is_current: bool,
 }

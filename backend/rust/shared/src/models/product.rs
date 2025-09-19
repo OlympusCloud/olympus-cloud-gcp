@@ -501,14 +501,15 @@ impl From<Product> for ProductSummary {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rust_decimal_macros::dec;
+    use rust_decimal::Decimal;
+    use std::str::FromStr;
 
     #[test]
     fn test_product_creation() {
         let tenant_id = Uuid::new_v4();
         let sku = "TEST-001".to_string();
         let name = "Test Product".to_string();
-        let price = dec!(19.99);
+        let price = Decimal::from_str("19.99").unwrap();
 
         let product = Product::new(tenant_id, sku.clone(), name.clone(), price);
 
@@ -526,7 +527,7 @@ mod tests {
             Uuid::new_v4(),
             "TEST-001".to_string(),
             "Test Product".to_string(),
-            dec!(15.00),
+            Decimal::from_str("15.00").unwrap(),
         );
 
         // Not on sale initially
@@ -534,12 +535,12 @@ mod tests {
         assert!(product.sale_percentage().is_none());
 
         // Set compare at price higher than unit price (on sale)
-        product.compare_at_price = Some(dec!(20.00));
+        product.compare_at_price = Some(Decimal::from_str("20.00").unwrap());
         assert!(product.is_on_sale());
 
         // Should be 25% off ((20-15)/20 * 100)
         let sale_percent = product.sale_percentage().unwrap();
-        assert_eq!(sale_percent, dec!(25.00));
+        assert_eq!(sale_percent, Decimal::from_str("25.00").unwrap());
     }
 
     #[test]
@@ -548,7 +549,7 @@ mod tests {
             Uuid::new_v4(),
             "TEST-001".to_string(),
             "Test Product".to_string(),
-            dec!(19.99),
+            Decimal::from_str("19.99").unwrap(),
         );
 
         // Add images
@@ -569,7 +570,7 @@ mod tests {
             Uuid::new_v4(),
             "TEST-001".to_string(),
             "Test Product".to_string(),
-            dec!(19.99),
+            Decimal::from_str("19.99").unwrap(),
         );
 
         // Add tags
@@ -592,7 +593,7 @@ mod tests {
             Uuid::new_v4(),
             "LAPTOP-001".to_string(),
             "Gaming Laptop".to_string(),
-            dec!(999.99),
+            Decimal::from_str("999.99").unwrap(),
         );
 
         assert!(product.matches_search("laptop"));
@@ -608,13 +609,13 @@ mod tests {
             Uuid::new_v4(),
             "TEST-001".to_string(),
             "Test Product".to_string(),
-            dec!(19.99),
+            Decimal::from_str("19.99").unwrap(),
         );
         assert!(product.validate().is_ok());
 
         // Invalid product with negative price
         let mut invalid_product = product.clone();
-        invalid_product.unit_price = dec!(-5.00);
+        invalid_product.unit_price = Decimal::from_str("-5.00").unwrap();
         assert!(invalid_product.validate().is_err());
 
         // Invalid product with empty name
