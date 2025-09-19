@@ -108,21 +108,12 @@ class _OutlinedLoadingButton extends LoadingButton {
     this.style,
     this.loadingColor,
   }) : super(
-<<<<<<< HEAD
-         isLoading: isLoading,
-         onPressed: onPressed,
-         child: child,
-         style: style,
-         loadingColor: loadingColor,
-       );
-=======
           isLoading: isLoading,
           onPressed: onPressed,
           child: child,
           style: style,
           loadingColor: loadingColor,
         );
->>>>>>> origin/main
 
   @override
   Widget build(BuildContext context) {
@@ -168,21 +159,12 @@ class _TextLoadingButton extends LoadingButton {
     this.style,
     this.loadingColor,
   }) : super(
-<<<<<<< HEAD
-         isLoading: isLoading,
-         onPressed: onPressed,
-         child: child,
-         style: style,
-         loadingColor: loadingColor,
-       );
-=======
           isLoading: isLoading,
           onPressed: onPressed,
           child: child,
           style: style,
           loadingColor: loadingColor,
         );
->>>>>>> origin/main
 
   @override
   Widget build(BuildContext context) {
