@@ -9,6 +9,8 @@
 
 pub mod restaurant;
 pub mod customer_security;
+pub mod inventory_transactions;
 
 pub use restaurant::*;
 pub use customer_security::*;
+pub use inventory_transactions::*;
