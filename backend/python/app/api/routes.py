@@ -13,6 +13,7 @@ from app.api.dependencies import (
     get_inventory_service,
     get_nlp_service,
     get_recommendation_service,
+    get_restaurant_service,
     get_snapshot_service,
 )
 from app.core.settings import get_settings
@@ -26,6 +27,7 @@ from app.models.enhanced_analytics import (
 from app.models.inventory import StockMovement
 from app.models.nlp import NLPQueryResponse
 from app.models.recommendations import RecommendationResponse
+from app.models.restaurant import RestaurantAnalytics, RestaurantRecommendation
 from app.models.snapshots import (
     MetricsSnapshot,
     SnapshotHistoryRequest,
@@ -38,6 +40,7 @@ from app.services.crm.service import CRMService
 from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
+from app.services.restaurant.service import RestaurantService
 
 api_router = APIRouter()
 
@@ -345,3 +348,56 @@ async def track_stock_movement(
 ) -> StockMovement:
     """Track inventory stock movement."""
     return await inventory_service.track_stock_movement(movement)
+
+
+@api_router.get(
+    "/restaurant/analytics",
+    tags=["restaurant"],
+    response_model=RestaurantAnalytics
+)
+async def get_restaurant_analytics(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: Optional[str] = Query(None, description="Location filter"),
+    restaurant_service: RestaurantService = Depends(get_restaurant_service),
+) -> RestaurantAnalytics:
+    """Get comprehensive restaurant analytics including table turnover and service metrics."""
+    return await restaurant_service.get_table_analytics(tenant_id, location_id)
+
+
+@api_router.get(
+    "/restaurant/recommendations",
+    tags=["restaurant"]
+)
+async def get_restaurant_recommendations(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: Optional[str] = Query(None, description="Location filter"),
+    restaurant_service: RestaurantService = Depends(get_restaurant_service),
+) -> List[RestaurantRecommendation]:
+    """Get AI-powered restaurant operation recommendations."""
+    return await restaurant_service.generate_restaurant_recommendations(tenant_id, location_id)
+
+
+@api_router.get(
+    "/restaurant/kitchen/orders",
+    tags=["restaurant"]
+)
+async def get_kitchen_display_orders(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: str = Query(..., description="Location identifier"),
+    restaurant_service: RestaurantService = Depends(get_restaurant_service),
+):
+    """Get orders for kitchen display system."""
+    return await restaurant_service.get_kitchen_display_orders(tenant_id, location_id)
+
+
+@api_router.get(
+    "/restaurant/tables/status",
+    tags=["restaurant"]
+)
+async def get_table_status(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: str = Query(..., description="Location identifier"),
+    restaurant_service: RestaurantService = Depends(get_restaurant_service),
+):
+    """Get current table status distribution."""
+    return await restaurant_service.get_table_status(tenant_id, location_id)
