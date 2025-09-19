@@ -202,21 +202,21 @@ fn extract_tenant_identifier(
         TenantResolutionStrategy::Header => {
             extract_from_header(request.headers(), "x-tenant-slug")
                 .or_else(|| extract_from_header(request.headers(), "x-tenant-id"))
-                .ok_or_else(|| Error::BadRequest("Missing tenant identifier in headers".to_string()))
+                .ok_or_else(|| Error::Validation("Missing tenant identifier in headers".to_string()))
         }
 
         TenantResolutionStrategy::Subdomain => {
             let host = extract_from_header(request.headers(), "host")
-                .ok_or_else(|| Error::BadRequest("Missing Host header".to_string()))?;
+                .ok_or_else(|| Error::Validation("Missing Host header".to_string()))?;
 
             extract_subdomain(&host)
-                .ok_or_else(|| Error::BadRequest("Invalid subdomain format".to_string()))
+                .ok_or_else(|| Error::Validation("Invalid subdomain format".to_string()))
         }
 
         TenantResolutionStrategy::JwtClaims => {
             // Extract from Authorization header JWT claims
             let auth_header = extract_from_header(request.headers(), "authorization")
-                .ok_or_else(|| Error::BadRequest("Missing Authorization header".to_string()))?;
+                .ok_or_else(|| Error::Validation("Missing Authorization header".to_string()))?;
 
             extract_tenant_from_jwt(&auth_header)
         }
@@ -225,7 +225,7 @@ fn extract_tenant_identifier(
             // Extract from URL path (e.g., /api/v1/tenants/{slug}/...)
             let path = request.uri().path();
             extract_tenant_from_path(path)
-                .ok_or_else(|| Error::BadRequest("Missing tenant in path".to_string()))
+                .ok_or_else(|| Error::Validation("Missing tenant in path".to_string()))
         }
     }
 }
@@ -256,14 +256,14 @@ fn extract_tenant_from_jwt(auth_header: &str) -> Result<String> {
     // This is a simplified version - in a real implementation,
     // you would parse and validate the JWT token
     if !auth_header.starts_with("Bearer ") {
-        return Err(Error::BadRequest("Invalid Authorization header format".to_string()));
+        return Err(Error::Validation("Invalid Authorization header format".to_string()));
     }
 
     let token = &auth_header[7..]; // Remove "Bearer " prefix
 
     // TODO: Implement JWT parsing and extract tenant_id or tenant_slug
     // For now, return an error indicating this needs to be implemented
-    Err(Error::BadRequest("JWT tenant extraction not implemented".to_string()))
+    Err(Error::Validation("JWT tenant extraction not implemented".to_string()))
 }
 
 /// Extract tenant from URL path

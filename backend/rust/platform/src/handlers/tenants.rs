@@ -109,11 +109,11 @@ pub async fn create_tenant(
         Err(e) => {
             error!("Failed to create tenant: {}", e);
             match e {
-                olympus_shared::Error::Conflict(msg) => Ok(Json(ApiResponse::error(
+                olympus_shared::Error::AlreadyExists(msg) => Ok(Json(ApiResponse::error(
                     "SLUG_ALREADY_EXISTS".to_string(),
                     msg,
                 ))),
-                olympus_shared::Error::BadRequest(msg) => Ok(Json(ApiResponse::error(
+                olympus_shared::Error::Validation(msg) => Ok(Json(ApiResponse::error(
                     "VALIDATION_ERROR".to_string(),
                     msg,
                 ))),
@@ -223,7 +223,7 @@ pub async fn update_tenant(
             "TENANT_NOT_FOUND".to_string(),
             "Tenant not found".to_string(),
         ))),
-        Err(olympus_shared::Error::BadRequest(msg)) => Ok(Json(ApiResponse::error(
+        Err(olympus_shared::Error::Validation(msg)) => Ok(Json(ApiResponse::error(
             "VALIDATION_ERROR".to_string(),
             msg,
         ))),
@@ -318,7 +318,7 @@ pub async fn update_subscription(
             "TENANT_NOT_FOUND".to_string(),
             "Tenant not found".to_string(),
         ))),
-        Err(olympus_shared::Error::BadRequest(msg)) => Ok(Json(ApiResponse::error(
+        Err(olympus_shared::Error::Validation(msg)) => Ok(Json(ApiResponse::error(
             "VALIDATION_ERROR".to_string(),
             msg,
         ))),

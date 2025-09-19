@@ -54,9 +54,9 @@ impl From<TenantError> for Error {
         match err {
             TenantError::NotFound => Error::NotFound("Tenant not found".to_string()),
             TenantError::SlugAlreadyExists { slug } => {
-                Error::Conflict(format!("Tenant slug already exists: {}", slug))
+                Error::AlreadyExists(format!("Tenant slug already exists: {}", slug))
             }
-            TenantError::Validation { message } => Error::BadRequest(message),
+            TenantError::Validation { message } => Error::Validation(message),
             TenantError::Database(db_err) => Error::Internal(format!("Database error: {}", db_err)),
             _ => Error::Internal(err.to_string()),
         }
@@ -64,6 +64,7 @@ impl From<TenantError> for Error {
 }
 
 /// Comprehensive tenant management service
+#[derive(Debug)]
 pub struct TenantService {
     db: Arc<DbPool>,
     event_publisher: Arc<EventPublisher>,
@@ -164,7 +165,7 @@ impl TenantService {
             tenant.audit_fields.updated_at,
             tenant.audit_fields.deleted_at
         )
-        .execute(&**self.db)
+        .execute(self.db.as_ref())
         .await;
 
         match result {
@@ -190,7 +191,7 @@ impl TenantService {
                 .source_service("platform".to_string())
                 .build();
 
-                if let Err(e) = self.event_publisher.publish(event).await {
+                if let Err(e) = self.event_publisher.publish(&event).await {
                     warn!("Failed to publish TenantCreated event: {}", e);
                 }
 
@@ -223,7 +224,7 @@ impl TenantService {
             "#,
             tenant_id
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match row {
@@ -275,7 +276,7 @@ impl TenantService {
             "#,
             slug
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match row {
@@ -471,7 +472,7 @@ impl TenantService {
             request.metadata,
             Utc::now()
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match updated_tenant {
@@ -520,7 +521,7 @@ impl TenantService {
                 .source_service("platform".to_string())
                 .build();
 
-                if let Err(e) = self.event_publisher.publish(event).await {
+                if let Err(e) = self.event_publisher.publish(&event).await {
                     warn!("Failed to publish TenantUpdated event: {}", e);
                 }
 
@@ -570,7 +571,7 @@ impl TenantService {
             request.billing_address,
             Utc::now()
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match updated_tenant {
@@ -621,7 +622,7 @@ impl TenantService {
                 .source_service("platform".to_string())
                 .build();
 
-                if let Err(e) = self.event_publisher.publish(event).await {
+                if let Err(e) = self.event_publisher.publish(&event).await {
                     warn!("Failed to publish SubscriptionUpdated event: {}", e);
                 }
 
@@ -675,7 +676,7 @@ impl TenantService {
             feature_flags,
             Utc::now()
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match updated_tenant {
@@ -722,7 +723,7 @@ impl TenantService {
 
         // Get total count
         let count_result = sqlx::query!("SELECT COUNT(*) as count FROM tenants WHERE deleted_at IS NULL")
-            .fetch_one(&**self.db)
+            .fetch_one(self.db.as_ref())
             .await?;
 
         let total = count_result.count.unwrap_or(0) as u64;
@@ -744,7 +745,7 @@ impl TenantService {
             limit as i64,
             offset as i64
         )
-        .fetch_all(&**self.db)
+        .fetch_all(self.db.as_ref())
         .await?;
 
         let tenants: Vec<TenantSummary> = rows
@@ -780,7 +781,7 @@ impl TenantService {
             })
             .collect();
 
-        Ok(PageResponse::new(tenants, page.page, total, page.per_page))
+        Ok(PageResponse::new(tenants, total, page.page, page.per_page))
     }
 
     /// Activate tenant (end trial period)
@@ -801,7 +802,7 @@ impl TenantService {
             tenant_id,
             Utc::now()
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match updated_tenant {
@@ -850,7 +851,7 @@ impl TenantService {
                 .source_service("platform".to_string())
                 .build();
 
-                if let Err(e) = self.event_publisher.publish(event).await {
+                if let Err(e) = self.event_publisher.publish(&event).await {
                     warn!("Failed to publish TenantActivated event: {}", e);
                 }
 
@@ -878,7 +879,7 @@ impl TenantService {
             tenant_id,
             Utc::now()
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         match updated_tenant {
@@ -927,7 +928,7 @@ impl TenantService {
                 .source_service("platform".to_string())
                 .build();
 
-                if let Err(e) = self.event_publisher.publish(event).await {
+                if let Err(e) = self.event_publisher.publish(&event).await {
                     warn!("Failed to publish TenantSuspended event: {}", e);
                 }
 
@@ -951,7 +952,7 @@ impl TenantService {
             tenant_id,
             Utc::now()
         )
-        .execute(&**self.db)
+        .execute(self.db.as_ref())
         .await?;
 
         if result.rows_affected() == 0 {
@@ -975,7 +976,7 @@ impl TenantService {
         .source_service("platform".to_string())
         .build();
 
-        if let Err(e) = self.event_publisher.publish(event).await {
+        if let Err(e) = self.event_publisher.publish(&event).await {
             warn!("Failed to publish TenantDeleted event: {}", e);
         }
 
@@ -996,7 +997,7 @@ impl TenantService {
             "SELECT id FROM tenants WHERE slug = $1 AND deleted_at IS NULL",
             slug
         )
-        .fetch_optional(&**self.db)
+        .fetch_optional(self.db.as_ref())
         .await?;
 
         Ok(result.is_some())
@@ -1016,7 +1017,7 @@ impl TenantService {
             "#,
             tenant_id
         )
-        .fetch_one(&**self.db)
+        .fetch_one(self.db.as_ref())
         .await?;
 
         Ok(serde_json::json!({
