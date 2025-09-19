@@ -230,7 +230,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         TextFormField(
           controller: _naturalLanguageController,
           decoration: const InputDecoration(
-            labelText: 'What would you like to do?',
+            labelText: 'Tell me how you\'d like to sign in...',
             hintText: 'e.g., "Log me in as john@example.com"',
             prefixIcon: Icon(Icons.chat_bubble_outline),
           ),
