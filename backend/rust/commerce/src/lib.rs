@@ -7,6 +7,7 @@
 // Date: 2025-01-18
 // ============================================================================
 
+pub mod event_handlers;
 pub mod models;
 pub mod services;
 pub mod handlers;
@@ -116,6 +117,12 @@ pub async fn health_check() -> &'static str {
 }
 
 // Re-export important types
+pub use event_handlers::{
+    OrderLifecycleHandler,
+    InventoryManagementHandler,
+    CommerceAnalyticsHandler,
+    CommerceEventHandlerFactory,
+};
 pub use handlers::*;
 pub use models::*;
 pub use services::*;
