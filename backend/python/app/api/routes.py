@@ -10,13 +10,20 @@ from app.api.dependencies import (
     get_analytics_service,
     get_nlp_service,
     get_recommendation_service,
+    get_snapshot_service,
 )
 from app.core.settings import get_settings
 from app.core.state import RuntimeState
 from app.models.analytics import AnalyticsDashboardResponse, AnalyticsTimeframe
 from app.models.nlp import NLPQueryResponse
 from app.models.recommendations import RecommendationResponse
+from app.models.snapshots import (
+    MetricsSnapshot,
+    SnapshotHistoryRequest,
+    SnapshotHistoryResponse
+)
 from app.services.analytics.service import AnalyticsService
+from app.services.analytics.snapshots import SnapshotService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 
@@ -173,3 +180,75 @@ async def interpret_nlp_query(
 
     result = await nlp_service.interpret(request_body.query)
     return NLPQueryResponse(query=request_body.query, result=result)
+
+
+@api_router.post(
+    "/analytics/snapshots",
+    tags=["analytics"],
+    response_model=MetricsSnapshot,
+    status_code=status.HTTP_201_CREATED
+)
+async def create_metrics_snapshot(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    timeframe: AnalyticsTimeframe = Query(AnalyticsTimeframe.TODAY, description="Timeframe for snapshot"),
+    snapshot_service: SnapshotService = Depends(get_snapshot_service),
+) -> MetricsSnapshot:
+    """Create a new metrics snapshot for the specified tenant."""
+    
+    return await snapshot_service.create_snapshot(
+        tenant_id=tenant_id,
+        timeframe=timeframe,
+        location_id=location_id
+    )
+
+
+@api_router.get(
+    "/analytics/snapshots/history",
+    tags=["analytics"],
+    response_model=SnapshotHistoryResponse
+)
+async def get_snapshot_history(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    timeframe: AnalyticsTimeframe = Query(AnalyticsTimeframe.LAST_MONTH, description="Timeframe filter"),
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of snapshots to return"),
+    snapshot_service: SnapshotService = Depends(get_snapshot_service),
+) -> SnapshotHistoryResponse:
+    """Retrieve historical metrics snapshots with trend analysis."""
+    
+    request = SnapshotHistoryRequest(
+        tenant_id=tenant_id,
+        location_id=location_id,
+        timeframe=timeframe,
+        limit=limit
+    )
+    
+    return await snapshot_service.get_snapshot_history(request)
+
+
+@api_router.post(
+    "/analytics/snapshots/backfill",
+    tags=["analytics"],
+    status_code=status.HTTP_202_ACCEPTED
+)
+async def backfill_snapshots(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    days_back: int = Query(30, ge=1, le=365, description="Number of days to backfill"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    snapshot_service: SnapshotService = Depends(get_snapshot_service),
+) -> dict[str, Any]:
+    """Backfill historical snapshots for the specified tenant."""
+    
+    snapshots_created = await snapshot_service.backfill_snapshots(
+        tenant_id=tenant_id,
+        days_back=days_back,
+        location_id=location_id
+    )
+    
+    return {
+        "message": "Backfill completed",
+        "tenant_id": tenant_id,
+        "snapshots_created": snapshots_created,
+        "days_back": days_back
+    }
