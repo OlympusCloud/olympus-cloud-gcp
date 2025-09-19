@@ -1,16 +1,16 @@
 use std::sync::Arc;
 use uuid::Uuid;
 use chrono::Utc;
-use olympus_shared::database::Database;
+use olympus_shared::database::DbPool;
 use crate::error::{AuthError, Result};
 use crate::models::{User, Tenant, RefreshToken};
 
 pub struct UserRepository {
-    _db: Arc<Database>,
+    _db: Arc<DbPool>,
 }
 
 impl UserRepository {
-    pub fn new(db: Arc<Database>) -> Self {
+    pub fn new(db: Arc<DbPool>) -> Self {
         Self { _db: db }
     }
 

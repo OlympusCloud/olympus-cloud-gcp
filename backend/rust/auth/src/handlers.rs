@@ -174,7 +174,7 @@ pub async fn logout(
 }
 
 pub async fn forgot_password(
-    Extension(_auth_service): Extension<Arc<AuthService>>,
+    Extension(auth_service): Extension<Arc<AuthService>>,
     Json(request): Json<ForgotPasswordRequest>,
 ) -> impl IntoResponse {
     if let Err(e) = request.validate() {
@@ -187,16 +187,25 @@ pub async fn forgot_password(
         );
     }
 
-    (
-        StatusCode::OK,
-        Json(ApiResponse::success(serde_json::json!({
-            "message": "If the email exists, a password reset link has been sent"
-        }))),
-    )
+    match auth_service.forgot_password(request).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(ApiResponse::success(serde_json::json!({
+                "message": "If the email exists, a password reset link has been sent"
+            }))),
+        ),
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
 }
 
 pub async fn reset_password(
-    Extension(_auth_service): Extension<Arc<AuthService>>,
+    Extension(auth_service): Extension<Arc<AuthService>>,
     Json(request): Json<ResetPasswordRequest>,
 ) -> impl IntoResponse {
     if let Err(e) = request.validate() {
@@ -209,20 +218,29 @@ pub async fn reset_password(
         );
     }
 
-    (
-        StatusCode::OK,
-        Json(ApiResponse::success(serde_json::json!({
-            "message": "Password has been reset successfully"
-        }))),
-    )
+    match auth_service.reset_password(request).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(ApiResponse::success(serde_json::json!({
+                "message": "Password has been reset successfully"
+            }))),
+        ),
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
 }
 
 pub async fn change_password(
-    Extension(_auth_service): Extension<Arc<AuthService>>,
+    Extension(auth_service): Extension<Arc<AuthService>>,
     TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
     Json(request): Json<ChangePasswordRequest>,
 ) -> impl IntoResponse {
-    let _token = auth.token();
+    let token = auth.token();
 
     if let Err(e) = request.validate() {
         return (
@@ -234,24 +252,56 @@ pub async fn change_password(
         );
     }
 
-    (
-        StatusCode::OK,
-        Json(ApiResponse::success(serde_json::json!({
-            "message": "Password changed successfully"
-        }))),
-    )
+    // Verify the token and get user ID
+    let claims = match auth_service.verify_token(token).await {
+        Ok(claims) => claims,
+        Err(e) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(ApiResponse::error(
+                    format!("{:?}", e),
+                    e.to_string(),
+                )),
+            )
+        }
+    };
+
+    match auth_service.change_password(claims.sub, request).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(ApiResponse::success(serde_json::json!({
+                "message": "Password changed successfully"
+            }))),
+        ),
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
 }
 
 pub async fn verify_email(
-    Extension(_auth_service): Extension<Arc<AuthService>>,
-    Json(_request): Json<VerifyEmailRequest>,
+    Extension(auth_service): Extension<Arc<AuthService>>,
+    Json(request): Json<VerifyEmailRequest>,
 ) -> impl IntoResponse {
-    (
-        StatusCode::OK,
-        Json(ApiResponse::success(serde_json::json!({
-            "message": "Email verified successfully"
-        }))),
-    )
+    match auth_service.verify_email(&request.token).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(ApiResponse::success(serde_json::json!({
+                "message": "Email verified successfully"
+            }))),
+        ),
+        Err(e) => (
+            StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+            Json(ApiResponse::error(
+                format!("{:?}", e),
+                e.to_string(),
+            )),
+        ),
+    }
 }
 
 pub async fn health_check() -> impl IntoResponse {

@@ -204,4 +204,15 @@ impl User {
             true
         }
     }
+
+    pub fn update_password(&mut self, new_password_hash: String) {
+        self.password_hash = new_password_hash;
+        self.password_changed_at = Some(Utc::now());
+        self.updated_at = Utc::now();
+    }
+
+    pub fn verify_email(&mut self) {
+        self.email_verified = true;
+        self.updated_at = Utc::now();
+    }
 }
