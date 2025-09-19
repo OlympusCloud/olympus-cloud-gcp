@@ -1,12 +1,12 @@
 // ============================================================================
-// OLYMPUS CLOUD - PLATFORM HANDLERS
+// OLYMPUS CLOUD - PLATFORM MIDDLEWARE
 // ============================================================================
-// Module: platform/src/handlers.rs
-// Description: HTTP handlers for platform management APIs
+// Module: platform/src/middleware/mod.rs
+// Description: Middleware for tenant isolation and security enforcement
 // Author: Claude Code Agent
 // Date: 2025-01-18
 // ============================================================================
 
-pub mod tenants;
+pub mod tenant;
 
-pub use tenants::*;
+pub use tenant::*;
