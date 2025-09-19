@@ -19,6 +19,7 @@ from app.services.crm.service import CRMService
 from app.services.events.subscriber import EventSubscriber
 from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationService
+from app.services.nlp.enhanced_nlp import EnhancedNLPService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 from app.services.restaurant.service import RestaurantService
 from app.services.retail.service import RetailService
@@ -97,6 +98,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     if not hasattr(app.state, "nlp_service"):
         app.state.nlp_service = NaturalLanguageQueryService()
+
+    if not hasattr(app.state, "enhanced_nlp_service"):
+        app.state.enhanced_nlp_service = EnhancedNLPService()
 
     redis = create_redis_client(settings)
     subscriber: Optional[EventSubscriber] = None

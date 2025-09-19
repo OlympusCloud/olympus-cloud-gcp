@@ -6,6 +6,7 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import nlp_routes
 from app.api.dependencies import (
     get_analytics_service,
     get_crm_service,
@@ -65,6 +66,9 @@ from app.services.hospitality.service import HospitalityService
 from app.services.events_industry.service import EventsService
 
 api_router = APIRouter()
+
+# Mount enhanced NLP endpoints
+api_router.include_router(nlp_routes.router)
 
 
 class NLPQueryRequest(BaseModel):
