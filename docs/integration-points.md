@@ -71,7 +71,7 @@
 
 ### Event-Driven Communication
 - **Status**: 📋 Architecture Defined
-- **Latest Update**: Analytics service now streams domain events to BigQuery for historical analysis.
+- **Latest Update**: Analytics service streams domain events to BigQuery and persists dashboard snapshots to Postgres (`analytics.metric_snapshots`) while auto-provisioning `events` and `metrics_snapshots` tables in BigQuery.
 - **Medium**: Redis pub/sub channels
 - **Event Schema Owner**: Claude Code (Rust shared module)
 - **Publishers**: All services can publish domain events

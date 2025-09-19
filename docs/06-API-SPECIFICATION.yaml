@@ -1682,6 +1682,20 @@ components:
     DashboardMetrics:
       type: object
       properties:
+        timeframe:
+          type: string
+          enum:
+            - all_time
+            - today
+            - yesterday
+            - this_week
+            - last_week
+            - this_month
+            - last_month
+            - this_quarter
+            - this_year
+            - year_to_date
+            - custom
         sales:
           type: object
           properties:

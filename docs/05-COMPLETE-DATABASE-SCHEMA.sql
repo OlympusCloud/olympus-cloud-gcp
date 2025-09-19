@@ -930,9 +930,27 @@ CREATE TABLE analytics.metrics (
     
     -- Timestamps
     calculated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    
+
     UNIQUE(tenant_id, location_id, metric_date, metric_type, metric_name)
 );
+
+-- Dashboard snapshot rollups
+CREATE TABLE analytics.metric_snapshots (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tenant_id UUID NOT NULL REFERENCES platform.tenants(id) ON DELETE CASCADE,
+    location_id UUID REFERENCES platform.locations(id) ON DELETE CASCADE,
+    timeframe VARCHAR(50) NOT NULL,
+    active_users INTEGER NOT NULL DEFAULT 0,
+    orders INTEGER NOT NULL DEFAULT 0,
+    revenue NUMERIC(18,2) NOT NULL DEFAULT 0,
+    inventory_warnings INTEGER NOT NULL DEFAULT 0,
+    start_date DATE,
+    end_date DATE,
+    captured_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_metric_snapshots_tenant_time ON analytics.metric_snapshots (tenant_id, captured_at DESC);
+CREATE INDEX idx_metric_snapshots_location_time ON analytics.metric_snapshots (location_id, captured_at DESC);
 
 -- Events table (for event tracking)
 CREATE TABLE analytics.events (

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
 from sqlalchemy import text
@@ -12,6 +12,13 @@ from app.models.analytics import (
     AnalyticsDashboardResponse,
     AnalyticsMetrics,
     AnalyticsTimeframe,
+    CustomerMetrics,
+    InventoryMetrics,
+    SalesForecast,
+    SalesMetrics,
+    SalesSnapshot,
+    SalesTrend,
+    StaffMetrics,
 )
 from app.models.events import AnalyticsEvent
 from app.services.analytics.bigquery import BigQueryClient
@@ -39,25 +46,37 @@ class AnalyticsService:
     ) -> AnalyticsDashboardResponse:
         """Return high-level dashboard metrics for a tenant."""
 
-        metrics = AnalyticsMetrics(timeframe=timeframe)
-
         async with self._session_factory() as session:
-            metrics = metrics.model_copy(
-                update=await self._fetch_user_metrics(session, tenant_id, location_id)
+            user_metrics = await self._fetch_user_metrics(session, tenant_id, location_id)
+            order_metrics = await self._fetch_order_metrics(
+                session,
+                tenant_id,
+                timeframe,
+                location_id=location_id,
+                start_date=start_date,
+                end_date=end_date,
             )
-            metrics = metrics.model_copy(
-                update=
-                await self._fetch_order_metrics(
-                    session,
-                    tenant_id,
-                    timeframe,
-                    location_id=location_id,
-                    start_date=start_date,
-                    end_date=end_date,
-                )
+            inventory_metrics = await self._fetch_inventory_metrics(session, tenant_id, location_id)
+
+            metrics = self._build_metrics(
+                timeframe=timeframe,
+                active_users=user_metrics["active_users"],
+                orders=order_metrics["orders"],
+                revenue=order_metrics["revenue"],
+                inventory_warnings=inventory_metrics["inventory_warnings"],
             )
-            metrics = metrics.model_copy(
-                update=await self._fetch_inventory_metrics(session, tenant_id, location_id)
+
+            await self._record_metrics_snapshot(
+                session,
+                tenant_id,
+                metrics,
+                active_users=user_metrics["active_users"],
+                orders=order_metrics["orders"],
+                revenue=order_metrics["revenue"],
+                inventory_warnings=inventory_metrics["inventory_warnings"],
+                location_id=location_id,
+                start_date=start_date,
+                end_date=end_date,
             )
 
         return AnalyticsDashboardResponse(tenant_id=tenant_id, metrics=metrics)
@@ -184,6 +203,120 @@ class AnalyticsService:
         except SQLAlchemyError as exc:
             logger.warning("analytics.metrics.inventory_failed", extra={"error": str(exc)})
         return {"inventory_warnings": 0}
+
+    def _build_metrics(
+        self,
+        *,
+        timeframe: AnalyticsTimeframe,
+        active_users: int,
+        orders: int,
+        revenue: float,
+        inventory_warnings: int,
+    ) -> AnalyticsMetrics:
+        avg_order = revenue / orders if orders else 0.0
+        stockout_risk = 1.0 if inventory_warnings > 0 else 0.0
+
+        sales = SalesMetrics(
+            today=SalesSnapshot(revenue=revenue, orders=orders, avg_order=avg_order),
+            trend=SalesTrend(revenue=revenue, orders=orders),
+            forecast=SalesForecast(),
+        )
+        customers = CustomerMetrics(total=active_users, new_today=0, active=active_users)
+        inventory = InventoryMetrics(
+            low_stock_items=inventory_warnings,
+            stockout_risk=stockout_risk,
+            total_value=0.0,
+        )
+        staff = StaffMetrics()
+
+        return AnalyticsMetrics(
+            timeframe=timeframe,
+            sales=sales,
+            customers=customers,
+            inventory=inventory,
+            staff=staff,
+        )
+
+    async def _record_metrics_snapshot(
+        self,
+        session: AsyncSession,
+        tenant_id: str,
+        metrics: AnalyticsMetrics,
+        *,
+        active_users: int,
+        orders: int,
+        revenue: float,
+        inventory_warnings: int,
+        location_id: Optional[str] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
+    ) -> None:
+        snapshot = {
+            "tenant_id": tenant_id,
+            "timeframe": metrics.timeframe.value,
+            "active_users": active_users,
+            "orders": orders,
+            "revenue": revenue,
+            "inventory_warnings": inventory_warnings,
+            "location_id": location_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "captured_at": datetime.utcnow(),
+        }
+
+        await self._write_snapshot_to_postgres(session, snapshot)
+
+        try:
+            self._bigquery.record_snapshot(snapshot)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "analytics.snapshot.bigquery_failed",
+                extra={"error": str(exc), "tenant": tenant_id},
+            )
+
+    async def _write_snapshot_to_postgres(
+        self,
+        session: AsyncSession,
+        snapshot: dict[str, Any],
+    ) -> None:
+        try:
+            await session.execute(
+                text(
+                    """
+                    INSERT INTO analytics.metric_snapshots (
+                        tenant_id,
+                        timeframe,
+                        active_users,
+                        orders,
+                        revenue,
+                        inventory_warnings,
+                        location_id,
+                        start_date,
+                        end_date,
+                        captured_at
+                    ) VALUES (
+                        :tenant_id,
+                        :timeframe,
+                        :active_users,
+                        :orders,
+                        :revenue,
+                        :inventory_warnings,
+                        :location_id,
+                        :start_date,
+                        :end_date,
+                        :captured_at
+                    )
+                    """
+                ),
+                snapshot,
+            )
+            await session.commit()
+        except SQLAlchemyError as exc:
+            await session.rollback()
+            logger.warning(
+                "analytics.snapshot.postgres_failed",
+                extra={"error": str(exc), "tenant": snapshot.get("tenant_id")},
+            )
 
     def _build_timeframe_clause(
         self,

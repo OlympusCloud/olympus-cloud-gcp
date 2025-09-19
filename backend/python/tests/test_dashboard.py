@@ -10,7 +10,29 @@ from app.models.analytics import (
     AnalyticsDashboardResponse,
     AnalyticsMetrics,
     AnalyticsTimeframe,
+    CustomerMetrics,
+    InventoryMetrics,
+    SalesForecast,
+    SalesMetrics,
+    SalesSnapshot,
+    SalesTrend,
+    StaffMetrics,
 )
+
+
+def _stub_metrics(timeframe: AnalyticsTimeframe) -> AnalyticsMetrics:
+    sales_today = SalesSnapshot(revenue=123.45, orders=2, avg_order=61.725)
+    sales = SalesMetrics(today=sales_today, trend=SalesTrend(revenue=123.45, orders=2), forecast=SalesForecast())
+    customers = CustomerMetrics(total=5, new_today=0, active=5)
+    inventory = InventoryMetrics(low_stock_items=1, stockout_risk=1.0, total_value=0.0)
+    staff = StaffMetrics()
+    return AnalyticsMetrics(
+        timeframe=timeframe,
+        sales=sales,
+        customers=customers,
+        inventory=inventory,
+        staff=staff,
+    )
 
 
 class StubAnalyticsService:
@@ -25,13 +47,7 @@ class StubAnalyticsService:
     ) -> AnalyticsDashboardResponse:
         return AnalyticsDashboardResponse(
             tenant_id=tenant_id,
-            metrics=AnalyticsMetrics(
-                active_users=5,
-                orders=2,
-                revenue=123.45,
-                inventory_warnings=1,
-                timeframe=timeframe,
-            ),
+            metrics=_stub_metrics(timeframe),
         )
 
 
@@ -51,8 +67,8 @@ async def test_dashboard_endpoint_returns_metrics(monkeypatch):
     assert response.status_code == 200
     payload = response.json()
     assert payload["tenant_id"] == "tenant-123"
-    assert payload["metrics"]["active_users"] == 5
-    assert payload["metrics"]["orders"] == 2
+    assert payload["metrics"]["customers"]["active"] == 5
+    assert payload["metrics"]["sales"]["today"]["orders"] == 2
     assert payload["metrics"]["timeframe"] == "all_time"
 
     get_settings.cache_clear()
