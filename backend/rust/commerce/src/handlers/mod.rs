@@ -7,8 +7,10 @@
 // Date: 2025-01-18
 // ============================================================================
 
-pub mod products;
+pub mod analytics;
 pub mod orders;
+pub mod products;
 
-pub use products::*;
+pub use analytics::*;
 pub use orders::*;
+pub use products::*;
