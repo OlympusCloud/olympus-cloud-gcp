@@ -17,6 +17,7 @@ tower-http.workspace = true
 # Async
 tokio.workspace = true
 futures.workspace = true
+async-trait.workspace = true
 
 # Serialization
 serde.workspace = true

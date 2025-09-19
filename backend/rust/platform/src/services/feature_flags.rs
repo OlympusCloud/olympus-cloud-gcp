@@ -17,7 +17,7 @@ use rand::Rng;
 use olympus_shared::{
     database::DbPool,
     events::{EventPublisher, DomainEvent},
-    error::{Result, OlympusError},
+    error::{Result, Error},
 };
 
 use crate::models::{
@@ -56,7 +56,7 @@ impl FeatureFlagsService {
         // Validate rollout percentage for percentage-based strategies
         if matches!(request.rollout_strategy, RolloutStrategy::PercentageUsers | RolloutStrategy::GradualRollout) {
             if request.rollout_percentage.is_none() {
-                return Err(OlympusError::Validation(
+                return Err(Error::Validation(
                     "Rollout percentage is required for percentage-based strategies".to_string()
                 ));
             }
@@ -73,7 +73,7 @@ impl FeatureFlagsService {
         let flag_row = query_as!(
             FeatureFlagRow,
             r#"
-            INSERT INTO feature_flags (
+            INSERT INTO platform.feature_flags (
                 id, tenant_id, key, name, description, flag_type, status,
                 default_value, rollout_strategy, rollout_percentage,
                 target_users, target_groups, conditions, variants, tags,
@@ -115,7 +115,7 @@ impl FeatureFlagsService {
         )
         .fetch_one(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to create feature flag: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to create feature flag: {}", e)))?;
 
         let flag = self.flag_row_to_model(flag_row)?;
 
@@ -157,7 +157,7 @@ impl FeatureFlagsService {
                 rollout_percentage, target_users, target_groups, conditions,
                 variants, tags, is_global, created_at, updated_at,
                 created_by, updated_by, starts_at, ends_at
-            FROM feature_flags
+            FROM platform.feature_flags
             WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
             "#,
             flag_id,
@@ -165,7 +165,7 @@ impl FeatureFlagsService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get feature flag: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get feature flag: {}", e)))?;
 
         match flag_row {
             Some(row) => Ok(Some(self.flag_row_to_model(row)?)),
@@ -189,7 +189,7 @@ impl FeatureFlagsService {
                 rollout_percentage, target_users, target_groups, conditions,
                 variants, tags, is_global, created_at, updated_at,
                 created_by, updated_by, starts_at, ends_at
-            FROM feature_flags
+            FROM platform.feature_flags
             WHERE key = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
             ORDER BY tenant_id NULLS LAST
             LIMIT 1
@@ -199,7 +199,7 @@ impl FeatureFlagsService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get feature flag by key: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get feature flag by key: {}", e)))?;
 
         match flag_row {
             Some(row) => Ok(Some(self.flag_row_to_model(row)?)),
@@ -221,7 +221,7 @@ impl FeatureFlagsService {
             let flag_row = query_as!(
                 FeatureFlagRow,
                 r#"
-                UPDATE feature_flags
+                UPDATE platform.feature_flags
                 SET status = $3, updated_at = $4, updated_by = $5
                 WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
                 RETURNING
@@ -241,7 +241,7 @@ impl FeatureFlagsService {
             )
             .fetch_optional(self.db.as_ref())
             .await
-            .map_err(|e| OlympusError::Database(format!("Failed to update feature flag: {}", e)))?;
+            .map_err(|e| Error::Database(format!("Failed to update feature flag: {}", e)))?;
 
             match flag_row {
                 Some(row) => {
@@ -282,7 +282,7 @@ impl FeatureFlagsService {
 
         let rows_affected = query!(
             r#"
-            UPDATE feature_flags
+            UPDATE platform.feature_flags
             SET deleted_at = $3, updated_by = $4
             WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
             "#,
@@ -293,7 +293,7 @@ impl FeatureFlagsService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to delete feature flag: {}", e)))?
+        .map_err(|e| Error::Database(format!("Failed to delete feature flag: {}", e)))?
         .rows_affected();
 
         if rows_affected > 0 {
@@ -484,7 +484,7 @@ impl FeatureFlagsService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to record flag evaluation: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to record flag evaluation: {}", e)))?;
 
         Ok(())
     }
@@ -522,7 +522,7 @@ impl FeatureFlagsService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get flag usage analytics: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get flag usage analytics: {}", e)))?;
 
         if let Some(usage) = usage {
             Ok(Some(FeatureFlagUsage {
@@ -560,7 +560,7 @@ impl FeatureFlagsService {
                 rollout_percentage, target_users, target_groups, conditions,
                 variants, tags, is_global, created_at, updated_at,
                 created_by, updated_by, starts_at, ends_at
-            FROM feature_flags
+            FROM platform.feature_flags
             WHERE (tenant_id = $1 OR tenant_id IS NULL) AND deleted_at IS NULL
             ORDER BY created_at DESC
             LIMIT $2 OFFSET $3
@@ -571,7 +571,7 @@ impl FeatureFlagsService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to list feature flags: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to list feature flags: {}", e)))?;
 
         flag_rows
             .into_iter()
@@ -589,7 +589,7 @@ impl FeatureFlagsService {
         key: &str,
         exclude_id: Option<Uuid>,
     ) -> Result<()> {
-        let mut query_str = "SELECT id FROM feature_flags WHERE key = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL".to_string();
+        let mut query_str = "SELECT id FROM platform.feature_flags WHERE key = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL".to_string();
 
         if exclude_id.is_some() {
             query_str.push_str(" AND id != $3");
@@ -604,10 +604,10 @@ impl FeatureFlagsService {
                 .fetch_optional(self.db.as_ref())
                 .await
         }
-        .map_err(|e| OlympusError::Database(format!("Failed to check flag key uniqueness: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to check flag key uniqueness: {}", e)))?;
 
         if exists.is_some() {
-            return Err(OlympusError::Validation("Feature flag key already exists".to_string()));
+            return Err(Error::Validation("Feature flag key already exists".to_string()));
         }
 
         Ok(())

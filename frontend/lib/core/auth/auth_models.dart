@@ -7,10 +7,10 @@ part 'auth_models.g.dart';
 @freezed
 class AuthResponse with _$AuthResponse {
   const factory AuthResponse({
-    @JsonKey(name: 'access_token') required String accessToken,
-    @JsonKey(name: 'refresh_token') required String refreshToken,
-    @JsonKey(name: 'token_type') required String tokenType,
-    @JsonKey(name: 'expires_in') required int expiresIn,
+    required String accessToken,
+    required String refreshToken,
+    required String tokenType,
+    required int expiresIn,
     required User user,
   }) = _AuthResponse;
 
@@ -24,16 +24,16 @@ class User with _$User {
   const factory User({
     required String id,
     required String email,
-    @JsonKey(name: 'first_name') required String firstName,
-    @JsonKey(name: 'last_name') required String lastName,
-    @JsonKey(name: 'tenant_id') String? tenantId,
-    @JsonKey(name: 'is_email_verified') @Default(false) bool isEmailVerified,
-    @JsonKey(name: 'is_active') @Default(true) bool isActive,
+    required String firstName,
+    required String lastName,
+    String? tenantId,
+    @Default(false) bool isEmailVerified,
+    @Default(true) bool isActive,
     @Default([]) List<UserRole> roles,
     @Default([]) List<String> permissions,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
-    @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? lastLoginAt,
     String? avatar,
     String? phone,
     Map<String, dynamic>? preferences,
@@ -50,7 +50,7 @@ class UserRole with _$UserRole {
     required String name,
     required String description,
     @Default([]) List<String> permissions,
-    @JsonKey(name: 'assigned_at') DateTime? assignedAt,
+    DateTime? assignedAt,
   }) = _UserRole;
 
   factory UserRole.fromJson(Map<String, dynamic> json) =>
@@ -75,9 +75,9 @@ class RegisterRequest with _$RegisterRequest {
   const factory RegisterRequest({
     required String email,
     required String password,
-    @JsonKey(name: 'first_name') required String firstName,
-    @JsonKey(name: 'last_name') required String lastName,
-    @JsonKey(name: 'tenant_id') String? tenantId,
+    required String firstName,
+    required String lastName,
+    String? tenantId,
     String? phone,
   }) = _RegisterRequest;
 
@@ -89,8 +89,8 @@ class RegisterRequest with _$RegisterRequest {
 @freezed
 class ChangePasswordRequest with _$ChangePasswordRequest {
   const factory ChangePasswordRequest({
-    @JsonKey(name: 'current_password') required String currentPassword,
-    @JsonKey(name: 'new_password') required String newPassword,
+    required String currentPassword,
+    required String newPassword,
   }) = _ChangePasswordRequest;
 
   factory ChangePasswordRequest.fromJson(Map<String, dynamic> json) =>
@@ -113,7 +113,7 @@ class ForgotPasswordRequest with _$ForgotPasswordRequest {
 class ResetPasswordRequest with _$ResetPasswordRequest {
   const factory ResetPasswordRequest({
     required String token,
-    @JsonKey(name: 'new_password') required String newPassword,
+    required String newPassword,
   }) = _ResetPasswordRequest;
 
   factory ResetPasswordRequest.fromJson(Map<String, dynamic> json) =>
@@ -135,7 +135,7 @@ class VerifyEmailRequest with _$VerifyEmailRequest {
 @freezed
 class RefreshTokenRequest with _$RefreshTokenRequest {
   const factory RefreshTokenRequest({
-    @JsonKey(name: 'refresh_token') required String refreshToken,
+    required String refreshToken,
   }) = _RefreshTokenRequest;
 
   factory RefreshTokenRequest.fromJson(Map<String, dynamic> json) =>

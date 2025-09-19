@@ -1063,112 +1063,209 @@ paths:
   # Natural Language Endpoints
   # ==========================================
   
-  /nl/query:
+  /nlp/process:
     post:
       tags:
         - Natural Language
-      summary: Process natural language query
-      operationId: processNaturalLanguageQuery
+      summary: Interpret natural language request with enhanced NLP engine
+      operationId: processEnhancedNLPQuery
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - query
-              properties:
-                query:
-                  type: string
-                  example: "Show me today's sales"
-                context:
-                  type: object
-                  properties:
-                    location_id:
-                      type: string
-                      format: uuid
-                    time_range:
-                      type: string
+              $ref: '#/components/schemas/NLPQueryRequest'
       responses:
         '200':
-          description: Query response
+          description: NLP interpretation result
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response:
-                    type: string
-                  data:
-                    type: object
-                  actions:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                        label:
-                          type: string
-                        action:
-                          type: string
+                $ref: '#/components/schemas/NLPResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
 
-  /nl/command:
-    post:
-      tags:
-        - Natural Language
-      summary: Execute natural language command
-      operationId: executeNaturalLanguageCommand
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - command
-              properties:
-                command:
-                  type: string
-                  example: "Create an order for table 5 with 2 burgers and 2 cokes"
-                context:
-                  type: object
-      responses:
-        '200':
-          description: Command executed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  result:
-                    type: object
-                  message:
-                    type: string
-
-  /nl/suggestions:
+  /nlp/suggestions:
     get:
       tags:
         - Natural Language
-      summary: Get AI suggestions
-      operationId: getAISuggestions
+      summary: Autocomplete natural language input with contextual suggestions
+      operationId: getEnhancedNLPSuggestions
       parameters:
-        - name: context
+        - name: partial_text
           in: query
+          required: true
           schema:
             type: string
-            enum: [orders, inventory, customers, staff, general]
+            minLength: 1
+          description: Partial user input to complete
+        - name: session_id
+          in: query
+          required: false
+          schema:
+            type: string
+            default: default
+          description: Session identifier for contextual cues
       responses:
         '200':
-          description: AI suggestions
+          description: Suggested completions
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AISuggestion'
+                $ref: '#/components/schemas/NLPSuggestionsResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /nlp/train:
+    post:
+      tags:
+        - Natural Language
+      summary: Submit labeled feedback to improve intent classification
+      operationId: trainEnhancedNLPIntent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NLPTrainingRequest'
+      responses:
+        '200':
+          description: Training feedback accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: training_data_recorded
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /nlp/analytics/{session_id}:
+    get:
+      tags:
+        - Natural Language
+      summary: Retrieve session analytics for NLP interactions
+      operationId: getEnhancedNLPAnalytics
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analytics for the requested session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NLPAnalyticsResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /nlp/context/{session_id}:
+    delete:
+      tags:
+        - Natural Language
+      summary: Clear persisted NLP context for a session
+      operationId: clearEnhancedNLPContext
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Context cleared
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: context_cleared
+                  session_id:
+                    type: string
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /nlp/intents:
+    get:
+      tags:
+        - Natural Language
+      summary: List supported intents for the enhanced NLP engine
+      operationId: getEnhancedNLPIntents
+      responses:
+        '200':
+          description: Supported intent catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  intents:
+                    type: array
+                    items:
+                      type: string
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /nlp/entities:
+    get:
+      tags:
+        - Natural Language
+      summary: List entity types recognized by the enhanced NLP engine
+      operationId: getEnhancedNLPEntities
+      responses:
+        '200':
+          description: Recognized entity catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entity_types:
+                    type: array
+                    items:
+                      type: string
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /nlp/health:
+    get:
+      tags:
+        - Natural Language
+      summary: Health probe for enhanced NLP service
+      operationId: getEnhancedNLPHealth
+      responses:
+        '200':
+          description: Service health details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: enhanced_nlp
+                  version:
+                    type: string
+                  features:
+                    type: array
+                    items:
+                      type: string
 
 # ==========================================
 # Components
@@ -1246,6 +1343,13 @@ components:
         X-RateLimit-Reset:
           schema:
             type: integer
+
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
   schemas:
     # ==========================================
@@ -1924,6 +2028,226 @@ components:
         generated_at:
           type: string
           format: date-time
+
+    # ==========================================
+    # Natural Language Schemas
+    # ==========================================
+
+    NLPQueryRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: User-supplied natural language input
+          example: "Show me today's revenue by location"
+        session_id:
+          type: string
+          description: Conversation session identifier
+          default: default
+        tenant_id:
+          type: string
+          description: Optional tenant override for cross-tenant workflows
+        user_id:
+          type: string
+          description: Optional user identifier for personalization
+
+    NLPTrainingRequest:
+      type: object
+      required:
+        - text
+        - correct_intent
+      properties:
+        text:
+          type: string
+          example: "Create a new order for table seven"
+        correct_intent:
+          type: string
+          description: Labeled intent identifier
+          example: create_order
+        session_id:
+          type: string
+          default: default
+
+    NLPIntent:
+      type: object
+      properties:
+        name:
+          type: string
+          example: view_analytics
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    NLPEntityMatch:
+      type: object
+      properties:
+        value:
+          type: string
+        start:
+          type: integer
+          minimum: 0
+        end:
+          type: integer
+          minimum: 0
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    NLPResponse:
+      type: object
+      properties:
+        intent:
+          $ref: '#/components/schemas/NLPIntent'
+        entities:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/NLPEntityMatch'
+        response:
+          type: string
+        context:
+          type: object
+        session_id:
+          type: string
+        processed_at:
+          type: string
+          format: date-time
+
+    NLPSuggestionsResponse:
+      type: object
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    NLPAnalyticsResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        queries_processed:
+          type: integer
+          minimum: 0
+        last_intent:
+          type: string
+          nullable: true
+        last_query_time:
+          type: string
+          format: date-time
+          nullable: true
+        context_size:
+          type: integer
+          minimum: 0
+
+    TimeSeriesPoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+        label:
+          type: string
+          nullable: true
+
+    ForecastData:
+      type: object
+      properties:
+        metric_name:
+          type: string
+        forecast_points:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSeriesPoint'
+        confidence_interval:
+          type: object
+          properties:
+            upper:
+              type: array
+              items:
+                type: number
+            lower:
+              type: array
+              items:
+                type: number
+        accuracy_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        model_used:
+          type: string
+
+    CohortPeriodMetrics:
+      type: object
+      properties:
+        period_index:
+          type: integer
+          minimum: 0
+        period_label:
+          type: string
+        customers_active:
+          type: integer
+          minimum: 0
+        revenue:
+          type: number
+          minimum: 0
+        retention_rate:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    CohortAnalysis:
+      type: object
+      properties:
+        cohort_key:
+          type: string
+        cohort_size:
+          type: integer
+          minimum: 0
+        periods:
+          type: array
+          items:
+            $ref: '#/components/schemas/CohortPeriodMetrics'
+        average_retention:
+          type: number
+          minimum: 0
+          maximum: 1
+        lifetime_value:
+          type: number
+          minimum: 0
+
+    CohortAnalyticsResponse:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+        period_granularity:
+          type: string
+          enum: [day, week, month]
+        cohorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/CohortAnalysis'
+        average_retention_rate:
+          type: number
+          minimum: 0
+          maximum: 1
+        best_cohort:
+          type: string
+          nullable: true
+        period_labels:
+          type: array
+          items:
+            type: string
 
     AISuggestion:
       type: object

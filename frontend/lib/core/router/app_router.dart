@@ -6,7 +6,7 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/business_setup/presentation/screens/business_setup_wizard.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
-import '../../features/orders/presentation/screens/order_management_screen.dart';
+// import '../../features/orders/presentation/screens/order_management_screen.dart';
 import '../../features/inventory/presentation/screens/inventory_management_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_dashboard.dart';
 import '../../shared/presentation/screens/error_screen.dart';
@@ -54,11 +54,12 @@ class AppRouter {
         builder: (context, state) => const DashboardScreen(),
         routes: [
           // Dashboard sub-routes will be added here
-          GoRoute(
-            path: 'orders',
-            name: 'orders',
-            builder: (context, state) => const OrderManagementScreen(),
-          ),
+          // TODO: Re-enable when order management is fixed
+          // GoRoute(
+          //   path: 'orders',
+          //   name: 'orders',
+          //   builder: (context, state) => const OrderManagementScreen(),
+          // ),
           GoRoute(
             path: 'inventory',
             name: 'inventory',

@@ -20,13 +20,9 @@ AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AuthResponse {
-  @JsonKey(name: 'access_token')
   String get accessToken => throw _privateConstructorUsedError;
-  @JsonKey(name: 'refresh_token')
   String get refreshToken => throw _privateConstructorUsedError;
-  @JsonKey(name: 'token_type')
   String get tokenType => throw _privateConstructorUsedError;
-  @JsonKey(name: 'expires_in')
   int get expiresIn => throw _privateConstructorUsedError;
   User get user => throw _privateConstructorUsedError;
 
@@ -43,10 +39,10 @@ abstract class $AuthResponseCopyWith<$Res> {
       _$AuthResponseCopyWithImpl<$Res, AuthResponse>;
   @useResult
   $Res call(
-      {@JsonKey(name: 'access_token') String accessToken,
-      @JsonKey(name: 'refresh_token') String refreshToken,
-      @JsonKey(name: 'token_type') String tokenType,
-      @JsonKey(name: 'expires_in') int expiresIn,
+      {String accessToken,
+      String refreshToken,
+      String tokenType,
+      int expiresIn,
       User user});
 
   $UserCopyWith<$Res> get user;
@@ -113,10 +109,10 @@ abstract class _$$AuthResponseImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: 'access_token') String accessToken,
-      @JsonKey(name: 'refresh_token') String refreshToken,
-      @JsonKey(name: 'token_type') String tokenType,
-      @JsonKey(name: 'expires_in') int expiresIn,
+      {String accessToken,
+      String refreshToken,
+      String tokenType,
+      int expiresIn,
       User user});
 
   @override
@@ -169,26 +165,22 @@ class __$$AuthResponseImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AuthResponseImpl implements _AuthResponse {
   const _$AuthResponseImpl(
-      {@JsonKey(name: 'access_token') required this.accessToken,
-      @JsonKey(name: 'refresh_token') required this.refreshToken,
-      @JsonKey(name: 'token_type') required this.tokenType,
-      @JsonKey(name: 'expires_in') required this.expiresIn,
+      {required this.accessToken,
+      required this.refreshToken,
+      required this.tokenType,
+      required this.expiresIn,
       required this.user});
 
   factory _$AuthResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$AuthResponseImplFromJson(json);
 
   @override
-  @JsonKey(name: 'access_token')
   final String accessToken;
   @override
-  @JsonKey(name: 'refresh_token')
   final String refreshToken;
   @override
-  @JsonKey(name: 'token_type')
   final String tokenType;
   @override
-  @JsonKey(name: 'expires_in')
   final int expiresIn;
   @override
   final User user;
@@ -235,26 +227,22 @@ class _$AuthResponseImpl implements _AuthResponse {
 
 abstract class _AuthResponse implements AuthResponse {
   const factory _AuthResponse(
-      {@JsonKey(name: 'access_token') required final String accessToken,
-      @JsonKey(name: 'refresh_token') required final String refreshToken,
-      @JsonKey(name: 'token_type') required final String tokenType,
-      @JsonKey(name: 'expires_in') required final int expiresIn,
+      {required final String accessToken,
+      required final String refreshToken,
+      required final String tokenType,
+      required final int expiresIn,
       required final User user}) = _$AuthResponseImpl;
 
   factory _AuthResponse.fromJson(Map<String, dynamic> json) =
       _$AuthResponseImpl.fromJson;
 
   @override
-  @JsonKey(name: 'access_token')
   String get accessToken;
   @override
-  @JsonKey(name: 'refresh_token')
   String get refreshToken;
   @override
-  @JsonKey(name: 'token_type')
   String get tokenType;
   @override
-  @JsonKey(name: 'expires_in')
   int get expiresIn;
   @override
   User get user;
@@ -272,23 +260,15 @@ User _$UserFromJson(Map<String, dynamic> json) {
 mixin _$User {
   String get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
-  @JsonKey(name: 'first_name')
   String get firstName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_name')
   String get lastName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'tenant_id')
   String? get tenantId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_email_verified')
   bool get isEmailVerified => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_active')
   bool get isActive => throw _privateConstructorUsedError;
   List<UserRole> get roles => throw _privateConstructorUsedError;
   List<String> get permissions => throw _privateConstructorUsedError;
-  @JsonKey(name: 'created_at')
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'updated_at')
   DateTime? get updatedAt => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_login_at')
   DateTime? get lastLoginAt => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
   String? get phone => throw _privateConstructorUsedError;
@@ -307,16 +287,16 @@ abstract class $UserCopyWith<$Res> {
   $Res call(
       {String id,
       String email,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
-      @JsonKey(name: 'tenant_id') String? tenantId,
-      @JsonKey(name: 'is_email_verified') bool isEmailVerified,
-      @JsonKey(name: 'is_active') bool isActive,
+      String firstName,
+      String lastName,
+      String? tenantId,
+      bool isEmailVerified,
+      bool isActive,
       List<UserRole> roles,
       List<String> permissions,
-      @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt,
-      @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
+      DateTime? createdAt,
+      DateTime? updatedAt,
+      DateTime? lastLoginAt,
       String? avatar,
       String? phone,
       Map<String, dynamic>? preferences});
@@ -426,16 +406,16 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   $Res call(
       {String id,
       String email,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
-      @JsonKey(name: 'tenant_id') String? tenantId,
-      @JsonKey(name: 'is_email_verified') bool isEmailVerified,
-      @JsonKey(name: 'is_active') bool isActive,
+      String firstName,
+      String lastName,
+      String? tenantId,
+      bool isEmailVerified,
+      bool isActive,
       List<UserRole> roles,
       List<String> permissions,
-      @JsonKey(name: 'created_at') DateTime? createdAt,
-      @JsonKey(name: 'updated_at') DateTime? updatedAt,
-      @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
+      DateTime? createdAt,
+      DateTime? updatedAt,
+      DateTime? lastLoginAt,
       String? avatar,
       String? phone,
       Map<String, dynamic>? preferences});
@@ -538,16 +518,16 @@ class _$UserImpl implements _User {
   const _$UserImpl(
       {required this.id,
       required this.email,
-      @JsonKey(name: 'first_name') required this.firstName,
-      @JsonKey(name: 'last_name') required this.lastName,
-      @JsonKey(name: 'tenant_id') this.tenantId,
-      @JsonKey(name: 'is_email_verified') this.isEmailVerified = false,
-      @JsonKey(name: 'is_active') this.isActive = true,
+      required this.firstName,
+      required this.lastName,
+      this.tenantId,
+      this.isEmailVerified = false,
+      this.isActive = true,
       final List<UserRole> roles = const [],
       final List<String> permissions = const [],
-      @JsonKey(name: 'created_at') this.createdAt,
-      @JsonKey(name: 'updated_at') this.updatedAt,
-      @JsonKey(name: 'last_login_at') this.lastLoginAt,
+      this.createdAt,
+      this.updatedAt,
+      this.lastLoginAt,
       this.avatar,
       this.phone,
       final Map<String, dynamic>? preferences})
@@ -563,19 +543,16 @@ class _$UserImpl implements _User {
   @override
   final String email;
   @override
-  @JsonKey(name: 'first_name')
   final String firstName;
   @override
-  @JsonKey(name: 'last_name')
   final String lastName;
   @override
-  @JsonKey(name: 'tenant_id')
   final String? tenantId;
   @override
-  @JsonKey(name: 'is_email_verified')
+  @JsonKey()
   final bool isEmailVerified;
   @override
-  @JsonKey(name: 'is_active')
+  @JsonKey()
   final bool isActive;
   final List<UserRole> _roles;
   @override
@@ -596,13 +573,10 @@ class _$UserImpl implements _User {
   }
 
   @override
-  @JsonKey(name: 'created_at')
   final DateTime? createdAt;
   @override
-  @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
   @override
-  @JsonKey(name: 'last_login_at')
   final DateTime? lastLoginAt;
   @override
   final String? avatar;
@@ -693,16 +667,16 @@ abstract class _User implements User {
   const factory _User(
       {required final String id,
       required final String email,
-      @JsonKey(name: 'first_name') required final String firstName,
-      @JsonKey(name: 'last_name') required final String lastName,
-      @JsonKey(name: 'tenant_id') final String? tenantId,
-      @JsonKey(name: 'is_email_verified') final bool isEmailVerified,
-      @JsonKey(name: 'is_active') final bool isActive,
+      required final String firstName,
+      required final String lastName,
+      final String? tenantId,
+      final bool isEmailVerified,
+      final bool isActive,
       final List<UserRole> roles,
       final List<String> permissions,
-      @JsonKey(name: 'created_at') final DateTime? createdAt,
-      @JsonKey(name: 'updated_at') final DateTime? updatedAt,
-      @JsonKey(name: 'last_login_at') final DateTime? lastLoginAt,
+      final DateTime? createdAt,
+      final DateTime? updatedAt,
+      final DateTime? lastLoginAt,
       final String? avatar,
       final String? phone,
       final Map<String, dynamic>? preferences}) = _$UserImpl;
@@ -714,32 +688,24 @@ abstract class _User implements User {
   @override
   String get email;
   @override
-  @JsonKey(name: 'first_name')
   String get firstName;
   @override
-  @JsonKey(name: 'last_name')
   String get lastName;
   @override
-  @JsonKey(name: 'tenant_id')
   String? get tenantId;
   @override
-  @JsonKey(name: 'is_email_verified')
   bool get isEmailVerified;
   @override
-  @JsonKey(name: 'is_active')
   bool get isActive;
   @override
   List<UserRole> get roles;
   @override
   List<String> get permissions;
   @override
-  @JsonKey(name: 'created_at')
   DateTime? get createdAt;
   @override
-  @JsonKey(name: 'updated_at')
   DateTime? get updatedAt;
   @override
-  @JsonKey(name: 'last_login_at')
   DateTime? get lastLoginAt;
   @override
   String? get avatar;
@@ -763,7 +729,6 @@ mixin _$UserRole {
   String get name => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   List<String> get permissions => throw _privateConstructorUsedError;
-  @JsonKey(name: 'assigned_at')
   DateTime? get assignedAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -782,7 +747,7 @@ abstract class $UserRoleCopyWith<$Res> {
       String name,
       String description,
       List<String> permissions,
-      @JsonKey(name: 'assigned_at') DateTime? assignedAt});
+      DateTime? assignedAt});
 }
 
 /// @nodoc
@@ -842,7 +807,7 @@ abstract class _$$UserRoleImplCopyWith<$Res>
       String name,
       String description,
       List<String> permissions,
-      @JsonKey(name: 'assigned_at') DateTime? assignedAt});
+      DateTime? assignedAt});
 }
 
 /// @nodoc
@@ -895,7 +860,7 @@ class _$UserRoleImpl implements _UserRole {
       required this.name,
       required this.description,
       final List<String> permissions = const [],
-      @JsonKey(name: 'assigned_at') this.assignedAt})
+      this.assignedAt})
       : _permissions = permissions;
 
   factory _$UserRoleImpl.fromJson(Map<String, dynamic> json) =>
@@ -917,7 +882,6 @@ class _$UserRoleImpl implements _UserRole {
   }
 
   @override
-  @JsonKey(name: 'assigned_at')
   final DateTime? assignedAt;
 
   @override
@@ -961,12 +925,11 @@ class _$UserRoleImpl implements _UserRole {
 
 abstract class _UserRole implements UserRole {
   const factory _UserRole(
-          {required final String id,
-          required final String name,
-          required final String description,
-          final List<String> permissions,
-          @JsonKey(name: 'assigned_at') final DateTime? assignedAt}) =
-      _$UserRoleImpl;
+      {required final String id,
+      required final String name,
+      required final String description,
+      final List<String> permissions,
+      final DateTime? assignedAt}) = _$UserRoleImpl;
 
   factory _UserRole.fromJson(Map<String, dynamic> json) =
       _$UserRoleImpl.fromJson;
@@ -980,7 +943,6 @@ abstract class _UserRole implements UserRole {
   @override
   List<String> get permissions;
   @override
-  @JsonKey(name: 'assigned_at')
   DateTime? get assignedAt;
   @override
   @JsonKey(ignore: true)
@@ -1151,11 +1113,8 @@ RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) {
 mixin _$RegisterRequest {
   String get email => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
-  @JsonKey(name: 'first_name')
   String get firstName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_name')
   String get lastName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'tenant_id')
   String? get tenantId => throw _privateConstructorUsedError;
   String? get phone => throw _privateConstructorUsedError;
 
@@ -1174,9 +1133,9 @@ abstract class $RegisterRequestCopyWith<$Res> {
   $Res call(
       {String email,
       String password,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
-      @JsonKey(name: 'tenant_id') String? tenantId,
+      String firstName,
+      String lastName,
+      String? tenantId,
       String? phone});
 }
 
@@ -1240,9 +1199,9 @@ abstract class _$$RegisterRequestImplCopyWith<$Res>
   $Res call(
       {String email,
       String password,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
-      @JsonKey(name: 'tenant_id') String? tenantId,
+      String firstName,
+      String lastName,
+      String? tenantId,
       String? phone});
 }
 
@@ -1299,9 +1258,9 @@ class _$RegisterRequestImpl implements _RegisterRequest {
   const _$RegisterRequestImpl(
       {required this.email,
       required this.password,
-      @JsonKey(name: 'first_name') required this.firstName,
-      @JsonKey(name: 'last_name') required this.lastName,
-      @JsonKey(name: 'tenant_id') this.tenantId,
+      required this.firstName,
+      required this.lastName,
+      this.tenantId,
       this.phone});
 
   factory _$RegisterRequestImpl.fromJson(Map<String, dynamic> json) =>
@@ -1312,13 +1271,10 @@ class _$RegisterRequestImpl implements _RegisterRequest {
   @override
   final String password;
   @override
-  @JsonKey(name: 'first_name')
   final String firstName;
   @override
-  @JsonKey(name: 'last_name')
   final String lastName;
   @override
-  @JsonKey(name: 'tenant_id')
   final String? tenantId;
   @override
   final String? phone;
@@ -1369,9 +1325,9 @@ abstract class _RegisterRequest implements RegisterRequest {
   const factory _RegisterRequest(
       {required final String email,
       required final String password,
-      @JsonKey(name: 'first_name') required final String firstName,
-      @JsonKey(name: 'last_name') required final String lastName,
-      @JsonKey(name: 'tenant_id') final String? tenantId,
+      required final String firstName,
+      required final String lastName,
+      final String? tenantId,
       final String? phone}) = _$RegisterRequestImpl;
 
   factory _RegisterRequest.fromJson(Map<String, dynamic> json) =
@@ -1382,13 +1338,10 @@ abstract class _RegisterRequest implements RegisterRequest {
   @override
   String get password;
   @override
-  @JsonKey(name: 'first_name')
   String get firstName;
   @override
-  @JsonKey(name: 'last_name')
   String get lastName;
   @override
-  @JsonKey(name: 'tenant_id')
   String? get tenantId;
   @override
   String? get phone;
@@ -1405,9 +1358,7 @@ ChangePasswordRequest _$ChangePasswordRequestFromJson(
 
 /// @nodoc
 mixin _$ChangePasswordRequest {
-  @JsonKey(name: 'current_password')
   String get currentPassword => throw _privateConstructorUsedError;
-  @JsonKey(name: 'new_password')
   String get newPassword => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1422,9 +1373,7 @@ abstract class $ChangePasswordRequestCopyWith<$Res> {
           $Res Function(ChangePasswordRequest) then) =
       _$ChangePasswordRequestCopyWithImpl<$Res, ChangePasswordRequest>;
   @useResult
-  $Res call(
-      {@JsonKey(name: 'current_password') String currentPassword,
-      @JsonKey(name: 'new_password') String newPassword});
+  $Res call({String currentPassword, String newPassword});
 }
 
 /// @nodoc
@@ -1466,9 +1415,7 @@ abstract class _$$ChangePasswordRequestImplCopyWith<$Res>
       __$$ChangePasswordRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: 'current_password') String currentPassword,
-      @JsonKey(name: 'new_password') String newPassword});
+  $Res call({String currentPassword, String newPassword});
 }
 
 /// @nodoc
@@ -1503,17 +1450,14 @@ class __$$ChangePasswordRequestImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ChangePasswordRequestImpl implements _ChangePasswordRequest {
   const _$ChangePasswordRequestImpl(
-      {@JsonKey(name: 'current_password') required this.currentPassword,
-      @JsonKey(name: 'new_password') required this.newPassword});
+      {required this.currentPassword, required this.newPassword});
 
   factory _$ChangePasswordRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$ChangePasswordRequestImplFromJson(json);
 
   @override
-  @JsonKey(name: 'current_password')
   final String currentPassword;
   @override
-  @JsonKey(name: 'new_password')
   final String newPassword;
 
   @override
@@ -1553,18 +1497,15 @@ class _$ChangePasswordRequestImpl implements _ChangePasswordRequest {
 
 abstract class _ChangePasswordRequest implements ChangePasswordRequest {
   const factory _ChangePasswordRequest(
-      {@JsonKey(name: 'current_password') required final String currentPassword,
-      @JsonKey(name: 'new_password')
+      {required final String currentPassword,
       required final String newPassword}) = _$ChangePasswordRequestImpl;
 
   factory _ChangePasswordRequest.fromJson(Map<String, dynamic> json) =
       _$ChangePasswordRequestImpl.fromJson;
 
   @override
-  @JsonKey(name: 'current_password')
   String get currentPassword;
   @override
-  @JsonKey(name: 'new_password')
   String get newPassword;
   @override
   @JsonKey(ignore: true)
@@ -1721,7 +1662,6 @@ ResetPasswordRequest _$ResetPasswordRequestFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ResetPasswordRequest {
   String get token => throw _privateConstructorUsedError;
-  @JsonKey(name: 'new_password')
   String get newPassword => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1736,7 +1676,7 @@ abstract class $ResetPasswordRequestCopyWith<$Res> {
           $Res Function(ResetPasswordRequest) then) =
       _$ResetPasswordRequestCopyWithImpl<$Res, ResetPasswordRequest>;
   @useResult
-  $Res call({String token, @JsonKey(name: 'new_password') String newPassword});
+  $Res call({String token, String newPassword});
 }
 
 /// @nodoc
@@ -1777,7 +1717,7 @@ abstract class _$$ResetPasswordRequestImplCopyWith<$Res>
       __$$ResetPasswordRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String token, @JsonKey(name: 'new_password') String newPassword});
+  $Res call({String token, String newPassword});
 }
 
 /// @nodoc
@@ -1811,8 +1751,7 @@ class __$$ResetPasswordRequestImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$ResetPasswordRequestImpl implements _ResetPasswordRequest {
   const _$ResetPasswordRequestImpl(
-      {required this.token,
-      @JsonKey(name: 'new_password') required this.newPassword});
+      {required this.token, required this.newPassword});
 
   factory _$ResetPasswordRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$ResetPasswordRequestImplFromJson(json);
@@ -1820,7 +1759,6 @@ class _$ResetPasswordRequestImpl implements _ResetPasswordRequest {
   @override
   final String token;
   @override
-  @JsonKey(name: 'new_password')
   final String newPassword;
 
   @override
@@ -1860,9 +1798,8 @@ class _$ResetPasswordRequestImpl implements _ResetPasswordRequest {
 
 abstract class _ResetPasswordRequest implements ResetPasswordRequest {
   const factory _ResetPasswordRequest(
-          {required final String token,
-          @JsonKey(name: 'new_password') required final String newPassword}) =
-      _$ResetPasswordRequestImpl;
+      {required final String token,
+      required final String newPassword}) = _$ResetPasswordRequestImpl;
 
   factory _ResetPasswordRequest.fromJson(Map<String, dynamic> json) =
       _$ResetPasswordRequestImpl.fromJson;
@@ -1870,7 +1807,6 @@ abstract class _ResetPasswordRequest implements ResetPasswordRequest {
   @override
   String get token;
   @override
-  @JsonKey(name: 'new_password')
   String get newPassword;
   @override
   @JsonKey(ignore: true)
@@ -2022,7 +1958,6 @@ RefreshTokenRequest _$RefreshTokenRequestFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$RefreshTokenRequest {
-  @JsonKey(name: 'refresh_token')
   String get refreshToken => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -2037,7 +1972,7 @@ abstract class $RefreshTokenRequestCopyWith<$Res> {
           RefreshTokenRequest value, $Res Function(RefreshTokenRequest) then) =
       _$RefreshTokenRequestCopyWithImpl<$Res, RefreshTokenRequest>;
   @useResult
-  $Res call({@JsonKey(name: 'refresh_token') String refreshToken});
+  $Res call({String refreshToken});
 }
 
 /// @nodoc
@@ -2072,7 +2007,7 @@ abstract class _$$RefreshTokenRequestImplCopyWith<$Res>
       __$$RefreshTokenRequestImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@JsonKey(name: 'refresh_token') String refreshToken});
+  $Res call({String refreshToken});
 }
 
 /// @nodoc
@@ -2100,14 +2035,12 @@ class __$$RefreshTokenRequestImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$RefreshTokenRequestImpl implements _RefreshTokenRequest {
-  const _$RefreshTokenRequestImpl(
-      {@JsonKey(name: 'refresh_token') required this.refreshToken});
+  const _$RefreshTokenRequestImpl({required this.refreshToken});
 
   factory _$RefreshTokenRequestImpl.fromJson(Map<String, dynamic> json) =>
       _$$RefreshTokenRequestImplFromJson(json);
 
   @override
-  @JsonKey(name: 'refresh_token')
   final String refreshToken;
 
   @override
@@ -2144,15 +2077,13 @@ class _$RefreshTokenRequestImpl implements _RefreshTokenRequest {
 }
 
 abstract class _RefreshTokenRequest implements RefreshTokenRequest {
-  const factory _RefreshTokenRequest(
-      {@JsonKey(name: 'refresh_token')
-      required final String refreshToken}) = _$RefreshTokenRequestImpl;
+  const factory _RefreshTokenRequest({required final String refreshToken}) =
+      _$RefreshTokenRequestImpl;
 
   factory _RefreshTokenRequest.fromJson(Map<String, dynamic> json) =
       _$RefreshTokenRequestImpl.fromJson;
 
   @override
-  @JsonKey(name: 'refresh_token')
   String get refreshToken;
   @override
   @JsonKey(ignore: true)

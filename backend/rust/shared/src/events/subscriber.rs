@@ -894,7 +894,7 @@ impl EventHandler for LoggingEventHandler {
             EventContainer::Versioned(event) => {
                 info!(
                     "Handler '{}' processing versioned event: {} (type: {}, tenant: {})",
-                    self.name, event.event.id, event.event.event_type, event.event.tenant_id
+                    self.name, event.id, event.event_type, event.context.business_context.tenant_id
                 );
             }
         }

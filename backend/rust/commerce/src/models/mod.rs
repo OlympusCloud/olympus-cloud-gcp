@@ -1,22 +1,16 @@
 // ============================================================================
-// OLYMPUS CLOUD - COMMERCE HANDLERS
+// OLYMPUS CLOUD - COMMERCE MODELS
 // ============================================================================
-// Module: commerce/src/handlers/mod.rs
-// Description: Commerce HTTP handlers modules and exports
+// Module: commerce/src/models/mod.rs
+// Description: Commerce data model exports
 // Author: Claude Code Agent
-// Date: 2025-01-18
+// Date: 2025-01-19
 // ============================================================================
 
-pub mod products;
-pub mod orders;
-pub mod payments;
 pub mod restaurant;
-pub mod websocket;
 pub mod customer_security;
+pub mod inventory_transactions;
 
-pub use products::*;
-pub use orders::*;
-pub use payments::*;
 pub use restaurant::*;
-pub use websocket::*;
 pub use customer_security::*;
+pub use inventory_transactions::*;

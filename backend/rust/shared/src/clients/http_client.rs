@@ -156,7 +156,7 @@ impl HttpClient {
         request
     }
 
-    async fn execute_with_retry<T>(&self, request_fn: impl Fn() -> RequestBuilder) -> Result<Response, HttpClientError> {
+    async fn execute_with_retry(&self, request_fn: impl Fn() -> RequestBuilder) -> Result<Response, HttpClientError> {
         let mut attempts = 0;
         let mut last_error = None;
 

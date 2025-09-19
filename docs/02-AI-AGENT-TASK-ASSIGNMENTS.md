@@ -280,27 +280,40 @@ class NLPService:
 - **ChatGPT**: Admin APIs
 - **GitHub Copilot**: Admin portal UI
 
-## 📊 Week 5-6: Industry Features
+## 📊 Week 5-6: Industry Features - Priority: Restaurant Revolution
 
-### Restaurant Module
+### Restaurant Module (For Restaurants)
+
 - Table management
 - Kitchen display system
 - Reservation system
 - Menu management
 
-### Retail Module  
+### Restaurant Module (For Customers)
+
+- Online ordering
+- Reservation booking
+- Loyalty program
+- Review and feedback system
+
+## Backlog: Future Industry Modules
+
+### Retail Module
+
 - Product catalog
 - Barcode scanning
 - Promotions engine
 - Multi-channel sales
 
 ### Hospitality Module
+
 - Room management
 - Booking engine
 - Guest services
 - Housekeeping
 
 ### Events Module
+
 - Event planning
 - Ticketing
 - VIP management
@@ -309,18 +322,21 @@ class NLPService:
 ## 🎯 Week 7-8: Polish & Optimization
 
 ### Performance Optimization
+
 - Database query optimization
 - API response caching
 - Frontend lazy loading
 - Image optimization
 
 ### Security Hardening
+
 - Penetration testing
 - Vulnerability scanning
 - Security headers
 - Rate limiting
 
 ### Documentation
+
 - User guides
 - API documentation
 - Deployment guides
@@ -378,7 +394,8 @@ git commit -m "docs(api): add order endpoint documentation"
 
 ## ✅ Definition of Done
 
-### For Each Feature:
+### For Each Feature
+
 - [ ] Code implemented
 - [ ] Unit tests written (>80% coverage)
 - [ ] Integration tests passing
@@ -392,19 +409,22 @@ git commit -m "docs(api): add order endpoint documentation"
 
 ## 🚦 Priority Order
 
-### Critical Path (Must Complete First):
+### Critical Path (Must Complete First)
+
 1. Authentication (all agents depend on this)
 2. Database schema (foundation for all data)
 3. API gateway (central communication)
 4. Core UI shell (navigation, routing)
 
-### Parallel Development (Can work simultaneously):
+### Parallel Development (Can work simultaneously)
+
 - Commerce module
 - Customer module  
 - Inventory module
 - Analytics module
 
-### Final Integration:
+### Final Integration
+
 - Cross-module workflows
 - Real-time updates
 - Performance optimization
