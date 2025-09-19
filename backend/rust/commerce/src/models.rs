@@ -443,7 +443,6 @@ pub struct CreateProductRequest {
     pub brand: Option<String>,
     pub weight: Option<Decimal>,
     pub dimensions: Option<ProductDimensions>,
-    #[validate(range(min = 0))]
     pub base_price: Decimal,
     pub price_type: PriceType,
     pub cost_price: Option<Decimal>,
@@ -569,4 +568,298 @@ pub struct AttributeFacet {
 pub struct AttributeValueFacet {
     pub value: String,
     pub count: i64,
+}
+
+// ============================================================================
+// ORDER REQUEST/RESPONSE MODELS
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct CreateOrderRequest {
+    pub customer_id: Option<Uuid>,
+    #[validate(email)]
+    pub customer_email: Option<String>,
+    #[validate(length(min = 1))]
+    pub items: Vec<CreateOrderItemRequest>,
+    pub shipping_address: Option<Address>,
+    pub billing_address: Option<Address>,
+    pub notes: Option<String>,
+    pub tags: Option<Vec<String>>,
+    pub metadata: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct CreateOrderItemRequest {
+    pub product_id: Uuid,
+    pub variant_id: Option<Uuid>,
+    #[validate(range(min = 1))]
+    pub quantity: i32,
+    pub unit_price: Option<Decimal>, // If not provided, use product price
+    pub attributes: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct UpdateOrderRequest {
+    pub status: Option<OrderStatus>,
+    pub customer_id: Option<Uuid>,
+    #[validate(email)]
+    pub customer_email: Option<String>,
+    pub shipping_address: Option<Address>,
+    pub billing_address: Option<Address>,
+    pub notes: Option<String>,
+    pub tags: Option<Vec<String>>,
+    pub metadata: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct UpdateOrderItemRequest {
+    pub id: Uuid,
+    #[validate(range(min = 0))]
+    pub quantity: Option<i32>,
+    pub unit_price: Option<Decimal>,
+    pub attributes: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderSearchRequest {
+    pub query: Option<String>, // Search by order number, customer email
+    pub customer_id: Option<Uuid>,
+    pub customer_email: Option<String>,
+    pub status: Option<OrderStatus>,
+    pub payment_status: Option<PaymentStatus>,
+    pub fulfillment_status: Option<FulfillmentStatus>,
+    pub created_from: Option<DateTime<Utc>>,
+    pub created_to: Option<DateTime<Utc>>,
+    pub total_min: Option<Decimal>,
+    pub total_max: Option<Decimal>,
+    pub tags: Option<Vec<String>>,
+    pub sort_by: Option<OrderSortBy>,
+    pub sort_order: Option<SortOrder>,
+    pub limit: Option<i32>,
+    pub offset: Option<i32>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum OrderSortBy {
+    CreatedAt,
+    UpdatedAt,
+    OrderNumber,
+    CustomerEmail,
+    Status,
+    Total,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderSearchResponse {
+    pub orders: Vec<Order>,
+    pub total_count: i64,
+    pub has_more: bool,
+    pub facets: OrderSearchFacets,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderSearchFacets {
+    pub status_counts: Vec<StatusFacet>,
+    pub payment_status_counts: Vec<PaymentStatusFacet>,
+    pub fulfillment_status_counts: Vec<FulfillmentStatusFacet>,
+    pub monthly_counts: Vec<MonthlyCountFacet>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StatusFacet {
+    pub status: OrderStatus,
+    pub count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PaymentStatusFacet {
+    pub status: PaymentStatus,
+    pub count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FulfillmentStatusFacet {
+    pub status: FulfillmentStatus,
+    pub count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MonthlyCountFacet {
+    pub year: i32,
+    pub month: u32,
+    pub count: i64,
+    pub total_revenue: Decimal,
+}
+
+// ============================================================================
+// ORDER LIFECYCLE AND AUDIT MODELS
+// ============================================================================
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "order_event_type", rename_all = "lowercase")]
+pub enum OrderEventType {
+    Created,
+    Updated,
+    StatusChanged,
+    PaymentProcessed,
+    PaymentFailed,
+    Shipped,
+    Delivered,
+    Cancelled,
+    Refunded,
+    ItemAdded,
+    ItemRemoved,
+    ItemUpdated,
+    NoteAdded,
+    TagAdded,
+    TagRemoved,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderEvent {
+    pub id: Uuid,
+    pub order_id: Uuid,
+    pub event_type: OrderEventType,
+    pub description: String,
+    pub previous_data: Option<serde_json::Value>,
+    pub new_data: Option<serde_json::Value>,
+    pub metadata: serde_json::Value,
+    pub created_by: Option<Uuid>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderModification {
+    pub id: Uuid,
+    pub order_id: Uuid,
+    pub modification_type: OrderModificationType,
+    pub original_total: Decimal,
+    pub new_total: Decimal,
+    pub reason: String,
+    pub approved_by: Option<Uuid>,
+    pub applied_at: Option<DateTime<Utc>>,
+    pub created_by: Uuid,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "order_modification_type", rename_all = "lowercase")]
+pub enum OrderModificationType {
+    PriceAdjustment,
+    ItemAddition,
+    ItemRemoval,
+    QuantityChange,
+    DiscountApplied,
+    DiscountRemoved,
+    ShippingAdjustment,
+    TaxAdjustment,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderFulfillment {
+    pub id: Uuid,
+    pub order_id: Uuid,
+    pub fulfillment_number: String,
+    pub status: FulfillmentStatus,
+    pub items: Vec<FulfillmentItem>,
+    pub tracking_number: Option<String>,
+    pub tracking_url: Option<String>,
+    pub carrier: Option<String>,
+    pub shipped_at: Option<DateTime<Utc>>,
+    pub delivered_at: Option<DateTime<Utc>>,
+    pub created_by: Uuid,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FulfillmentItem {
+    pub id: Uuid,
+    pub fulfillment_id: Uuid,
+    pub order_item_id: Uuid,
+    pub quantity: i32,
+    pub created_at: DateTime<Utc>,
+}
+
+// ============================================================================
+// ORDER CALCULATION MODELS
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderCalculation {
+    pub subtotal: Decimal,
+    pub tax_total: Decimal,
+    pub shipping_total: Decimal,
+    pub discount_total: Decimal,
+    pub total: Decimal,
+    pub line_items: Vec<LineItemCalculation>,
+    pub tax_lines: Vec<TaxLine>,
+    pub discount_lines: Vec<DiscountLine>,
+    pub shipping_lines: Vec<ShippingLine>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LineItemCalculation {
+    pub product_id: Uuid,
+    pub variant_id: Option<Uuid>,
+    pub quantity: i32,
+    pub unit_price: Decimal,
+    pub line_total: Decimal,
+    pub tax_amount: Decimal,
+    pub discount_amount: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaxLine {
+    pub name: String,
+    pub rate: Decimal,
+    pub amount: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiscountLine {
+    pub name: String,
+    pub discount_type: DiscountType,
+    pub value: Decimal,
+    pub amount: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShippingLine {
+    pub name: String,
+    pub method: String,
+    pub rate: Decimal,
+    pub amount: Decimal,
+}
+
+// ============================================================================
+// ORDER BULK OPERATION MODELS
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct BulkOrderUpdateRequest {
+    pub order_ids: Vec<Uuid>,
+    pub updates: BulkOrderUpdates,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BulkOrderUpdates {
+    pub status: Option<OrderStatus>,
+    pub tags_to_add: Option<Vec<String>>,
+    pub tags_to_remove: Option<Vec<String>>,
+    pub notes_to_append: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BulkOrderResult {
+    pub total_orders: usize,
+    pub successful_updates: usize,
+    pub failed_updates: usize,
+    pub errors: Vec<BulkOrderError>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BulkOrderError {
+    pub order_id: Uuid,
+    pub error_message: String,
 }

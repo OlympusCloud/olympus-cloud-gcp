@@ -8,5 +8,7 @@
 // ============================================================================
 
 pub mod catalog;
+pub mod order;
 
 pub use catalog::CatalogService;
+pub use order::OrderService;
