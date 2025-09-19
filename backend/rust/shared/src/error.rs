@@ -34,6 +34,18 @@ pub enum Error {
 
     #[error("JWT error: {0}")]
     Jwt(#[from] jsonwebtoken::errors::Error),
+
+    #[error("Encryption error: {0}")]
+    EncryptionError(String),
+
+    #[error("Decryption error: {0}")]
+    DecryptionError(String),
+
+    #[error("Invalid configuration: {0}")]
+    InvalidConfiguration(String),
+
+    #[error("Serialization error: {0}")]
+    SerializationError(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

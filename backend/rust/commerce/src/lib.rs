@@ -1,6 +1,7 @@
 pub mod handlers;
 pub mod models;
 pub mod services;
+pub mod customer_security;
 
 use axum::{
     routing::get,

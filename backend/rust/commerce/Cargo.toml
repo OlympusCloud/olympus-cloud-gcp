@@ -43,6 +43,9 @@ validator.workspace = true
 rust_decimal = "1.33"
 rust_decimal_macros = "1.33"
 
+# Security
+sha2 = "0.10"
+
 [dev-dependencies]
 rstest.workspace = true
 mockall.workspace = true
