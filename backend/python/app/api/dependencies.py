@@ -7,6 +7,7 @@ from app.services.crm.service import CRMService
 from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
+from app.services.restaurant.service import RestaurantService
 
 
 def get_analytics_service(request: Request) -> AnalyticsService:
@@ -69,5 +70,15 @@ def get_inventory_service(request: Request) -> InventoryService:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Inventory service unavailable",
+        )
+    return service
+
+
+def get_restaurant_service(request: Request) -> RestaurantService:
+    service = getattr(request.app.state, "restaurant_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Restaurant service unavailable",
         )
     return service
