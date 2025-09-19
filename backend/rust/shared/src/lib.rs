@@ -1,6 +1,7 @@
 pub mod database;
 pub mod error;
 pub mod events;
+pub mod security;
 pub mod types;
 
 pub use error::{Error, Result};
