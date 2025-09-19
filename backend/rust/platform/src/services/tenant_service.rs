@@ -1,16 +1,16 @@
 use std::sync::Arc;
 use uuid::Uuid;
 use chrono::Utc;
-use olympus_shared::database::Database;
+use olympus_shared::database::DbPool;
 use olympus_shared::types::{PageRequest, PageResponse};
 use crate::models::{Tenant, CreateTenantRequest, UpdateTenantRequest};
 
 pub struct TenantService {
-    _db: Arc<Database>,
+    _db: Arc<DbPool>,
 }
 
 impl TenantService {
-    pub fn new(db: Arc<Database>) -> Self {
+    pub fn new(db: Arc<DbPool>) -> Self {
         Self { _db: db }
     }
 

@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -43,6 +45,13 @@ func main() {
 				"version": "1.0.0",
 			})
 		})
+
+		// Commerce service proxy routes
+		commerce := v1.Group("/commerce")
+		{
+			// Forward all commerce requests to Rust commerce service
+			commerce.Any("/*path", commerceProxyHandler)
+		}
 	}
 
 	// Create HTTP server
@@ -108,4 +117,55 @@ func ginLogger() gin.HandlerFunc {
 		}).Info("HTTP Request")
 		return ""
 	})
+}
+
+func commerceProxyHandler(c *gin.Context) {
+	// Get the target Rust commerce service URL
+	commerceURL := os.Getenv("RUST_COMMERCE_SERVICE_URL")
+	if commerceURL == "" {
+		commerceURL = "http://localhost:3001" // Default port for Rust commerce service
+	}
+
+	// Build the target URL
+	targetPath := strings.TrimPrefix(c.Param("path"), "/")
+	targetURL := fmt.Sprintf("%s/%s", commerceURL, targetPath)
+	if c.Request.URL.RawQuery != "" {
+		targetURL += "?" + c.Request.URL.RawQuery
+	}
+
+	// Create the request
+	req, err := http.NewRequest(c.Request.Method, targetURL, c.Request.Body)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to create proxy request")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	// Copy headers
+	for key, values := range c.Request.Header {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
+	}
+
+	// Make the request
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		logrus.WithError(err).Error("Failed to make proxy request")
+		c.JSON(http.StatusBadGateway, gin.H{"error": "Service unavailable"})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response headers
+	for key, values := range resp.Header {
+		for _, value := range values {
+			c.Header(key, value)
+		}
+	}
+
+	// Copy response status and body
+	c.Status(resp.StatusCode)
+	io.Copy(c.Writer, resp.Body)
 }

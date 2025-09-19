@@ -15,18 +15,18 @@ class AppConstants {
   // API Configuration
   static const String apiUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'http://localhost:8080',
+    defaultValue: 'http://localhost:8081/api/v1',
   );
 
   static const String wsUrl = String.fromEnvironment(
     'WS_URL', 
-    defaultValue: 'ws://localhost:8080/ws',
+    defaultValue: 'ws://localhost:8081/ws',
   );
   
   // WebSocket URL for service
   static const String websocketUrl = String.fromEnvironment(
     'WS_URL', 
-    defaultValue: 'ws://localhost:8080/ws',
+    defaultValue: 'ws://localhost:8081/ws',
   );
 
   // API Endpoints

@@ -89,10 +89,15 @@ class LoadingButton extends StatelessWidget {
 
 /// Outlined loading button
 class _OutlinedLoadingButton extends LoadingButton {
+  @override
   final bool isLoading;
+  @override
   final VoidCallback? onPressed;
+  @override
   final Widget child;
+  @override
   final ButtonStyle? style;
+  @override
   final Color? loadingColor;
 
   const _OutlinedLoadingButton({
@@ -102,7 +107,13 @@ class _OutlinedLoadingButton extends LoadingButton {
     required this.child,
     this.style,
     this.loadingColor,
-  });
+  }) : super(
+          isLoading: isLoading,
+          onPressed: onPressed,
+          child: child,
+          style: style,
+          loadingColor: loadingColor,
+        );
 
   @override
   Widget build(BuildContext context) {
@@ -129,10 +140,15 @@ class _OutlinedLoadingButton extends LoadingButton {
 
 /// Text loading button
 class _TextLoadingButton extends LoadingButton {
+  @override
   final bool isLoading;
+  @override
   final VoidCallback? onPressed;
+  @override
   final Widget child;
+  @override
   final ButtonStyle? style;
+  @override
   final Color? loadingColor;
 
   const _TextLoadingButton({
@@ -142,7 +158,13 @@ class _TextLoadingButton extends LoadingButton {
     required this.child,
     this.style,
     this.loadingColor,
-  });
+  }) : super(
+          isLoading: isLoading,
+          onPressed: onPressed,
+          child: child,
+          style: style,
+          loadingColor: loadingColor,
+        );
 
   @override
   Widget build(BuildContext context) {
