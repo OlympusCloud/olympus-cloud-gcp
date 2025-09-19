@@ -18,6 +18,9 @@ pub mod simple_handlers;
 #[cfg(test)]
 pub mod tests;
 
+#[cfg(test)]
+pub mod restaurant_integration_test;
+
 use std::sync::Arc;
 use axum::{
     routing::{get, post, put},
@@ -30,8 +33,8 @@ use sqlx::PgPool;
 
 use olympus_shared::database::DbPool;
 use olympus_shared::events::EventPublisher;
-use crate::handlers::{create_product_router, create_order_router, inventory_routes};
-use crate::services::{CatalogService, InventoryService, OrderService};
+use crate::handlers::{create_product_router, create_order_router, inventory_routes, restaurant_routes, create_websocket_manager};
+use crate::services::{CatalogService, InventoryService, OrderService, RestaurantService};
 use simple_service::SimpleCommerceService;
 use simple_handlers::*;
 
@@ -60,6 +63,9 @@ pub fn create_router(config: CommerceConfig) -> Router {
         config.event_publisher.clone(),
     ));
 
+    let restaurant_service = RestaurantService::new((*config.db).clone());
+    let ws_manager = create_websocket_manager();
+
     Router::new()
         // Health check
         .route("/health", get(health_check))
@@ -72,6 +78,12 @@ pub fn create_router(config: CommerceConfig) -> Router {
 
         // Inventory management routes
         .nest("/api/v1/commerce/inventory", inventory_routes().with_state((*inventory_service).clone()))
+
+        // Restaurant management routes
+        .nest("/api/v1/restaurants", restaurant_routes().with_state(restaurant_service.clone()))
+
+        // WebSocket route for real-time updates
+        .route("/api/v1/restaurants/:tenant_id/ws", axum::routing::get(crate::handlers::websocket_handler).with_state((restaurant_service, ws_manager)))
 
         // Middleware stack
         .layer(

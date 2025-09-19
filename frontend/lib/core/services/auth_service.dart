@@ -21,12 +21,12 @@ class AuthService {
       final user = User(
         id: 'user-123',
         email: email,
-        fullName: 'Test User',
-        roles: ['user'],
-        permissions: {},
+        name: 'Test User',
+        role: 'user',
+        permissions: ['read', 'write'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        emailVerified: true,
+        isEmailVerified: true,
       );
 
       // Store user data
@@ -43,7 +43,7 @@ class AuthService {
   Future<User> register({
     required String email,
     required String password,
-    required String fullName,
+    required String name,
   }) async {
     try {
       // Simulate API call for now - replace with actual backend integration
@@ -53,12 +53,12 @@ class AuthService {
       final user = User(
         id: 'user-${DateTime.now().millisecondsSinceEpoch}',
         email: email,
-        fullName: fullName,
-        roles: ['user'],
-        permissions: {},
+        name: name,
+        role: 'user',
+        permissions: ['read', 'write'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        emailVerified: false,
+        isEmailVerified: false,
       );
 
       // Store user data
@@ -80,12 +80,12 @@ class AuthService {
       final user = User(
         id: 'google-user-123',
         email: 'user@gmail.com',
-        fullName: 'Google User',
-        roles: ['user'],
-        permissions: {},
+        name: 'Google User',
+        role: 'user',
+        permissions: ['read', 'write'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        emailVerified: true,
+        isEmailVerified: true,
       );
 
       await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
@@ -106,12 +106,12 @@ class AuthService {
       final user = User(
         id: 'apple-user-123',
         email: 'user@privaterelay.appleid.com',
-        fullName: 'Apple User',
-        roles: ['user'],
-        permissions: {},
+        name: 'Apple User',
+        role: 'user',
+        permissions: ['read', 'write'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        emailVerified: true,
+        isEmailVerified: true,
       );
 
       await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
@@ -194,9 +194,9 @@ class AuthService {
 
   /// Update user profile
   Future<User> updateProfile({
-    required String fullName,
-    String? phoneNumber,
-    Map<String, dynamic>? preferences,
+    required String name,
+    String? phone,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final currentUser = await getCurrentUser();
@@ -208,9 +208,9 @@ class AuthService {
       await Future.delayed(const Duration(seconds: 1));
 
       final updatedUser = currentUser.copyWith(
-        fullName: fullName,
-        phoneNumber: phoneNumber,
-        preferences: preferences,
+        name: name,
+        phone: phone,
+        metadata: metadata,
         updatedAt: DateTime.now(),
       );
 

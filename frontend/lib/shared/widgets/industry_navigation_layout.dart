@@ -625,8 +625,8 @@ class _IndustryNavigationLayoutState extends ConsumerState<IndustryNavigationLay
           NavigationItem(
             route: '/concierge',
             label: 'Concierge',
-            icon: Icons.concierge_outlined,
-            selectedIcon: Icons.concierge,
+            icon: Icons.room_service_outlined,
+            selectedIcon: Icons.room_service,
           ),
           NavigationItem(
             route: '/billing',

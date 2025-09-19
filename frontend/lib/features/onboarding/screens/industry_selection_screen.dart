@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/branding/industry_branding.dart';
-import '../../core/branding/branding_provider.dart';
-import '../../shared/widgets/adaptive_layout.dart';
+import '../../../core/branding/industry_branding.dart';
+import '../../../core/branding/branding_provider.dart';
+import '../../../core/platform/responsive_layout.dart';
 
-/// Industry selection screen for onboarding
+/// Industry selection screen for onboarding with visual branding previews
 class IndustrySelectionScreen extends ConsumerStatefulWidget {
   const IndustrySelectionScreen({super.key});
 
@@ -23,16 +23,20 @@ class _IndustrySelectionScreenState extends ConsumerState<IndustrySelectionScree
   @override
   void initState() {
     super.initState();
+    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _fadeAnimation = FadeTransition(
-      opacity: CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    ).animation;
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
     _animationController.forward();
   }
 
@@ -44,235 +48,192 @@ class _IndustrySelectionScreenState extends ConsumerState<IndustrySelectionScree
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isDesktop = size.width > 1200;
-    final isTablet = size.width > 600;
-
-    return AdaptiveLayout(
-      child: Scaffold(
-        body: AnimatedBuilder(
-          animation: _fadeAnimation,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fadeAnimation.value,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-                    ],
-                  ),
-                ),
-                child: SafeArea(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.all(isDesktop ? 32 : 16),
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: isDesktop ? 1200 : (isTablet ? 800 : double.infinity),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildHeader(context),
-                            const SizedBox(height: 48),
-                            _buildIndustryGrid(context, isDesktop, isTablet),
-                            const SizedBox(height: 32),
-                            _buildContinueButton(context),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
+    return Scaffold(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: ResponsiveWidget(
+          mobile: _buildMobileLayout(context),
+          tablet: _buildTabletLayout(context),
+          desktop: _buildDesktopLayout(context),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Column(
-      children: [
-        // Logo placeholder
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Icon(
-            Icons.business,
-            size: 40,
-            color: theme.colorScheme.onPrimary,
-          ),
-        ),
-        
-        const SizedBox(height: 24),
-        
-        Text(
-          'Welcome to Olympus Cloud',
-          style: theme.textTheme.displayMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        
-        const SizedBox(height: 12),
-        
-        Text(
-          'Choose your industry to get started with a customized experience',
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
-          ),
-          textAlign: TextAlign.center,
-        ),
+  Widget _buildMobileLayout(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _buildAppBar(context),
+        _buildIndustryGrid(context, crossAxisCount: 1),
+        _buildContinueButton(context),
       ],
     );
   }
 
-  Widget _buildIndustryGrid(BuildContext context, bool isDesktop, bool isTablet) {
-    final industries = [
-      IndustryBrandings.restaurantRevolution,
-      IndustryBrandings.retailEdge,
-      IndustryBrandings.salonLuxe,
-      IndustryBrandings.eventMaster,
-      IndustryBrandings.hotelHaven,
-      IndustryBrandings.olympusDefault,
-    ];
-
-    final crossAxisCount = isDesktop ? 3 : (isTablet ? 2 : 1);
-    
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: isDesktop ? 1.2 : (isTablet ? 1.1 : 1.5),
-      ),
-      itemCount: industries.length,
-      itemBuilder: (context, index) {
-        final industry = industries[index];
-        return _buildIndustryCard(context, industry);
-      },
+  Widget _buildTabletLayout(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _buildAppBar(context),
+        _buildIndustryGrid(context, crossAxisCount: 2),
+        _buildContinueButton(context),
+      ],
     );
   }
 
-  Widget _buildIndustryCard(BuildContext context, IndustryBranding industry) {
-    final isSelected = selectedIndustry == industry.industryType;
-    final theme = Theme.of(context);
-    
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      transform: Matrix4.identity()..scale(isSelected ? 1.02 : 1.0),
-      child: Card(
-        elevation: isSelected ? 8 : 2,
-        shadowColor: industry.lightColorScheme.primary.withOpacity(0.3),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: isSelected 
-                ? industry.lightColorScheme.primary
-                : Colors.transparent,
-            width: 2,
+  Widget _buildDesktopLayout(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        _buildAppBar(context),
+        _buildIndustryGrid(context, crossAxisCount: 3),
+        _buildContinueButton(context),
+      ],
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 120,
+      floating: false,
+      pinned: true,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(
+          'Choose Your Industry',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              selectedIndustry = industry.industryType;
-            });
+        centerTitle: true,
+        titlePadding: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  Widget _buildIndustryGrid(BuildContext context, {required int crossAxisCount}) {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 1.1,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final industry = IndustryBrandings.all.keys.elementAt(index);
+            final branding = IndustryBrandings.all[industry]!;
+            
+            return _buildIndustryCard(context, industry, branding);
           },
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  industry.lightColorScheme.primary.withOpacity(0.1),
-                  industry.lightColorScheme.secondary.withOpacity(0.1),
+          childCount: IndustryBrandings.all.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIndustryCard(BuildContext context, String industry, IndustryBranding branding) {
+    final isSelected = selectedIndustry == industry;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedIndustry = industry;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              branding.primaryColor.withValues(alpha: 0.1),
+              branding.secondaryColor.withValues(alpha: 0.1),
+            ],
+          ),
+          border: Border.all(
+            color: isSelected 
+                ? branding.primaryColor 
+                : branding.primaryColor.withValues(alpha: 0.3),
+            width: isSelected ? 3 : 1,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with icon
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: branding.primaryColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _getIndustryIcon(industry),
+                      color: branding.primaryColor,
+                      size: 32,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (isSelected)
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: branding.primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
                 ],
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Industry icon
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: industry.lightColorScheme.primary,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(
-                    _getIndustryIcon(industry.industryType),
-                    size: 30,
-                    color: industry.lightColorScheme.onPrimary,
-                  ),
+              const SizedBox(height: 16),
+              // Industry name
+              Text(
+                branding.name,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: branding.primaryColor,
                 ),
-                
-                const SizedBox(height: 16),
-                
-                // Brand name
-                Text(
-                  industry.brandName,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: industry.lightColorScheme.primary,
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              // Industry description
+              Text(
+                branding.tagline,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
-                
-                const SizedBox(height: 8),
-                
-                // Tagline
-                Text(
-                  industry.tagline,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Description
-                Text(
-                  industry.description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                if (isSelected) ...[
-                  const SizedBox(height: 12),
-                  Icon(
-                    Icons.check_circle,
-                    color: industry.lightColorScheme.primary,
-                    size: 24,
-                  ),
-                ],
-              ],
-            ),
+              ),
+              const Spacer(),
+              // Feature highlights
+              Wrap(
+                spacing: 4,
+                children: branding.features.take(3).map((feature) {
+                  return Chip(
+                    label: Text(
+                      feature,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: branding.primaryColor,
+                      ),
+                    ),
+                    backgroundColor: branding.primaryColor.withValues(alpha: 0.1),
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
         ),
       ),
@@ -280,44 +241,41 @@ class _IndustrySelectionScreenState extends ConsumerState<IndustrySelectionScree
   }
 
   Widget _buildContinueButton(BuildContext context) {
-    final theme = Theme.of(context);
-    final isEnabled = selectedIndustry != null;
+    if (selectedIndustry == null) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    final branding = IndustryBrandings.all[selectedIndustry]!;
     
-    return AnimatedOpacity(
-      opacity: isEnabled ? 1.0 : 0.5,
-      duration: const Duration(milliseconds: 200),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: isEnabled ? _handleContinue : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isEnabled 
-                ? theme.colorScheme.primary 
-                : theme.colorScheme.onSurface.withOpacity(0.3),
-            foregroundColor: Colors.white,
-            elevation: isEnabled ? 4 : 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Continue with ${selectedIndustry != null ? IndustryBrandings.getBranding(selectedIndustry!).brandName : "Selection"}',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _handleContinue,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: branding.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Continue with ${branding.name}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.arrow_forward,
-                color: Colors.white,
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+          ],
         ),
       ),
     );

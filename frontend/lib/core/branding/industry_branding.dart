@@ -29,6 +29,12 @@ class IndustryBranding {
     required this.customSettings,
   });
 
+  // Convenience getters that default to light theme
+  String get name => brandName;
+  Color get primaryColor => lightColorScheme.primary;
+  Color get secondaryColor => lightColorScheme.secondary;
+  List<String> get features => enabledModules;
+
   /// Get primary color for current brightness
   Color getPrimaryColor(Brightness brightness) {
     return brightness == Brightness.light 
@@ -68,7 +74,7 @@ class IndustryBranding {
       ),
 
       // Card theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shadowColor: colorScheme.primary.withOpacity(0.1),
         shape: RoundedRectangleBorder(
@@ -487,7 +493,7 @@ class IndustryBrandings {
       'reservations': Icons.book_online,
       'guests': Icons.people,
       'housekeeping': Icons.cleaning_services,
-      'concierge': Icons.concierge,
+      'concierge': Icons.person_pin_circle,
       'billing': Icons.receipt,
       'amenities': Icons.pool,
       'maintenance': Icons.build,

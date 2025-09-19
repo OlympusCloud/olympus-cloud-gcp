@@ -21,7 +21,7 @@ use uuid::Uuid;
 use validator::Validate;
 use chrono::{DateTime, Utc};
 
-use olympus_shared::error::{Result, OlympusError};
+use olympus_shared::error::{Result, Error};
 use crate::models::{
     FeatureFlag, FeatureFlagEvaluation, FeatureFlagUsage, FeatureFlagEvaluationRequest,
     CreateFeatureFlagRequest, UpdateFeatureFlagRequest,
@@ -155,7 +155,7 @@ pub async fn create_feature_flag(
 ) -> Result<Json<FeatureFlagResponse>> {
     // Validate request
     request.validate()
-        .map_err(|e| OlympusError::Validation(format!("Invalid request: {}", e)))?;
+        .map_err(|e| Error::Validation(format!("Invalid request: {}", e)))?;
 
     let tenant_id = Some(Uuid::new_v4()); // Mock tenant ID
     let created_by = Uuid::new_v4(); // Mock user ID
@@ -180,7 +180,7 @@ pub async fn get_feature_flag(
     let flag = feature_flags_service
         .get_feature_flag(tenant_id, flag_id)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Feature flag not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Feature flag not found".to_string()))?;
 
     Ok(Json(FeatureFlagResponse {
         success: true,
@@ -198,7 +198,7 @@ pub async fn get_feature_flag_by_key(
     let flag = feature_flags_service
         .get_feature_flag_by_key(tenant_id, &flag_key)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Feature flag not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Feature flag not found".to_string()))?;
 
     Ok(Json(FeatureFlagResponse {
         success: true,
@@ -231,7 +231,7 @@ pub async fn update_feature_flag(
 ) -> Result<Json<FeatureFlagResponse>> {
     // Validate request
     request.validate()
-        .map_err(|e| OlympusError::Validation(format!("Invalid request: {}", e)))?;
+        .map_err(|e| Error::Validation(format!("Invalid request: {}", e)))?;
 
     let tenant_id = Some(Uuid::new_v4()); // Mock tenant ID
     let updated_by = Uuid::new_v4(); // Mock user ID
@@ -239,7 +239,7 @@ pub async fn update_feature_flag(
     let flag = feature_flags_service
         .update_feature_flag(tenant_id, flag_id, request, updated_by)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Feature flag not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Feature flag not found".to_string()))?;
 
     Ok(Json(FeatureFlagResponse {
         success: true,
@@ -262,7 +262,7 @@ pub async fn delete_feature_flag(
     if deleted {
         Ok(StatusCode::NO_CONTENT)
     } else {
-        Err(OlympusError::NotFound("Feature flag not found".to_string()))
+        Err(Error::NotFound("Feature flag not found".to_string()))
     }
 }
 
@@ -297,7 +297,7 @@ pub async fn get_feature_flag_usage(
     let usage = feature_flags_service
         .get_flag_usage_analytics(tenant_id, &flag_key, period_start, period_end)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Feature flag usage not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Feature flag usage not found".to_string()))?;
 
     Ok(Json(FeatureFlagUsageResponse {
         success: true,
@@ -316,7 +316,7 @@ pub async fn create_configuration(
 ) -> Result<Json<ConfigurationResponse>> {
     // Validate request
     request.validate()
-        .map_err(|e| OlympusError::Validation(format!("Invalid request: {}", e)))?;
+        .map_err(|e| Error::Validation(format!("Invalid request: {}", e)))?;
 
     let created_by = Uuid::new_v4(); // Mock user ID
 
@@ -341,7 +341,7 @@ pub async fn get_configuration(
     let config = config_service
         .get_configuration(config_id, include_sensitive)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Configuration not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Configuration not found".to_string()))?;
 
     Ok(Json(ConfigurationResponse {
         success: true,
@@ -360,7 +360,7 @@ pub async fn get_configuration_by_key(
         "tenant" => ConfigScope::Tenant,
         "user" => ConfigScope::User,
         "location" => ConfigScope::Location,
-        _ => return Err(OlympusError::Validation("Invalid scope".to_string())),
+        _ => return Err(Error::Validation("Invalid scope".to_string())),
     };
 
     let include_sensitive = query.include_sensitive.unwrap_or(false);
@@ -368,7 +368,7 @@ pub async fn get_configuration_by_key(
     let config = config_service
         .get_configuration_by_key(scope, query.scope_id, &key, include_sensitive)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Configuration not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Configuration not found".to_string()))?;
 
     Ok(Json(ConfigurationResponse {
         success: true,
@@ -402,7 +402,7 @@ pub async fn get_configurations_by_scope(
         "tenant" => ConfigScope::Tenant,
         "user" => ConfigScope::User,
         "location" => ConfigScope::Location,
-        _ => return Err(OlympusError::Validation("Invalid scope".to_string())),
+        _ => return Err(Error::Validation("Invalid scope".to_string())),
     };
 
     let include_sensitive = query.include_sensitive.unwrap_or(false);
@@ -425,14 +425,14 @@ pub async fn update_configuration(
 ) -> Result<Json<ConfigurationResponse>> {
     // Validate request
     request.validate()
-        .map_err(|e| OlympusError::Validation(format!("Invalid request: {}", e)))?;
+        .map_err(|e| Error::Validation(format!("Invalid request: {}", e)))?;
 
     let updated_by = Uuid::new_v4(); // Mock user ID
 
     let config = config_service
         .update_configuration(config_id, request, updated_by, None, None)
         .await?
-        .ok_or_else(|| OlympusError::NotFound("Configuration not found".to_string()))?;
+        .ok_or_else(|| Error::NotFound("Configuration not found".to_string()))?;
 
     Ok(Json(ConfigurationResponse {
         success: true,
@@ -454,7 +454,7 @@ pub async fn delete_configuration(
     if deleted {
         Ok(StatusCode::NO_CONTENT)
     } else {
-        Err(OlympusError::NotFound("Configuration not found".to_string()))
+        Err(Error::NotFound("Configuration not found".to_string()))
     }
 }
 
@@ -478,12 +478,12 @@ pub async fn get_configuration_audit(
 // ERROR HANDLING
 // ============================================================================
 
-impl axum::response::IntoResponse for OlympusError {
+impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
-            OlympusError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
-            OlympusError::Validation(msg) => (StatusCode::BAD_REQUEST, msg),
-            OlympusError::Database(msg) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Database error: {}", msg)),
+            Error::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            Error::Validation(msg) => (StatusCode::BAD_REQUEST, msg),
+            Error::Database(msg) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Database error: {}", msg)),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string()),
         };
 

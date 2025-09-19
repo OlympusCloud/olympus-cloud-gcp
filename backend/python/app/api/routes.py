@@ -1,16 +1,19 @@
 from __future__ import annotations
 
-from datetime import date, datetime
-from typing import Any, List, Optional
+from datetime import date, datetime, time
+from typing import Any, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
+from app.api import nlp_routes
 from app.api.dependencies import (
     get_analytics_service,
+    get_cohort_service,
     get_crm_service,
     get_enhanced_analytics_service,
     get_events_service,
+    get_forecasting_service,
     get_hospitality_service,
     get_inventory_service,
     get_nlp_service,
@@ -24,8 +27,10 @@ from app.core.state import RuntimeState
 from app.models.analytics import AnalyticsDashboardResponse, AnalyticsTimeframe
 from app.models.crm import Campaign
 from app.models.enhanced_analytics import (
+    CohortAnalyticsResponse,
     EnhancedAnalyticsResponse,
-    AnalyticsFilter
+    AnalyticsFilter,
+    ForecastData,
 )
 from app.models.inventory import StockMovement
 from app.models.nlp import NLPQueryResponse
@@ -55,6 +60,8 @@ from app.models.snapshots import (
 from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
+from app.services.analytics.cohort import CohortAnalyticsService
+from app.services.analytics.forecasting import ForecastingService
 from app.services.crm.service import CRMService
 from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
@@ -65,6 +72,21 @@ from app.services.hospitality.service import HospitalityService
 from app.services.events_industry.service import EventsService
 
 api_router = APIRouter()
+
+# Mount enhanced NLP endpoints
+api_router.include_router(nlp_routes.router)
+
+
+def _start_of_day(value: Optional[date]) -> Optional[datetime]:
+    if value is None:
+        return None
+    return datetime.combine(value, time.min)
+
+
+def _end_of_day(value: Optional[date]) -> Optional[datetime]:
+    if value is None:
+        return None
+    return datetime.combine(value, time.max.replace(microsecond=999999))
 
 
 class NLPQueryRequest(BaseModel):
@@ -85,6 +107,8 @@ _DATE_RANGE_ALIASES: dict[str, AnalyticsTimeframe] = {
     "custom": AnalyticsTimeframe.CUSTOM,
     "all_time": AnalyticsTimeframe.ALL_TIME,
 }
+
+GranularityLiteral = Literal["day", "week", "month"]
 
 
 def _resolve_timeframe(value: Optional[str]) -> AnalyticsTimeframe:
@@ -217,6 +241,83 @@ async def interpret_nlp_query(
 
     result = await nlp_service.interpret(request_body.query)
     return NLPQueryResponse(query=request_body.query, result=result)
+
+
+@api_router.get(
+    "/analytics/cohorts",
+    tags=["analytics"],
+    response_model=CohortAnalyticsResponse,
+)
+async def get_cohort_analytics(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    granularity: GranularityLiteral = Query(
+        "month",
+        description="Granularity for cohort grouping",
+    ),
+<<<<<<< HEAD
+    periods: int = Query(6, ge=1, le=12, description="Number of retention periods"),
+    start_date: Optional[date] = Query(None, description="Optional custom start date"),
+    end_date: Optional[date] = Query(None, description="Optional custom end date"),
+=======
+    periods: int = Query(
+        6,
+        ge=1,
+        le=12,
+        description="Number of retention periods to include",
+    ),
+    start_date: Optional[date] = Query(
+        None,
+        description="Optional custom start date",
+    ),
+    end_date: Optional[date] = Query(
+        None,
+        description="Optional custom end date",
+    ),
+>>>>>>> origin/main
+    cohort_service: CohortAnalyticsService = Depends(get_cohort_service),
+) -> CohortAnalyticsResponse:
+    """Return customer cohort retention metrics."""
+
+    start_dt = _start_of_day(start_date)
+    end_dt = _end_of_day(end_date)
+
+    return await cohort_service.generate_cohort_analysis(
+        tenant_id=tenant_id,
+        start_date=start_dt,
+        end_date=end_dt,
+        granularity=granularity,
+        max_periods=periods,
+    )
+
+
+@api_router.get(
+    "/analytics/forecast",
+    tags=["analytics"],
+    response_model=ForecastData,
+)
+async def get_revenue_forecast(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    periods: int = Query(6, ge=1, le=12, description="Forecast horizon"),
+    granularity: GranularityLiteral = Query(
+        "month",
+        description="Time granularity for the forecast",
+    ),
+    start_date: Optional[date] = Query(None, description="Historical window start date"),
+    end_date: Optional[date] = Query(None, description="Historical window end date"),
+    forecasting_service: ForecastingService = Depends(get_forecasting_service),
+) -> ForecastData:
+    """Generate a revenue forecast for the specified tenant."""
+
+    start_dt = _start_of_day(start_date)
+    end_dt = _end_of_day(end_date)
+
+    return await forecasting_service.revenue_forecast(
+        tenant_id=tenant_id,
+        periods=periods,
+        granularity=granularity,
+        start_date=start_dt,
+        end_date=end_dt,
+    )
 
 
 @api_router.post(

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/branding/branding_provider.dart';
-import '../../shared/widgets/adaptive_layout.dart';
-import '../restaurant/widgets/dashboard_widgets.dart';
-import '../restaurant/widgets/analytics_widgets.dart';
+import '../../../core/branding/branding_provider.dart';
+import '../../../shared/presentation/widgets/adaptive_layout.dart';
+import '../widgets/dashboard_widgets.dart';
+import '../widgets/analytics_widgets.dart';
+import '../../../core/branding/industry_branding.dart';
 
 /// Restaurant Revolution dashboard with comprehensive restaurant management features
 class RestaurantDashboardScreen extends ConsumerStatefulWidget {
@@ -28,9 +29,9 @@ class _RestaurantDashboardScreenState extends ConsumerState<RestaurantDashboardS
         appBar: AppBar(
           title: Row(
             children: [
-              if (branding.logo != null) ...[
+              if (branding.logoPath != null) ...[
                 Image.asset(
-                  branding.logo!,
+                  branding.logoPath!,
                   height: 32,
                   width: 32,
                 ),

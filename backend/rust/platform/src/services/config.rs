@@ -68,7 +68,7 @@ impl ConfigurationService {
         let config_row = query_as!(
             ConfigurationRow,
             r#"
-            INSERT INTO configurations (
+            INSERT INTO platform.configurations (
                 id, scope, scope_id, key, display_name, description, config_type,
                 value, default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
@@ -118,18 +118,22 @@ impl ConfigurationService {
         ).await?;
 
         // Publish domain event
-        let event = DomainEvent::builder()
-            .data(serde_json::json!({
-                "config_id": config_id,
-                "scope": request.scope,
-                "scope_id": request.scope_id,
-                "key": request.key,
-                "category": request.category,
-                "is_sensitive": request.is_sensitive,
-                "created_by": created_by
-            }))
-            .source_service("platform")
-            .build();
+        let event = DomainEvent::builder(
+            "ConfigurationCreated".to_string(),
+            request.scope_id.unwrap_or_else(|| Uuid::new_v4()), // Use scope_id as tenant context
+            "platform".to_string(),
+            created_by,
+        )
+        .data(serde_json::json!({
+            "config_id": config_id,
+            "scope": request.scope,
+            "scope_id": request.scope_id,
+            "key": request.key,
+            "category": request.category,
+            "is_sensitive": request.is_sensitive,
+            "created_by": created_by
+        }))?
+        .build();
 
         if let Err(e) = self.event_publisher.publish(&event).await {
             tracing::warn!("Failed to publish ConfigurationCreated event: {}", e);
@@ -151,14 +155,18 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE id = $1 AND deleted_at IS NULL
             "#,
             config_id
         )
         .fetch_optional(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to get configuration: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         match config_row {
             Some(row) => {
@@ -190,7 +198,7 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE scope = $1 AND scope_id = $2 AND key = $3 AND deleted_at IS NULL
             "#,
             scope as ConfigScope,
@@ -199,7 +207,11 @@ impl ConfigurationService {
         )
         .fetch_optional(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to get configuration by key: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         match config_row {
             Some(row) => {
@@ -252,7 +264,7 @@ impl ConfigurationService {
             let config_row = query_as!(
                 ConfigurationRow,
                 r#"
-                UPDATE configurations
+                UPDATE platform.configurations
                 SET value = $2, updated_at = $3, updated_by = $4
                 WHERE id = $1 AND deleted_at IS NULL
                 RETURNING
@@ -268,7 +280,11 @@ impl ConfigurationService {
             )
             .fetch_optional(self.db.as_ref())
             .await
+<<<<<<< HEAD
             .map_err(|e| Error::Database(format!("Failed to update configuration: {}", e)))?;
+=======
+            .map_err(Error::Database)?;
+>>>>>>> origin/main
 
             match config_row {
                 Some(row) => {
@@ -287,18 +303,22 @@ impl ConfigurationService {
                     ).await?;
 
                     // Publish domain event
-                    let event = DomainEvent::builder()
-                        .data(serde_json::json!({
-                            "config_id": config_id,
-                            "scope": config.scope,
-                            "scope_id": config.scope_id,
-                            "key": config.key,
-                            "updated_fields": ["value"],
-                            "is_sensitive": config.is_sensitive,
-                            "updated_by": updated_by
-                        }))
-                        .source_service("platform")
-                        .build();
+                    let event = DomainEvent::builder(
+                        "ConfigurationUpdated".to_string(),
+                        config.scope_id.unwrap_or_else(|| Uuid::new_v4()), // Use a default UUID if no scope_id
+                        "platform".to_string(),
+                        updated_by,
+                    )
+                    .data(serde_json::json!({
+                        "config_id": config_id,
+                        "scope": config.scope,
+                        "scope_id": config.scope_id,
+                        "key": config.key,
+                        "updated_fields": ["value"],
+                        "is_sensitive": config.is_sensitive,
+                        "updated_by": updated_by
+                    }))?
+                    .build();
 
                     if let Err(e) = self.event_publisher.publish(&event).await {
                         tracing::warn!("Failed to publish ConfigurationUpdated event: {}", e);
@@ -334,7 +354,7 @@ impl ConfigurationService {
 
         let rows_affected = query!(
             r#"
-            UPDATE configurations
+            UPDATE platform.configurations
             SET deleted_at = $2, updated_by = $3
             WHERE id = $1 AND deleted_at IS NULL
             "#,
@@ -344,7 +364,11 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to delete configuration: {}", e)))?
+=======
+        .map_err(Error::Database)?
+>>>>>>> origin/main
         .rows_affected();
 
         if rows_affected > 0 {
@@ -361,16 +385,20 @@ impl ConfigurationService {
             ).await?;
 
             // Publish domain event
-            let event = DomainEvent::builder()
-                .data(serde_json::json!({
-                    "config_id": config_id,
-                    "scope": current_config.scope,
-                    "scope_id": current_config.scope_id,
-                    "key": current_config.key,
-                    "deleted_by": deleted_by
-                }))
-                .source_service("platform")
-                .build();
+            let event = DomainEvent::builder(
+                "ConfigurationDeleted".to_string(),
+                current_config.scope_id.unwrap_or_else(|| Uuid::new_v4()), // Use scope_id as tenant context
+                "platform".to_string(),
+                deleted_by,
+            )
+            .data(serde_json::json!({
+                "config_id": config_id,
+                "scope": current_config.scope,
+                "scope_id": current_config.scope_id,
+                "key": current_config.key,
+                "deleted_by": deleted_by
+            }))?
+            .build();
 
             if let Err(e) = self.event_publisher.publish(&event).await {
                 tracing::warn!("Failed to publish ConfigurationDeleted event: {}", e);
@@ -421,7 +449,7 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE deleted_at IS NULL
             ORDER BY category, key
             LIMIT $1 OFFSET $2
@@ -431,14 +459,22 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to search configurations: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         let total_count = query!(
-            "SELECT COUNT(*) as count FROM configurations WHERE deleted_at IS NULL"
+            "SELECT COUNT(*) as count FROM platform.configurations WHERE deleted_at IS NULL"
         )
         .fetch_one(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to count configurations: {}", e)))?
+=======
+        .map_err(Error::Database)?
+>>>>>>> origin/main
         .count
         .unwrap_or(0);
 
@@ -475,7 +511,7 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE scope = $1 AND scope_id = $2 AND deleted_at IS NULL
             ORDER BY key
             "#,
@@ -484,7 +520,11 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to get configurations by scope: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         let mut result = HashMap::new();
         for row in config_rows {
@@ -532,7 +572,11 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to get audit history: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         let audits = audit_rows
             .into_iter()
@@ -588,7 +632,11 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to create audit record: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         Ok(())
     }
@@ -604,7 +652,7 @@ impl ConfigurationService {
         key: &str,
         exclude_id: Option<Uuid>,
     ) -> Result<()> {
-        let mut query_str = "SELECT id FROM configurations WHERE scope = $1 AND scope_id = $2 AND key = $3 AND deleted_at IS NULL".to_string();
+        let mut query_str = "SELECT id FROM platform.configurations WHERE scope = $1 AND scope_id = $2 AND key = $3 AND deleted_at IS NULL".to_string();
 
         if exclude_id.is_some() {
             query_str.push_str(" AND id != $4");
@@ -619,7 +667,11 @@ impl ConfigurationService {
                 .fetch_optional(self.db.as_ref())
                 .await
         }
+<<<<<<< HEAD
         .map_err(|e| Error::Database(format!("Failed to check config key uniqueness: {}", e)))?;
+=======
+        .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         if exists.is_some() {
             return Err(Error::Validation("Configuration key already exists in this scope".to_string()));

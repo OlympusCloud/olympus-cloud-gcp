@@ -73,7 +73,7 @@ impl FeatureFlagsService {
         let flag_row = query_as!(
             FeatureFlagRow,
             r#"
-            INSERT INTO feature_flags (
+            INSERT INTO platform.feature_flags (
                 id, tenant_id, key, name, description, flag_type, status,
                 default_value, rollout_strategy, rollout_percentage,
                 target_users, target_groups, conditions, variants, tags,
@@ -157,7 +157,7 @@ impl FeatureFlagsService {
                 rollout_percentage, target_users, target_groups, conditions,
                 variants, tags, is_global, created_at, updated_at,
                 created_by, updated_by, starts_at, ends_at
-            FROM feature_flags
+            FROM platform.feature_flags
             WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
             "#,
             flag_id,
@@ -189,7 +189,7 @@ impl FeatureFlagsService {
                 rollout_percentage, target_users, target_groups, conditions,
                 variants, tags, is_global, created_at, updated_at,
                 created_by, updated_by, starts_at, ends_at
-            FROM feature_flags
+            FROM platform.feature_flags
             WHERE key = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
             ORDER BY tenant_id NULLS LAST
             LIMIT 1
@@ -221,7 +221,7 @@ impl FeatureFlagsService {
             let flag_row = query_as!(
                 FeatureFlagRow,
                 r#"
-                UPDATE feature_flags
+                UPDATE platform.feature_flags
                 SET status = $3, updated_at = $4, updated_by = $5
                 WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
                 RETURNING
@@ -282,7 +282,7 @@ impl FeatureFlagsService {
 
         let rows_affected = query!(
             r#"
-            UPDATE feature_flags
+            UPDATE platform.feature_flags
             SET deleted_at = $3, updated_by = $4
             WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL
             "#,
@@ -560,7 +560,7 @@ impl FeatureFlagsService {
                 rollout_percentage, target_users, target_groups, conditions,
                 variants, tags, is_global, created_at, updated_at,
                 created_by, updated_by, starts_at, ends_at
-            FROM feature_flags
+            FROM platform.feature_flags
             WHERE (tenant_id = $1 OR tenant_id IS NULL) AND deleted_at IS NULL
             ORDER BY created_at DESC
             LIMIT $2 OFFSET $3
@@ -589,7 +589,7 @@ impl FeatureFlagsService {
         key: &str,
         exclude_id: Option<Uuid>,
     ) -> Result<()> {
-        let mut query_str = "SELECT id FROM feature_flags WHERE key = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL".to_string();
+        let mut query_str = "SELECT id FROM platform.feature_flags WHERE key = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND deleted_at IS NULL".to_string();
 
         if exclude_id.is_some() {
             query_str.push_str(" AND id != $3");

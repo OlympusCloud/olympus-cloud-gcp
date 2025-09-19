@@ -198,8 +198,72 @@ class EnhancedAnalyticsResponse(BaseModel):
     business_health: Optional[BusinessHealthScore] = None
     forecasts: List[ForecastData] = Field(default_factory=list)
     competitive_analysis: Optional[CompetitiveAnalysis] = None
+
+
+class CohortPeriodMetrics(BaseModel):
+    """Metrics for a single retention period within a cohort."""
+
+    period_index: int = Field(ge=0)
+    period_label: str
+    customers_active: int = Field(ge=0)
+    revenue: float = Field(ge=0.0)
+    retention_rate: float = Field(ge=0.0, le=1.0)
+
+
+class CohortAnalysis(BaseModel):
+    """Retention and revenue metrics for a cohort."""
+
+    cohort_key: str
+    cohort_size: int = Field(ge=0)
+    periods: List[CohortPeriodMetrics] = Field(default_factory=list)
+    average_retention: float = Field(ge=0.0, le=1.0)
+    lifetime_value: float = Field(ge=0.0)
+
+
+class CohortAnalyticsResponse(BaseModel):
+    """Full cohort analytics payload."""
+
+    tenant_id: str
+    period_granularity: str
+    cohorts: List[CohortAnalysis] = Field(default_factory=list)
+    average_retention_rate: float = Field(ge=0.0, le=1.0)
+    best_cohort: Optional[str] = None
+    period_labels: List[str] = Field(default_factory=list)
     
     # Metadata
     processing_time_ms: float
     data_freshness: str  # "real-time", "5 minutes ago", etc.
     cache_hit: bool = False
+<<<<<<< HEAD
+
+class CohortPeriodMetrics(BaseModel):
+    """Metrics for a single retention period within a cohort."""
+
+    period_index: int = Field(ge=0)
+    period_label: str
+    customers_active: int = Field(ge=0)
+    revenue: float = Field(ge=0.0)
+    retention_rate: float = Field(ge=0.0, le=1.0)
+
+
+class CohortAnalysis(BaseModel):
+    """Retention and revenue metrics for a cohort."""
+
+    cohort_key: str
+    cohort_size: int = Field(ge=0)
+    periods: List[CohortPeriodMetrics] = Field(default_factory=list)
+    average_retention: float = Field(ge=0.0, le=1.0)
+    lifetime_value: float = Field(ge=0.0)
+
+
+class CohortAnalyticsResponse(BaseModel):
+    """Full cohort analytics payload."""
+
+    tenant_id: str
+    period_granularity: str
+    cohorts: List[CohortAnalysis] = Field(default_factory=list)
+    average_retention_rate: float = Field(ge=0.0, le=1.0)
+    best_cohort: Optional[str] = None
+    period_labels: List[str] = Field(default_factory=list)
+=======
+>>>>>>> origin/main
