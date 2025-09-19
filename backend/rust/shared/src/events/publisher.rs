@@ -78,14 +78,14 @@ struct QueuedEvent {
 }
 
 /// Event container that can hold either legacy or versioned events
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum EventContainer {
     Legacy(DomainEvent),
     Versioned(VersionedDomainEvent),
 }
 
 /// Event priority for processing order
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum EventPriority {
     Critical = 0,  // Immediate processing
     High = 1,      // Process before normal
