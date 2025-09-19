@@ -12,6 +12,7 @@ pub mod catalog;
 pub mod order;
 pub mod payment_service;
 pub mod restaurant_service;
+pub mod customer_security_service;
 pub mod gateways;
 
 pub use analytics::AnalyticsService;
@@ -19,3 +20,4 @@ pub use catalog::CatalogService;
 pub use order::OrderService;
 pub use payment_service::PaymentService;
 pub use restaurant_service::RestaurantService;
+pub use customer_security_service::CustomerSecurityService;
