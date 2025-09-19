@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
 from app.api import nlp_routes
+from app.api.experiments_routes import router as experiments_router
+from app.api.ml_routes import router as ml_router
 from app.api.dependencies import (
     get_analytics_service,
     get_cohort_service,
@@ -75,6 +77,8 @@ api_router = APIRouter()
 
 # Mount enhanced NLP endpoints
 api_router.include_router(nlp_routes.router)
+api_router.include_router(experiments_router)
+api_router.include_router(ml_router)
 
 
 def _start_of_day(value: Optional[date]) -> Optional[datetime]:

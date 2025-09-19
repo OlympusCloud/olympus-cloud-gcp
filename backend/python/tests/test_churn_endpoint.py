@@ -33,7 +33,7 @@ class StubChurnService:
 
 
 @pytest.mark.asyncio
-async def test_churn_predictions_endpoint(monkeypatch):
+async def test_churn_predictions_endpoint():
     app = FastAPI()
     app.include_router(ml_router)
     app.state.churn_service = StubChurnService()

@@ -2,120 +2,154 @@
 
 from __future__ import annotations
 
+import json
+import uuid
 from datetime import datetime
+from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.models.experiments import ExperimentDefinition, ExperimentVariant
+from app.models.experiments import (
+    ConversionUpdate,
+    ParticipantAssignment,
+)
 from app.services.analytics.ab_testing import ABTestingService
 
 
-class _MockSessionFactory:
-    def __init__(self, experiment_rows=None, participant_rows=None):
-        self._experiment_rows = experiment_rows or []
-        self._participant_rows = participant_rows or []
+@pytest.fixture
+def mock_session_factory() -> Mock:
+    session = Mock()
+    session.execute = AsyncMock()
+    session.commit = AsyncMock()
+    session.rollback = AsyncMock()
 
-    def __call__(self):
-        session = AsyncMock()
-        session.__aenter__.return_value = session
-        session.__aexit__.return_value = AsyncMock()
-
-        async def execute(query, params):  # noqa: ANN001
-            if "FROM analytics.experiments" in str(query):
-                return _SimpleResult(self._experiment_rows)
-            return _SimpleResult(self._participant_rows)
-
-        session.execute.side_effect = execute
-        return session
-
-
-class _SimpleResult:
-    def __init__(self, payload):
-        self._payload = payload
-
-    def fetchall(self):
-        return self._payload
-
-    def one_or_none(self):
-        return self._payload[0] if self._payload else None
-
-    def one(self):
-        if not self._payload:
-            raise RuntimeError("No rows")
-        return self._payload[0]
+    factory = Mock()
+    factory.return_value.__aenter__ = AsyncMock(return_value=session)
+    factory.return_value.__aexit__ = AsyncMock(return_value=None)
+    return factory
 
 
 @pytest.mark.asyncio
-async def test_list_experiments_returns_summary():
+async def test_get_experiment_detail_returns_computed_results(mock_session_factory: Mock) -> None:
+    service = ABTestingService(mock_session_factory)
+
+    experiment_id = uuid.uuid4()
+    tenant_id = uuid.uuid4()
     now = datetime.utcnow()
-    experiment_rows = [
-        SimpleNamespace(
-            id="exp-1",
-            tenant_id="tenant-1",
-            name="CTA",
-            description=None,
-            hypothesis=None,
-            variants="[]",
-            traffic_allocation="{}",
-            success_metrics="[]",
-            start_date=now,
-            end_date=None,
-            status="running",
-            created_by="user-1",
-            created_at=now,
-            updated_at=now,
-            results="{}",
-        )
+
+    experiment_row = SimpleNamespace(
+        id=experiment_id,
+        tenant_id=tenant_id,
+        name="Homepage CTA",
+        description="Testing CTA variants",
+        hypothesis="Variant B increases conversions",
+        variants=json.dumps([
+            {"key": "control", "name": "Control", "allocation": 0.5, "description": None, "metadata": {}},
+            {"key": "variant_b", "name": "Variant B", "allocation": 0.5, "description": None, "metadata": {}},
+        ]),
+        traffic_allocation=json.dumps({"Control": 0.5, "Variant B": 0.5}),
+        success_metrics=json.dumps([
+            {"name": "conversion_rate", "goal": "increase", "target": None, "weight": 1.0}
+        ]),
+        start_date=now,
+        end_date=None,
+        status="running",
+        created_by=uuid.uuid4(),
+        created_at=now,
+        updated_at=now,
+        results=json.dumps({}),
+    )
+
+    participants_rows = [
+        SimpleNamespace(variant_name="Control", participants=200, conversions=20, total_value=Decimal("400")),
+        SimpleNamespace(variant_name="Variant B", participants=190, conversions=30, total_value=Decimal("750")),
     ]
-    factory = _MockSessionFactory(experiment_rows=experiment_rows)
-    service = ABTestingService(factory)
 
-    summaries = await service.list_experiments("tenant-1")
+    experiment_result = Mock()
+    experiment_result.one_or_none.return_value = experiment_row
 
-    assert len(summaries) == 1
-    assert summaries[0].name == "CTA"
+    participant_result = Mock()
+    participant_result.fetchall.return_value = participants_rows
+
+    session = mock_session_factory.return_value.__aenter__.return_value
+    session.execute.side_effect = [experiment_result, participant_result]
+
+    detail = await service.get_experiment_detail(str(tenant_id), str(experiment_id))
+
+    assert detail is not None
+    assert detail.results.baseline_variant == "Control"
+    assert len(detail.results.variants) == 2
+    variant_b = next(variant for variant in detail.results.variants if variant.name == "Variant B")
+    assert pytest.approx(variant_b.conversion_rate, rel=1e-3) == 30 / 190
+    assert detail.results.comparisons[0].is_significant is False or detail.results.comparisons[0].confidence is not None
 
 
 @pytest.mark.asyncio
-async def test_create_experiment_persists_definition():
-    factory = _MockSessionFactory()
-    service = ABTestingService(factory)
+async def test_record_assignment_upsert(mock_session_factory: Mock) -> None:
+    service = ABTestingService(mock_session_factory)
 
-    definition = ExperimentDefinition(
-        tenant_id="tenant-1",
-        name="Homepage CTA",
-        description=None,
-        hypothesis="Variant B converts better",
-        variants=[
-            ExperimentVariant(key="control", name="Control", allocation=0.5, description=None, metadata={}),
-            ExperimentVariant(key="variant_b", name="Variant B", allocation=0.5, description=None, metadata={}),
-        ],
-        success_metrics=[{"name": "conversion_rate", "goal": "increase", "weight": 1.0}],
-        created_by="user-1",
+    now = datetime.utcnow()
+    assignment = ParticipantAssignment(
+        experiment_id=str(uuid.uuid4()),
+        variant_name="Control",
+        session_id="session-123",
+        assigned_at=now,
     )
 
-    session = factory()
-    session.execute.return_value.one.return_value = SimpleNamespace(
-        id="exp-123",
-        tenant_id="tenant-1",
-        name="Homepage CTA",
-        description=None,
-        hypothesis="Variant B converts better",
-        variants="[]",
-        traffic_allocation="{}",
-        success_metrics="[]",
-        start_date=None,
-        end_date=None,
-        status="draft",
-        created_by="user-1",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-        results="{}",
+    stored_row = SimpleNamespace(
+        id=uuid.uuid4(),
+        experiment_id=uuid.UUID(assignment.experiment_id),
+        user_id=None,
+        customer_id=None,
+        session_id=assignment.session_id,
+        variant_name=assignment.variant_name,
+        assigned_at=now,
+        converted_at=None,
+        conversion_value=None,
     )
 
-    experiment = await service.create_experiment(definition)
+    session = mock_session_factory.return_value.__aenter__.return_value
+    result = Mock()
+    result.one.return_value = stored_row
+    session.execute.return_value = result
 
-    assert experiment.name == "Homepage CTA"
-    session.execute.assert_awaited()
+    record = await service.record_assignment(assignment)
+
+    session.commit.assert_awaited_once()
+    assert record.variant_name == "Control"
+    assert record.session_id == "session-123"
+
+
+@pytest.mark.asyncio
+async def test_record_conversion_updates_participant(mock_session_factory: Mock) -> None:
+    service = ABTestingService(mock_session_factory)
+
+    participant_id = uuid.uuid4()
+    experiment_id = uuid.uuid4()
+    now = datetime.utcnow()
+
+    updated_row = SimpleNamespace(
+        id=participant_id,
+        experiment_id=experiment_id,
+        user_id=None,
+        customer_id=None,
+        session_id="session-123",
+        variant_name="Control",
+        assigned_at=now,
+        converted_at=now,
+        conversion_value=Decimal("199.99"),
+    )
+
+    session = mock_session_factory.return_value.__aenter__.return_value
+    result = Mock()
+    result.one.return_value = updated_row
+    session.execute.return_value = result
+
+    update = ConversionUpdate(participant_id=str(participant_id), conversion_value=199.99, converted_at=now)
+    record = await service.record_conversion(update)
+
+    session.commit.assert_awaited_once()
+    assert record.conversion_value == pytest.approx(199.99)
+    assert record.converted_at == now

@@ -124,7 +124,7 @@ Build a production-ready Python analytics and machine learning platform that pro
   - Churn prediction by cohort
   - Lifecycle value calculation
 
-- [ ] **A/B testing framework** (`app/services/analytics/ab_testing.py`)
+- [x] **A/B testing framework** (`app/services/analytics/ab_testing.py`)
   - Experiment design and setup
   - Statistical significance testing
   - Results analysis and reporting
@@ -164,7 +164,7 @@ Build a production-ready Python analytics and machine learning platform that pro
   # - Multiple forecasting models
   ```
 
-- [ ] **Churn prediction** (`app/services/ml/churn.py`)
+- [x] **Churn prediction** (`app/services/ml/churn.py`)
   - Customer churn scoring
   - Churn factor analysis
   - Intervention recommendations

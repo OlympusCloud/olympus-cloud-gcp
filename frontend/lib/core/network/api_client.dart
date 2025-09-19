@@ -1,10 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
 
-import '../auth/auth_models.dart';
 import '../storage/storage_service.dart';
 
 /// HTTP client for communicating with Olympus Cloud backend services

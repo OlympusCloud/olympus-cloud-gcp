@@ -263,7 +263,6 @@ class AdaptiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uiConstants = PlatformInfo.getUIConstants();
-    final theme = Theme.of(context);
     
     final adaptiveElevation = elevation ?? uiConstants.cardElevation;
     final adaptiveShape = shape ?? RoundedRectangleBorder(

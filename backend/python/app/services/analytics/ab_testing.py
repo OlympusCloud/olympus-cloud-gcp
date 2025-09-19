@@ -292,7 +292,7 @@ class ABTestingService:
             try:
                 result = await session.execute(query, params)
                 await session.commit()
-            except SQLAlchemyError as exc:  # pragma: no cover - handled by API layer
+            except SQLAlchemyError as exc:  # pragma: no cover
                 await session.rollback()
                 logger.error(
                     "analytics.experiments.assignment_failed",
@@ -355,7 +355,6 @@ class ABTestingService:
         results_payload = self._deserialize_json(row.results)
 
         variants = [ExperimentVariant(**variant) for variant in variants_payload]
-
         if not allocation_payload:
             allocation_payload = {variant.name: variant.allocation for variant in variants}
 
@@ -367,9 +366,7 @@ class ABTestingService:
             hypothesis=row.hypothesis,
             status=row.status if isinstance(row.status, ExperimentStatus) else ExperimentStatus(row.status),
             variants=variants,
-            success_metrics=[
-                ExperimentSuccessMetric(**metric) for metric in metrics_payload
-            ],
+            success_metrics=[ExperimentSuccessMetric(**metric) for metric in metrics_payload],
             traffic_allocation={str(k): float(v) for k, v in allocation_payload.items()},
             start_date=row.start_date,
             end_date=row.end_date,
@@ -477,7 +474,7 @@ class ABTestingService:
         return 0.5 * (1 + math.erf(value / math.sqrt(2)))
 
     @staticmethod
-    def _deserialize_json(payload) -> Dict | List | None:
+    def _deserialize_json(payload):
         if payload is None:
             return None
         if isinstance(payload, (bytes, bytearray, memoryview)):

@@ -7,6 +7,10 @@
 -- Date: 2025-01-18
 -- ============================================================================
 
+-- Create schemas
+CREATE SCHEMA IF NOT EXISTS events;
+CREATE SCHEMA IF NOT EXISTS analytics;
+
 -- Event and analytics types
 CREATE TYPE events.event_status AS ENUM (
     'pending',

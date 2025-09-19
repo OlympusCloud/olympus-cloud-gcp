@@ -6,12 +6,31 @@ from datetime import date, datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 
 from app.api.dependencies import get_ab_testing_service
 from app.models import experiments as experiments_models
 from app.services.analytics.ab_testing import ABTestingService
 
-router = APIRouter(prefix="/analytics/experiments", tags=["analytics"])
+router = APIRouter(prefix="/api/analytics/experiments", tags=["analytics"])
+
+class ParticipantAssignmentRequest(BaseModel):
+    variant_name: str
+    user_id: Optional[str] = None
+    customer_id: Optional[str] = None
+    session_id: Optional[str] = None
+    assigned_at: Optional[datetime] = None
+
+    def to_model(self, experiment_id: str) -> experiments_models.ParticipantAssignment:
+        payload = {
+            "experiment_id": experiment_id,
+            "variant_name": self.variant_name,
+            "user_id": self.user_id,
+            "customer_id": self.customer_id,
+            "session_id": self.session_id,
+            "assigned_at": self.assigned_at or datetime.utcnow(),
+        }
+        return experiments_models.ParticipantAssignment(**payload)
 
 
 def _to_datetime(value: Optional[date], *, start: bool) -> Optional[datetime]:
@@ -68,12 +87,12 @@ async def get_experiment_detail(
 )
 async def assign_participant(
     experiment_id: str,
-    payload: experiments_models.ParticipantAssignment,
+    payload: ParticipantAssignmentRequest,
     ab_testing_service: ABTestingService = Depends(get_ab_testing_service),
 ) -> experiments_models.ParticipantRecord:
     """Assign a participant to a variant, upserting existing assignments."""
 
-    assignment = payload.model_copy(update={"experiment_id": experiment_id})
+    assignment = payload.to_model(experiment_id)
     return await ab_testing_service.record_assignment(assignment)
 
 

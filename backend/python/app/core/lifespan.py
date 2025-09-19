@@ -14,6 +14,7 @@ from app.services.analytics.bigquery import BigQueryClient
 from app.services.analytics.processor import EventProcessor
 from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
+from app.services.analytics.ab_testing import ABTestingService
 from app.services.analytics.snapshots import SnapshotService
 from app.services.analytics.cohort import CohortAnalyticsService
 from app.services.analytics.forecasting import ForecastingService
@@ -76,6 +77,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     
     if not hasattr(app.state, "forecasting_service"):
         app.state.forecasting_service = ForecastingService(session_factory)
+    
+    if not hasattr(app.state, "ab_testing_service"):
+        app.state.ab_testing_service = ABTestingService(session_factory)
     
     if not hasattr(app.state, "crm_service"):
         app.state.crm_service = CRMService(session_factory)

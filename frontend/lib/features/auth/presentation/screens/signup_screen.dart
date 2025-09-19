@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/router/app_router.dart';
-import '../../../../core/auth/auth_controller.dart';
+import '../../../../core/auth/auth_controlle          style: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.colorScheme.onSurface.withAlpha(179),
+          ),art';
 import '../../../../core/network/api_client.dart';
 import '../../../../shared/presentation/widgets/adaptive_layout.dart';
-import '../../../../shared/presentation/widgets/responsive_form.dart';
+import '../../../../shared/presentation/widgets                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(153),
+                ),sponsive_form.dart';
 
 /// Sign up screen for new user registration
 class SignupScreen extends ConsumerStatefulWidget {

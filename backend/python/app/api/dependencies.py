@@ -1,8 +1,10 @@
 from fastapi import HTTPException, Request, status
 
 from app.services.analytics.service import AnalyticsService
+from app.services.analytics.ab_testing import ABTestingService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
+from app.services.ml.churn import ChurnPredictionService
 from app.services.analytics.cohort import CohortAnalyticsService
 from app.services.analytics.forecasting import ForecastingService
 from app.services.crm.service import CRMService
@@ -39,6 +41,17 @@ def get_enhanced_nlp_service(request: Request) -> EnhancedNLPService:
         )
     return service
 
+
+
+
+def get_churn_service(request: Request) -> ChurnPredictionService:
+    service = getattr(request.app.state, "churn_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Churn prediction service unavailable",
+        )
+    return service
 
 def get_recommendation_service(request: Request) -> RecommendationService:
     service = getattr(request.app.state, "recommendation_service", None)
@@ -86,6 +99,16 @@ def get_forecasting_service(request: Request) -> ForecastingService:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Forecasting service unavailable",
+        )
+    return service
+
+
+def get_ab_testing_service(request: Request) -> ABTestingService:
+    service = getattr(request.app.state, "ab_testing_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="A/B testing service unavailable",
         )
     return service
 

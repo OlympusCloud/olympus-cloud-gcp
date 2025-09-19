@@ -20,125 +20,153 @@ class ExperimentStatus(str, Enum):
 
 
 class ExperimentVariant(BaseModel):
-    """A variant within an experiment."""
+    """Configuration for a single experiment variant."""
 
-    name: str
-    description: Optional[str] = None
-    weight: float = Field(ge=0, le=1)
-    is_control: bool = False
-
-
-class ParticipantAssignment(BaseModel):
-    """Assignment of a participant to a variant."""
-
-    participant_id: str
-    experiment_id: str
-    variant: str
-    assigned_at: datetime = Field(default_factory=datetime.utcnow)
+    key: str = Field(..., min_length=1, description="Unique identifier for the variant")
+    name: str = Field(..., min_length=1, description="Human readable name")
+    allocation: float = Field(..., gt=0.0, le=1.0, description="Traffic allocation percentage (0-1 range)")
+    description: Optional[str] = Field(None, description="Optional details about the variant")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Arbitrary variant metadata")
 
 
-class ParticipantRecord(BaseModel):
-    """Record of a participant in an experiment."""
+class ExperimentSuccessMetric(BaseModel):
+    """Metric definitions tracked during the experiment."""
 
-    participant_id: str
-    experiment_id: str
-    variant: str
-    has_converted: bool = False
-    conversion_value: Optional[float] = None
-    conversion_time: Optional[datetime] = None
-
-
-class ConversionUpdate(BaseModel):
-    """Update for a conversion event."""
-
-    participant_id: str
-    experiment_id: str
-    variant: str
-    value: Optional[float] = None
-    occurred_at: datetime = Field(default_factory=datetime.utcnow)
+    name: str = Field(..., min_length=1)
+    goal: str = Field("increase", description="Desired direction of change (increase/decrease)")
+    target: Optional[float] = Field(None, description="Optional target value for the metric")
+    weight: float = Field(1.0, gt=0.0, description="Relative weight when combining metrics")
 
 
 class ExperimentDefinition(BaseModel):
-    """Definition for creating an experiment."""
+    """Payload required to create or update an experiment."""
 
-    name: str
+    tenant_id: str = Field(..., min_length=1)
+    name: str = Field(..., min_length=1)
     description: Optional[str] = None
-    variants: List[ExperimentVariant]
+    hypothesis: Optional[str] = None
+    variants: List[ExperimentVariant] = Field(..., min_length=2)
+    success_metrics: List[ExperimentSuccessMetric] = Field(..., min_length=1)
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     status: ExperimentStatus = ExperimentStatus.DRAFT
-    starts_at: Optional[datetime] = None
-    ends_at: Optional[datetime] = None
+    created_by: str = Field(..., min_length=1)
+
+    @model_validator(mode="after")
+    def validate_allocation(cls, values: "ExperimentDefinition") -> "ExperimentDefinition":  # type: ignore[override]
+        total_allocation = sum(variant.allocation for variant in values.variants)
+        if abs(total_allocation - 1.0) > 0.01:
+            raise ValueError("Variant allocations must sum to approximately 1.0")
+        return values
 
 
 class Experiment(BaseModel):
-    """Full experiment model."""
+    """Stored experiment with metadata and configuration."""
 
     id: str
+    tenant_id: str
     name: str
-    description: Optional[str] = None
-    variants: List[ExperimentVariant]
+    description: Optional[str]
+    hypothesis: Optional[str]
     status: ExperimentStatus
-    starts_at: Optional[datetime] = None
-    ends_at: Optional[datetime] = None
+    variants: List[ExperimentVariant]
+    success_metrics: List[ExperimentSuccessMetric]
+    traffic_allocation: Dict[str, float]
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+    created_by: str
     created_at: datetime
     updated_at: datetime
+    results: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ExperimentSummary(BaseModel):
-    """Summary of an experiment."""
+    """Lightweight summary used for listings."""
 
     id: str
     name: str
     status: ExperimentStatus
-    variants_count: int
-    participants_count: int
-    conversions_count: int
-
-
-class ExperimentDetail(BaseModel):
-    """Detailed experiment information."""
-
-    experiment: Experiment
-    summary: ExperimentSummary
-    results: Optional["ExperimentResults"] = None
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+    winner: Optional[str] = None
+    conversions: Optional[int] = None
+    created_at: datetime
 
 
 class VariantResult(BaseModel):
-    """Results for a single variant."""
+    """Aggregated performance metrics for a variant."""
 
     name: str
     participants: int
     conversions: int
     conversion_rate: float
-    average_value: float
-    confidence_level: Optional[float] = None
+    total_conversion_value: float
+    avg_conversion_value: float
+    lift: Optional[float] = None
 
 
 class VariantComparison(BaseModel):
-    """Comparison between two variants."""
+    """Pairwise comparison between baseline and another variant."""
 
-    variant_a: str
-    variant_b: str
-    conversion_rate_diff: float
-    relative_improvement: float
-    confidence_level: float
+    baseline: str
+    variant: str
+    lift: Optional[float]
+    p_value: Optional[float]
+    confidence: Optional[float]
     is_significant: bool
 
 
 class ExperimentResults(BaseModel):
-    """Complete results of an experiment."""
+    """Computed experiment analytics including statistical tests."""
 
-    experiment_id: str
-    status: ExperimentStatus
+    baseline_variant: str
     variants: List[VariantResult]
     comparisons: List[VariantComparison]
-    winner: Optional[str] = None
-    confidence_level: float
+    suggested_winner: Optional[str] = None
+    overall_confidence: Optional[float] = None
 
 
-class ExperimentSuccessMetric(BaseModel):
-    """Success metric for an experiment."""
+class ExperimentDetail(BaseModel):
+    """Complete experiment detail including computed statistics."""
 
-    name: str
-    target_value: float
-    current_value: float
-    is_met: bool
+    experiment: Experiment
+    results: ExperimentResults
+
+
+class ParticipantAssignment(BaseModel):
+    """Represents an assignment of a participant to a variant."""
+
+    experiment_id: str
+    variant_name: str
+    user_id: Optional[str] = None
+    customer_id: Optional[str] = None
+    session_id: Optional[str] = None
+    assigned_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @model_validator(mode="after")
+    def validate_identity(cls, values: "ParticipantAssignment") -> "ParticipantAssignment":  # type: ignore[override]
+        if not (values.user_id or values.customer_id or values.session_id):
+            raise ValueError("At least one participant identifier must be provided")
+        return values
+
+
+class ConversionUpdate(BaseModel):
+    """Conversion payload for a participant assignment."""
+
+    participant_id: str
+    converted_at: datetime = Field(default_factory=datetime.utcnow)
+    conversion_value: Optional[float] = None
+
+
+class ParticipantRecord(BaseModel):
+    """Participant row persisted in the database."""
+
+    id: str
+    experiment_id: str
+    variant_name: str
+    user_id: Optional[str]
+    customer_id: Optional[str]
+    session_id: Optional[str]
+    assigned_at: datetime
+    converted_at: Optional[datetime]
+    conversion_value: Optional[float]

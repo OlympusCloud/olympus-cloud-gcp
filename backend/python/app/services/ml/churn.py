@@ -139,8 +139,6 @@ class ChurnPredictionService:
         total_revenue: float,
         avg_order_value: float,
     ) -> float:
-        """Compute a churn risk score between 0 and 1."""
-
         recency_component = min(days_since_last / 120.0, 3.0)
         frequency_component = -0.6 * min(recent_orders, 6)
         revenue_component = -0.002 * min(total_revenue, 2000.0)

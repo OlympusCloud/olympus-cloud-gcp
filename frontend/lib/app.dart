@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/router/app_router.dart';
-import 'core/theme/app_theme.dart';
 import 'core/branding/branding_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/platform/platform_info.dart';
@@ -18,7 +17,6 @@ class OlympusApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkModeProvider);
     final branding = ref.watch(brandingProvider);
     final themeMode = ref.watch(themeModeProvider);
 
