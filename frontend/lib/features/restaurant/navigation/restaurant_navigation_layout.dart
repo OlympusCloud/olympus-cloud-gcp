@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/branding/industry_branding.dart';
 import '../../../core/branding/branding_provider.dart';
 import '../../../core/auth/auth_controller.dart';
 
@@ -163,9 +164,9 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
         children: [
           Row(
             children: [
-              if (branding.logo != null) ...[
+              if (branding.logoPath != null) ...[
                 Image.asset(
-                  branding.logo!,
+                  branding.logoPath!,
                   height: 40,
                   width: 40,
                 ),
@@ -466,9 +467,9 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
               children: [
                 Row(
                   children: [
-                    if (branding.logo != null) ...[
+                    if (branding.logoPath != null) ...[
                       Image.asset(
-                        branding.logo!,
+                        branding.logoPath!,
                         height: 40,
                         width: 40,
                       ),
