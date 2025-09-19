@@ -14,6 +14,9 @@ pub mod simple_models;
 pub mod simple_service;
 pub mod simple_handlers;
 
+#[cfg(test)]
+pub mod tests;
+
 use std::sync::Arc;
 use axum::{
     routing::{get, post, put},

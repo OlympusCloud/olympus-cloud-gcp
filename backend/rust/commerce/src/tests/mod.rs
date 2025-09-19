@@ -1,16 +1,10 @@
 // ============================================================================
-// OLYMPUS CLOUD - COMMERCE HANDLERS
+// OLYMPUS CLOUD - COMMERCE TESTS MODULE
 // ============================================================================
-// Module: commerce/src/handlers/mod.rs
-// Description: Commerce HTTP handlers modules and exports
+// Module: commerce/src/tests/mod.rs
+// Description: Test modules for commerce service
 // Author: Claude Code Agent
-// Date: 2025-01-18
+// Date: 2025-01-19
 // ============================================================================
 
-pub mod products;
-pub mod orders;
-pub mod payments;
-
-pub use products::*;
-pub use orders::*;
-pub use payments::*;
+pub mod payment_tests;
