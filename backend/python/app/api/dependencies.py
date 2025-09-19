@@ -9,6 +9,7 @@ from app.services.retail.service import RetailService
 from app.services.hospitality.service import HospitalityService
 from app.services.events_industry.service import EventsService
 from app.services.ml.recommendation import RecommendationService
+from app.services.nlp.enhanced_nlp import EnhancedNLPService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 from app.services.restaurant.service import RestaurantService
 
@@ -24,6 +25,16 @@ def get_nlp_service(request: Request) -> NaturalLanguageQueryService:
     service = getattr(request.app.state, "nlp_service", None)
     if service is None:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="NLP service unavailable")
+    return service
+
+
+def get_enhanced_nlp_service(request: Request) -> EnhancedNLPService:
+    service = getattr(request.app.state, "enhanced_nlp_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Enhanced NLP service unavailable",
+        )
     return service
 
 
