@@ -128,7 +128,7 @@ async def test_events_recommendations(events_service, mock_session_factory):
         upcoming_events=2,
         total_capacity=800,
         tickets_sold=400,
-        gross_revenue=12000.0,
+        gross_revenue=8000.0,
         average_price=30.0,
         avg_satisfaction=3.5,
     )

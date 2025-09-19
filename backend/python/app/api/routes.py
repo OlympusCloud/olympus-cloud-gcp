@@ -33,7 +33,7 @@ from app.models.recommendations import RecommendationResponse
 from app.models.restaurant import RestaurantAnalytics, RestaurantRecommendation
 from app.models.retail import RetailAnalytics, RetailRecommendation
 from app.models.hospitality import HospitalityAnalytics, HospitalityRecommendation
-from app.models.events_industry import EventsAnalytics, EventsRecommendation
+import app.models.events_industry as events_models
 from app.models.snapshots import (
     MetricsSnapshot,
     SnapshotHistoryRequest,
@@ -567,7 +567,7 @@ async def get_hospitality_recommendations(
 @api_router.get(
     "/events/analytics",
     tags=["events"],
-    response_model=EventsAnalytics,
+    response_model=events_models.EventsAnalytics,
 )
 async def get_events_analytics(
     tenant_id: str = Query(..., description="Tenant identifier"),
@@ -576,7 +576,7 @@ async def get_events_analytics(
     from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
     to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
     events_service: EventsService = Depends(get_events_service),
-) -> EventsAnalytics:
+) -> events_models.EventsAnalytics:
     """Return events analytics including ticket and vendor performance."""
 
     timeframe = _resolve_timeframe(date_range)
@@ -608,7 +608,7 @@ async def get_events_analytics(
 @api_router.get(
     "/events/recommendations",
     tags=["events"],
-    response_model=List[EventsRecommendation],
+    response_model=List[events_models.EventsRecommendation],
 )
 async def get_events_recommendations(
     tenant_id: str = Query(..., description="Tenant identifier"),
@@ -617,7 +617,7 @@ async def get_events_recommendations(
     from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
     to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
     events_service: EventsService = Depends(get_events_service),
-) -> List[EventsRecommendation]:
+) -> List[events_models.EventsRecommendation]:
     """Generate events-specific operational recommendations."""
 
     timeframe = _resolve_timeframe(date_range)
