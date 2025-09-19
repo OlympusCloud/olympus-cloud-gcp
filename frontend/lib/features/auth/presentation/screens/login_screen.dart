@@ -111,12 +111,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Scaffold(
         body: SafeArea(
           child: ResponsiveForm(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Spacer(),
+                  const SizedBox(height: 32), // Replace Spacer with fixed height
                   
                   // Header
                   _buildHeader(theme),
@@ -143,10 +143,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Sign Up Link
                   _buildSignUpLink(theme),
                   
-                  const Spacer(),
+                  const SizedBox(height: 32), // Replace Spacer with fixed height
                   
                   // Help Link
                   _buildHelpLink(theme),
+                  
+                  const SizedBox(height: 32), // Add bottom spacing
                 ],
               ),
             ),
