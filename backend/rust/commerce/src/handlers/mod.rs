@@ -8,5 +8,7 @@
 // ============================================================================
 
 pub mod products;
+pub mod orders;
 
 pub use products::*;
+pub use orders::*;

@@ -56,15 +56,15 @@
 **Timeline:** 2-3 days after auth service ready
 
 #### OpenAI Codex - Python Analytics
-**Current Task:** Infrastructure & Event Processing
-- [ ] **IN PROGRESS:** Enhanced database integration
-- [ ] **IN PROGRESS:** Event processing framework
-- [ ] **PENDING:** BigQuery integration
-- [ ] **PENDING:** ML model implementation
+**Current Task:** Industry Modules Expansion
+- [x] **COMPLETED:** Retail analytics & promotions engine
+- [ ] **IN PROGRESS:** Hospitality analytics foundation
+- [ ] **PENDING:** Events analytics design
+- [ ] **PENDING:** NLP intent enhancements
 
-**Blockers:** None (can work independently)
-**Dependencies:** Database schema (Claude Code)
-**Timeline:** 1-2 days for basic analytics
+**Blockers:** None (ready for further integrations)
+**Dependencies:** Coordination with Go API for retail endpoint rollout
+**Timeline:** 2-3 days to deliver hospitality & events modules
 
 #### GitHub Copilot - Flutter Frontend
 **Current Task:** Not yet started

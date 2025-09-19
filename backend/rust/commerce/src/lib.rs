@@ -26,8 +26,8 @@ use sqlx::PgPool;
 
 use olympus_shared::database::DbPool;
 use olympus_shared::events::EventPublisher;
-use crate::handlers::create_product_router;
-use crate::services::CatalogService;
+use crate::handlers::{create_product_router, create_order_router};
+use crate::services::{CatalogService, OrderService};
 use simple_service::SimpleCommerceService;
 use simple_handlers::*;
 
@@ -46,12 +46,20 @@ pub fn create_router(config: CommerceConfig) -> Router {
         config.event_publisher.clone(),
     ));
 
+    let order_service = Arc::new(OrderService::new(
+        config.db.clone(),
+        config.event_publisher.clone(),
+    ));
+
     Router::new()
         // Health check
         .route("/health", get(health_check))
 
         // Product catalog routes
         .nest("/api/v1/commerce", create_product_router(catalog_service.clone()))
+
+        // Order management routes
+        .nest("/api/v1/commerce", create_order_router(order_service.clone()))
 
         // Middleware stack
         .layer(
