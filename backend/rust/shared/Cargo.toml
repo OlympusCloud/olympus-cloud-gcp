@@ -29,6 +29,19 @@ validator.workspace = true
 # Authentication
 jsonwebtoken.workspace = true
 
+# Additional dependencies
+rust_decimal.workspace = true
+rand.workspace = true
+tokio.workspace = true
+
+# Configuration
+config.workspace = true
+dotenvy.workspace = true
+
+# Async trait support
+async-trait = "0.1"
+futures.workspace = true
+
 [dev-dependencies]
 tokio.workspace = true
 rstest.workspace = true

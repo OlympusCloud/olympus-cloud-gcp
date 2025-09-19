@@ -9,7 +9,6 @@ import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/orders/presentation/screens/order_management_screen.dart';
 import '../../features/inventory/presentation/screens/inventory_management_screen.dart';
 import '../../features/analytics/presentation/screens/analytics_dashboard.dart';
-// Watch imports removed to resolve compilation errors
 import '../../shared/presentation/screens/error_screen.dart';
 
 /// App router configuration using GoRouter
@@ -86,8 +85,6 @@ class AppRouter {
           ),
         ],
       ),
-
-      // Watch routes removed to resolve compilation errors
 
       // Business setup routes
       GoRoute(

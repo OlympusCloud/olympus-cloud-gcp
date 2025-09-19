@@ -1,16 +1,16 @@
 use std::sync::Arc;
 use uuid::Uuid;
 use chrono::Utc;
-use olympus_shared::database::Database;
+use olympus_shared::database::DbPool;
 use crate::error::{AuthError, Result};
 use crate::models::{User, Tenant, RefreshToken};
 
 pub struct UserRepository {
-    _db: Arc<Database>,
+    _db: Arc<DbPool>,
 }
 
 impl UserRepository {
-    pub fn new(db: Arc<Database>) -> Self {
+    pub fn new(db: Arc<DbPool>) -> Self {
         Self { _db: db }
     }
 
@@ -141,6 +141,58 @@ impl UserRepository {
     }
 
     pub async fn revoke_all_user_tokens(&self, _user_id: Uuid) -> Result<()> {
+        Ok(())
+    }
+
+    pub async fn find_active_refresh_tokens(&self, _user_id: Uuid) -> Result<Vec<RefreshToken>> {
+        // Mock implementation - return a couple of sample sessions
+        Ok(vec![
+            RefreshToken {
+                id: Uuid::new_v4(),
+                token_hash: "hash1".to_string(),
+                user_id: Uuid::new_v4(),
+                tenant_id: Uuid::new_v4(),
+                device_id: Some("device1".to_string()),
+                device_name: Some("iPhone 14".to_string()),
+                ip_address: "192.168.1.100".to_string(),
+                user_agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)".to_string(),
+                expires_at: Utc::now() + chrono::Duration::days(30),
+                revoked_at: None,
+                created_at: Utc::now() - chrono::Duration::hours(2),
+            },
+            RefreshToken {
+                id: Uuid::new_v4(),
+                token_hash: "hash2".to_string(),
+                user_id: Uuid::new_v4(),
+                tenant_id: Uuid::new_v4(),
+                device_id: Some("device2".to_string()),
+                device_name: Some("MacBook Pro".to_string()),
+                ip_address: "192.168.1.101".to_string(),
+                user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)".to_string(),
+                expires_at: Utc::now() + chrono::Duration::days(30),
+                revoked_at: None,
+                created_at: Utc::now() - chrono::Duration::days(1),
+            },
+        ])
+    }
+
+    pub async fn find_refresh_token_by_id(&self, token_id: Uuid) -> Result<RefreshToken> {
+        Ok(RefreshToken {
+            id: token_id,
+            token_hash: "hash".to_string(),
+            user_id: Uuid::new_v4(),
+            tenant_id: Uuid::new_v4(),
+            device_id: Some("device1".to_string()),
+            device_name: Some("Test Device".to_string()),
+            ip_address: "127.0.0.1".to_string(),
+            user_agent: "test".to_string(),
+            expires_at: Utc::now() + chrono::Duration::days(30),
+            revoked_at: None,
+            created_at: Utc::now(),
+        })
+    }
+
+    pub async fn revoke_all_user_tokens_except(&self, _user_id: Uuid, _except_token_id: Uuid) -> Result<()> {
         Ok(())
     }
 }

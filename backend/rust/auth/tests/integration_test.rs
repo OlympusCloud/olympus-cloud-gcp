@@ -1,42 +1,46 @@
-use std::sync::Arc;
-use olympus_auth::services::AuthService;
-use olympus_auth::models::{LoginRequest, RegisterRequest};
-use olympus_shared::database::Database;
+#[cfg(all(test, not(feature = "mock-queries")))]
+mod database_tests {
+    use std::sync::Arc;
+    use olympus_auth::services::AuthService;
+    use olympus_auth::models::{LoginRequest, RegisterRequest};
+    use olympus_shared::database::Database;
 
-#[tokio::test]
-async fn test_auth_flow() {
-    let db = Arc::new(Database::new("postgresql://localhost/test").await.unwrap_or_else(|_| {
-        panic!("Database connection failed")
-    }));
-    
-    let jwt_secret = b"test-secret-key-for-integration-testing-only";
-    let auth_service = AuthService::new(db, jwt_secret, None);
+    #[tokio::test]
+    #[ignore] // Run with: cargo test -- --ignored
+    async fn test_auth_flow_with_database() {
+        let db = Arc::new(Database::new("postgresql://localhost/test").await.unwrap_or_else(|_| {
+            panic!("Database connection failed")
+        }));
 
-    let register_req = RegisterRequest {
-        email: "test@example.com".to_string(),
-        password: "SecurePassword123!".to_string(),
-        first_name: "Test".to_string(),
-        last_name: "User".to_string(),
-        phone: None,
-        tenant_slug: "test-tenant".to_string(),
-    };
+        let jwt_secret = b"test-secret-key-for-integration-testing-only";
+        let auth_service = AuthService::new(db, jwt_secret, None);
 
-    let user_response = auth_service.register(register_req).await.unwrap();
-    assert_eq!(user_response.email, "test@example.com");
+        let register_req = RegisterRequest {
+            email: "test@example.com".to_string(),
+            password: "SecurePassword123!".to_string(),
+            first_name: "Test".to_string(),
+            last_name: "User".to_string(),
+            phone: None,
+            tenant_slug: "test-tenant".to_string(),
+        };
 
-    let login_req = LoginRequest {
-        email: "test@example.com".to_string(),
-        password: "SecurePassword123!".to_string(),
-        tenant_slug: "test-tenant".to_string(),
-        device_id: None,
-        device_name: None,
-    };
+        let user_response = auth_service.register(register_req).await.unwrap();
+        assert_eq!(user_response.email, "test@example.com");
 
-    let token_response = auth_service.login(login_req, "127.0.0.1".to_string(), "test-agent".to_string()).await.unwrap();
-    assert!(!token_response.access_token.is_empty());
+        let login_req = LoginRequest {
+            email: "test@example.com".to_string(),
+            password: "SecurePassword123!".to_string(),
+            tenant_slug: "test-tenant".to_string(),
+            device_id: None,
+            device_name: None,
+        };
 
-    let claims = auth_service.verify_token(&token_response.access_token).await.unwrap();
-    assert_eq!(claims.email, "test@example.com");
+        let token_response = auth_service.login(login_req, "127.0.0.1".to_string(), "test-agent".to_string()).await.unwrap();
+        assert!(!token_response.access_token.is_empty());
+
+        let claims = auth_service.verify_token(&token_response.access_token).await.unwrap();
+        assert_eq!(claims.email, "test@example.com");
+    }
 }
 
 #[test]
