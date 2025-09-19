@@ -256,7 +256,16 @@ void main() {
     });
 
     group('SignupScreen Tests', () {
+      setUp(() {
+        // Set larger window size for signup tests to accommodate the full form
+        TestWidgetsFlutterBinding.ensureInitialized();
+      });
+      
       testWidgets('should display signup form elements', (WidgetTester tester) async {
+        // Set screen size for this test
+        tester.view.physicalSize = const Size(400, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        
         await tester.pumpWidget(
           UncontrolledProviderScope(
             container: container,
@@ -281,9 +290,12 @@ void main() {
       });
 
       testWidgets('should validate form fields', (WidgetTester tester) async {
+        // Set larger window size for test to accommodate the full form
+        tester.view.physicalSize = const Size(400, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        
         await tester.pumpWidget(
-          UncontrolledProviderScope(
-            container: container,
+          ProviderScope(
             child: MaterialApp(
               home: const SignupScreen(),
             ),

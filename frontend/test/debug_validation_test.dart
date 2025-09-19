@@ -4,17 +4,17 @@ import 'package:frontend/features/auth/presentation/screens/signup_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
-  });
-
   testWidgets('Debug form validation behavior', (WidgetTester tester) async {
-    // Set window size for test
-    tester.view.physicalSize = const Size(400, 800);
+    // Set larger window size for test to accommodate the full form
+    tester.view.physicalSize = const Size(400, 1200);
     tester.view.devicePixelRatio = 1.0;
 
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
     await tester.pumpWidget(
-      ProviderScope(
+      UncontrolledProviderScope(
+        container: container,
         child: MaterialApp(
           home: const SignupScreen(),
         ),
@@ -23,30 +23,31 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    print('Searching for Create Account buttons...');
+    print('Looking for Create Account buttons...');
     final createAccountFinder = find.text('Create Account');
     print('Found ${createAccountFinder.evaluate().length} Create Account widgets');
     
-    for (var element in createAccountFinder.evaluate()) {
-      print('Create Account widget: ${element.widget.runtimeType}');
-    }
-
-    print('Looking for ElevatedButton or button widgets...');
-    final buttonFinder = find.byType(ElevatedButton);
-    print('Found ${buttonFinder.evaluate().length} ElevatedButton widgets');
-    
-    // Try tapping the last Create Account text
-    await tester.tap(createAccountFinder.last);
+    print('Trying to tap Create Account .last...');
+    // Try to submit without filling fields - use same approach as original test
+    await tester.tap(find.text('Create Account').last); // Get the button, not title
     await tester.pumpAndSettle();
     
     print('After tapping, looking for validation messages...');
+    
+    // Check exact messages the test is looking for
     final fullNameErrorFinder = find.text('Please enter your full name');
     print('Found ${fullNameErrorFinder.evaluate().length} "Please enter your full name" messages');
     
     final emailErrorFinder = find.text('Please enter your email');
     print('Found ${emailErrorFinder.evaluate().length} "Please enter your email" messages');
     
-    // Let's also check if any error text exists at all
+    final passwordErrorFinder = find.text('Please enter a password');
+    print('Found ${passwordErrorFinder.evaluate().length} "Please enter a password" messages');
+    
+    final confirmPasswordErrorFinder = find.text('Please confirm your password');
+    print('Found ${confirmPasswordErrorFinder.evaluate().length} "Please confirm your password" messages');
+    
+    // Check for any error text
     final anyErrorFinder = find.textContaining('Please enter');
     print('Found ${anyErrorFinder.evaluate().length} messages containing "Please enter"');
     
