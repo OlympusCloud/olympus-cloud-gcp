@@ -39,6 +39,9 @@ tracing.workspace = true
 # Validation
 validator.workspace = true
 
+# Async traits
+async-trait.workspace = true
+
 # Decimal arithmetic
 rust_decimal.workspace = true
 

@@ -17,7 +17,7 @@ use rand::Rng;
 use olympus_shared::{
     database::DbPool,
     events::{EventPublisher, DomainEvent},
-    error::{Result, OlympusError},
+    error::{Result, Error},
 };
 
 use crate::models::{
@@ -56,7 +56,7 @@ impl FeatureFlagsService {
         // Validate rollout percentage for percentage-based strategies
         if matches!(request.rollout_strategy, RolloutStrategy::PercentageUsers | RolloutStrategy::GradualRollout) {
             if request.rollout_percentage.is_none() {
-                return Err(OlympusError::Validation(
+                return Err(Error::Validation(
                     "Rollout percentage is required for percentage-based strategies".to_string()
                 ));
             }
@@ -115,7 +115,7 @@ impl FeatureFlagsService {
         )
         .fetch_one(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to create feature flag: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to create feature flag: {}", e)))?;
 
         let flag = self.flag_row_to_model(flag_row)?;
 
@@ -165,7 +165,7 @@ impl FeatureFlagsService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get feature flag: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get feature flag: {}", e)))?;
 
         match flag_row {
             Some(row) => Ok(Some(self.flag_row_to_model(row)?)),
@@ -199,7 +199,7 @@ impl FeatureFlagsService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get feature flag by key: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get feature flag by key: {}", e)))?;
 
         match flag_row {
             Some(row) => Ok(Some(self.flag_row_to_model(row)?)),
@@ -241,7 +241,7 @@ impl FeatureFlagsService {
             )
             .fetch_optional(self.db.as_ref())
             .await
-            .map_err(|e| OlympusError::Database(format!("Failed to update feature flag: {}", e)))?;
+            .map_err(|e| Error::Database(format!("Failed to update feature flag: {}", e)))?;
 
             match flag_row {
                 Some(row) => {
@@ -293,7 +293,7 @@ impl FeatureFlagsService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to delete feature flag: {}", e)))?
+        .map_err(|e| Error::Database(format!("Failed to delete feature flag: {}", e)))?
         .rows_affected();
 
         if rows_affected > 0 {
@@ -484,7 +484,7 @@ impl FeatureFlagsService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to record flag evaluation: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to record flag evaluation: {}", e)))?;
 
         Ok(())
     }
@@ -522,7 +522,7 @@ impl FeatureFlagsService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get flag usage analytics: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get flag usage analytics: {}", e)))?;
 
         if let Some(usage) = usage {
             Ok(Some(FeatureFlagUsage {
@@ -571,7 +571,7 @@ impl FeatureFlagsService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to list feature flags: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to list feature flags: {}", e)))?;
 
         flag_rows
             .into_iter()
@@ -604,10 +604,10 @@ impl FeatureFlagsService {
                 .fetch_optional(self.db.as_ref())
                 .await
         }
-        .map_err(|e| OlympusError::Database(format!("Failed to check flag key uniqueness: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to check flag key uniqueness: {}", e)))?;
 
         if exists.is_some() {
-            return Err(OlympusError::Validation("Feature flag key already exists".to_string()));
+            return Err(Error::Validation("Feature flag key already exists".to_string()));
         }
 
         Ok(())

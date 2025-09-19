@@ -135,16 +135,18 @@ impl GrpcRetry for GrpcClient {
                 Ok(response) => return Ok(response),
                 Err(status) => {
                     error!("gRPC request failed: {}", status);
-                    last_error = Some(status);
+                    let status_code = status.code();
 
                     if !matches!(
-                        status.code(),
+                        status_code,
                         tonic::Code::Unavailable
                             | tonic::Code::ResourceExhausted
                             | tonic::Code::DeadlineExceeded
                     ) {
                         return Err(status);
                     }
+
+                    last_error = Some(status);
                 }
             }
 

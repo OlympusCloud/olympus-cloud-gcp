@@ -9,14 +9,15 @@
 // ============================================================================
 
 use async_trait::async_trait;
-use shared::events::{
-    EventHandler, EventContainer, HandlerPriority, HandlerHealth,
+use olympus_shared::events::{
+    EventHandler, EventContainer,
     TenantCreatedEvent, TenantSubscriptionChangedEvent, UserRoleChangedEvent,
     LocationCreatedEvent, FeatureFlagChangedEvent, UserRegisteredEvent,
     UserLoggedInEvent, OrderCreatedEvent, PaymentProcessedEvent,
     platform_events, auth_events, commerce_events,
 };
-use shared::{Error, Result};
+use olympus_shared::events::subscriber::{HandlerPriority, HandlerHealth};
+use olympus_shared::{Error, Result};
 use tracing::{info, warn, error, debug, instrument};
 use uuid::Uuid;
 use std::sync::atomic::{AtomicU64, Ordering};

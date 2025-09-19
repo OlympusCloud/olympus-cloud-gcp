@@ -15,7 +15,6 @@ pub mod types;
 pub use domain::*;
 pub use publisher::{EventPublisher, PublishError, EventContainer, EventPriority, PublisherMetrics};
 pub use subscriber::{EventSubscriber, EventHandler, SubscriptionConfig};
-pub use types::*;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

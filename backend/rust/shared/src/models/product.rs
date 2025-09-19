@@ -10,7 +10,7 @@
 use super::{AuditFields, SoftDelete, TenantScoped, ValidateEntity, Searchable};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, Type};
+use sqlx::FromRow;
 use uuid::Uuid;
 use validator::{Validate, ValidationError};
 use rust_decimal::Decimal;
