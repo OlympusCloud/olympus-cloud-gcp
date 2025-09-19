@@ -34,6 +34,11 @@ from app.models.restaurant import RestaurantAnalytics, RestaurantRecommendation
 from app.models.retail import RetailAnalytics, RetailRecommendation
 from app.models.hospitality import HospitalityAnalytics, HospitalityRecommendation
 import app.models.events_industry as events_models
+from app.models.events_industry import EventsAnalytics, EventsRecommendation
+EventsAnalytics = events_models.EventsAnalytics
+EventsRecommendation = events_models.EventsRecommendation
+EventsAnalytics = events_models.EventsAnalytics
+EventsRecommendation = events_models.EventsRecommendation
 from app.models.snapshots import (
     MetricsSnapshot,
     SnapshotHistoryRequest,
@@ -567,7 +572,7 @@ async def get_hospitality_recommendations(
 @api_router.get(
     "/events/analytics",
     tags=["events"],
-    response_model=events_models.EventsAnalytics,
+    response_model=EventsAnalytics,
 )
 async def get_events_analytics(
     tenant_id: str = Query(..., description="Tenant identifier"),
@@ -576,7 +581,7 @@ async def get_events_analytics(
     from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
     to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
     events_service: EventsService = Depends(get_events_service),
-) -> events_models.EventsAnalytics:
+) -> EventsAnalytics:
     """Return events analytics including ticket and vendor performance."""
 
     timeframe = _resolve_timeframe(date_range)
@@ -608,7 +613,7 @@ async def get_events_analytics(
 @api_router.get(
     "/events/recommendations",
     tags=["events"],
-    response_model=List[events_models.EventsRecommendation],
+    response_model=List[EventsRecommendation],
 )
 async def get_events_recommendations(
     tenant_id: str = Query(..., description="Tenant identifier"),
@@ -617,7 +622,7 @@ async def get_events_recommendations(
     from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
     to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
     events_service: EventsService = Depends(get_events_service),
-) -> List[events_models.EventsRecommendation]:
+) -> List[EventsRecommendation]:
     """Generate events-specific operational recommendations."""
 
     timeframe = _resolve_timeframe(date_range)
