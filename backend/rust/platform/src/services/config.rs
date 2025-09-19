@@ -16,7 +16,7 @@ use sqlx::{Row, query, query_as};
 use olympus_shared::{
     database::DbPool,
     events::{EventPublisher, DomainEvent},
-    error::{Result, OlympusError},
+    error::{Result, Error},
 };
 
 use crate::models::{
@@ -68,7 +68,7 @@ impl ConfigurationService {
         let config_row = query_as!(
             ConfigurationRow,
             r#"
-            INSERT INTO configurations (
+            INSERT INTO platform.configurations (
                 id, scope, scope_id, key, display_name, description, config_type,
                 value, default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
@@ -101,7 +101,7 @@ impl ConfigurationService {
         )
         .fetch_one(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to create configuration: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to create configuration: {}", e)))?;
 
         let config = self.config_row_to_model(config_row)?;
 
@@ -151,14 +151,14 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE id = $1 AND deleted_at IS NULL
             "#,
             config_id
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get configuration: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get configuration: {}", e)))?;
 
         match config_row {
             Some(row) => {
@@ -190,7 +190,7 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE scope = $1 AND scope_id = $2 AND key = $3 AND deleted_at IS NULL
             "#,
             scope as ConfigScope,
@@ -199,7 +199,7 @@ impl ConfigurationService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get configuration by key: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get configuration by key: {}", e)))?;
 
         match config_row {
             Some(row) => {
@@ -235,7 +235,7 @@ impl ConfigurationService {
 
         // Check if configuration is readonly
         if current_config.is_readonly {
-            return Err(OlympusError::Validation("Configuration is readonly".to_string()));
+            return Err(Error::Validation("Configuration is readonly".to_string()));
         }
 
         // Validate new value if provided
@@ -252,7 +252,7 @@ impl ConfigurationService {
             let config_row = query_as!(
                 ConfigurationRow,
                 r#"
-                UPDATE configurations
+                UPDATE platform.configurations
                 SET value = $2, updated_at = $3, updated_by = $4
                 WHERE id = $1 AND deleted_at IS NULL
                 RETURNING
@@ -268,7 +268,7 @@ impl ConfigurationService {
             )
             .fetch_optional(self.db.as_ref())
             .await
-            .map_err(|e| OlympusError::Database(format!("Failed to update configuration: {}", e)))?;
+            .map_err(|e| Error::Database(format!("Failed to update configuration: {}", e)))?;
 
             match config_row {
                 Some(row) => {
@@ -329,12 +329,12 @@ impl ConfigurationService {
 
         // Check if configuration is readonly
         if current_config.is_readonly {
-            return Err(OlympusError::Validation("Configuration is readonly".to_string()));
+            return Err(Error::Validation("Configuration is readonly".to_string()));
         }
 
         let rows_affected = query!(
             r#"
-            UPDATE configurations
+            UPDATE platform.configurations
             SET deleted_at = $2, updated_by = $3
             WHERE id = $1 AND deleted_at IS NULL
             "#,
@@ -344,7 +344,7 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to delete configuration: {}", e)))?
+        .map_err(|e| Error::Database(format!("Failed to delete configuration: {}", e)))?
         .rows_affected();
 
         if rows_affected > 0 {
@@ -421,7 +421,7 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE deleted_at IS NULL
             ORDER BY category, key
             LIMIT $1 OFFSET $2
@@ -431,14 +431,14 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to search configurations: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to search configurations: {}", e)))?;
 
         let total_count = query!(
-            "SELECT COUNT(*) as count FROM configurations WHERE deleted_at IS NULL"
+            "SELECT COUNT(*) as count FROM platform.configurations WHERE deleted_at IS NULL"
         )
         .fetch_one(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to count configurations: {}", e)))?
+        .map_err(|e| Error::Database(format!("Failed to count configurations: {}", e)))?
         .count
         .unwrap_or(0);
 
@@ -475,7 +475,7 @@ impl ConfigurationService {
                 description, config_type as "config_type: ConfigType", value,
                 default_value, is_sensitive, is_readonly, validation_rules,
                 category, tags, created_at, updated_at, created_by, updated_by
-            FROM configurations
+            FROM platform.configurations
             WHERE scope = $1 AND scope_id = $2 AND deleted_at IS NULL
             ORDER BY key
             "#,
@@ -484,7 +484,7 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get configurations by scope: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get configurations by scope: {}", e)))?;
 
         let mut result = HashMap::new();
         for row in config_rows {
@@ -532,7 +532,7 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to get audit history: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to get audit history: {}", e)))?;
 
         let audits = audit_rows
             .into_iter()
@@ -588,7 +588,7 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| OlympusError::Database(format!("Failed to create audit record: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to create audit record: {}", e)))?;
 
         Ok(())
     }
@@ -604,7 +604,7 @@ impl ConfigurationService {
         key: &str,
         exclude_id: Option<Uuid>,
     ) -> Result<()> {
-        let mut query_str = "SELECT id FROM configurations WHERE scope = $1 AND scope_id = $2 AND key = $3 AND deleted_at IS NULL".to_string();
+        let mut query_str = "SELECT id FROM platform.configurations WHERE scope = $1 AND scope_id = $2 AND key = $3 AND deleted_at IS NULL".to_string();
 
         if exclude_id.is_some() {
             query_str.push_str(" AND id != $4");
@@ -619,10 +619,10 @@ impl ConfigurationService {
                 .fetch_optional(self.db.as_ref())
                 .await
         }
-        .map_err(|e| OlympusError::Database(format!("Failed to check config key uniqueness: {}", e)))?;
+        .map_err(|e| Error::Database(format!("Failed to check config key uniqueness: {}", e)))?;
 
         if exists.is_some() {
-            return Err(OlympusError::Validation("Configuration key already exists in this scope".to_string()));
+            return Err(Error::Validation("Configuration key already exists in this scope".to_string()));
         }
 
         Ok(())
@@ -638,27 +638,27 @@ impl ConfigurationService {
         match config_type {
             ConfigType::String => {
                 if !value.is_string() {
-                    return Err(OlympusError::Validation("Value must be a string".to_string()));
+                    return Err(Error::Validation("Value must be a string".to_string()));
                 }
             }
             ConfigType::Number => {
                 if !value.is_number() {
-                    return Err(OlympusError::Validation("Value must be a number".to_string()));
+                    return Err(Error::Validation("Value must be a number".to_string()));
                 }
             }
             ConfigType::Boolean => {
                 if !value.is_boolean() {
-                    return Err(OlympusError::Validation("Value must be a boolean".to_string()));
+                    return Err(Error::Validation("Value must be a boolean".to_string()));
                 }
             }
             ConfigType::Json => {
                 if !value.is_object() && !value.is_array() {
-                    return Err(OlympusError::Validation("Value must be a JSON object or array".to_string()));
+                    return Err(Error::Validation("Value must be a JSON object or array".to_string()));
                 }
             }
             ConfigType::Encrypted => {
                 if !value.is_string() {
-                    return Err(OlympusError::Validation("Encrypted value must be a string".to_string()));
+                    return Err(Error::Validation("Encrypted value must be a string".to_string()));
                 }
             }
         }
@@ -668,7 +668,7 @@ impl ConfigurationService {
             if let Some(min_length) = rules.get("min_length") {
                 if let (Some(str_val), Some(min)) = (value.as_str(), min_length.as_u64()) {
                     if str_val.len() < min as usize {
-                        return Err(OlympusError::Validation(format!("Value must be at least {} characters", min)));
+                        return Err(Error::Validation(format!("Value must be at least {} characters", min)));
                     }
                 }
             }
