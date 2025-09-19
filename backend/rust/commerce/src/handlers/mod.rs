@@ -7,10 +7,12 @@
 // Date: 2025-01-18
 // ============================================================================
 
-pub mod products;
+pub mod inventory;
 pub mod orders;
 pub mod payments;
+pub mod products;
 
-pub use products::*;
+pub use inventory::*;
 pub use orders::*;
 pub use payments::*;
+pub use products::*;

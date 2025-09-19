@@ -232,13 +232,93 @@ pub struct PaymentProcessedEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InventoryAdjustedEvent {
     pub product_id: Uuid,
-    pub location_id: Uuid,
+    pub variant_id: Option<Uuid>,
+    pub location_id: Option<Uuid>,
     pub tenant_id: Uuid,
     pub old_quantity: i32,
     pub new_quantity: i32,
     pub adjustment_reason: InventoryAdjustmentReason,
-    pub adjusted_by: Option<Uuid>,
+    pub adjusted_by: Uuid,
     pub reference_id: Option<Uuid>, // Order ID, transfer ID, etc.
+}
+
+/// Low stock alert event
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LowStockAlertEvent {
+    pub product_id: Uuid,
+    pub variant_id: Option<Uuid>,
+    pub location_id: Option<Uuid>,
+    pub tenant_id: Uuid,
+    pub current_stock: i32,
+    pub threshold: i32,
+    pub sku: String,
+    pub product_name: String,
+}
+
+/// Stock reserved event
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockReservedEvent {
+    pub tenant_id: Uuid,
+    pub reference_id: Uuid,
+    pub items: Vec<StockReservationItem>,
+    pub reserved_by: Uuid,
+}
+
+/// Stock released event
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockReleasedEvent {
+    pub tenant_id: Uuid,
+    pub reference_id: Uuid,
+    pub released_by: Uuid,
+}
+
+/// Stock transfer created event
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockTransferCreatedEvent {
+    pub transfer_id: Uuid,
+    pub tenant_id: Uuid,
+    pub from_location_id: Uuid,
+    pub to_location_id: Uuid,
+    pub item_count: i32,
+    pub created_by: Uuid,
+}
+
+/// Stock transfer shipped event
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockTransferShippedEvent {
+    pub transfer_id: Uuid,
+    pub tenant_id: Uuid,
+    pub shipped_by: Uuid,
+    pub shipped_at: DateTime<Utc>,
+    pub tracking_number: Option<String>,
+}
+
+/// Stock transfer received event
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockTransferReceivedEvent {
+    pub transfer_id: Uuid,
+    pub tenant_id: Uuid,
+    pub received_by: Uuid,
+    pub received_at: DateTime<Utc>,
+    pub discrepancies: Vec<TransferDiscrepancy>,
+}
+
+/// Supporting types for stock events
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StockReservationItem {
+    pub product_id: Uuid,
+    pub variant_id: Option<Uuid>,
+    pub location_id: Option<Uuid>,
+    pub quantity_allocated: i32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TransferDiscrepancy {
+    pub product_id: Uuid,
+    pub variant_id: Option<Uuid>,
+    pub expected_quantity: i32,
+    pub received_quantity: i32,
+    pub reason: Option<String>,
 }
 
 // ============================================================================
@@ -393,6 +473,12 @@ pub mod commerce_events {
     pub const ORDER_STATUS_CHANGED: &str = "OrderStatusChanged";
     pub const PAYMENT_PROCESSED: &str = "PaymentProcessed";
     pub const INVENTORY_ADJUSTED: &str = "InventoryAdjusted";
+    pub const LOW_STOCK_ALERT: &str = "LowStockAlert";
+    pub const STOCK_RESERVED: &str = "StockReserved";
+    pub const STOCK_RELEASED: &str = "StockReleased";
+    pub const STOCK_TRANSFER_CREATED: &str = "StockTransferCreated";
+    pub const STOCK_TRANSFER_SHIPPED: &str = "StockTransferShipped";
+    pub const STOCK_TRANSFER_RECEIVED: &str = "StockTransferReceived";
 }
 
 #[cfg(test)]

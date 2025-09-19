@@ -8,10 +8,12 @@
 // ============================================================================
 
 pub mod catalog;
+pub mod inventory;
 pub mod order;
 pub mod payment_service;
 pub mod gateways;
 
 pub use catalog::CatalogService;
+pub use inventory::InventoryService;
 pub use order::OrderService;
 pub use payment_service::PaymentService;
