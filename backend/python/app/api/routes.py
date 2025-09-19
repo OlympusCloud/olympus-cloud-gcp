@@ -77,6 +77,18 @@ api_router = APIRouter()
 api_router.include_router(nlp_routes.router)
 
 
+def _start_of_day(value: Optional[date]) -> Optional[datetime]:
+    if value is None:
+        return None
+    return datetime.combine(value, time.min)
+
+
+def _end_of_day(value: Optional[date]) -> Optional[datetime]:
+    if value is None:
+        return None
+    return datetime.combine(value, time.max.replace(microsecond=999999))
+
+
 class NLPQueryRequest(BaseModel):
     query: str = Field(min_length=1, max_length=500, description="Natural language analytics question")
 
@@ -242,6 +254,11 @@ async def get_cohort_analytics(
         "month",
         description="Granularity for cohort grouping",
     ),
+<<<<<<< HEAD
+    periods: int = Query(6, ge=1, le=12, description="Number of retention periods"),
+    start_date: Optional[date] = Query(None, description="Optional custom start date"),
+    end_date: Optional[date] = Query(None, description="Optional custom end date"),
+=======
     periods: int = Query(
         6,
         ge=1,
@@ -256,6 +273,7 @@ async def get_cohort_analytics(
         None,
         description="Optional custom end date",
     ),
+>>>>>>> origin/main
     cohort_service: CohortAnalyticsService = Depends(get_cohort_service),
 ) -> CohortAnalyticsResponse:
     """Return customer cohort retention metrics."""
