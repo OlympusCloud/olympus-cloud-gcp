@@ -7,6 +7,7 @@ import 'app.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/api_service.dart';
 import 'core/constants/app_constants.dart';
+import 'core/platform/platform_performance.dart';
 
 Future<void> main() async {
   // Ensure Flutter binding is initialized
@@ -18,6 +19,12 @@ Future<void> main() async {
 
   // Initialize API service
   ApiService.initialize();
+
+  // Initialize platform-specific performance optimizations
+  await PlatformPerformance.initialize();
+
+  // Preload critical resources
+  await PlatformPerformance.preloadCriticalResources();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(

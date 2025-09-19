@@ -7,6 +7,8 @@ import '../../features/business_setup/presentation/screens/business_setup_wizard
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/orders/presentation/screens/order_management_screen.dart';
+import '../../features/inventory/presentation/screens/inventory_management_screen.dart';
+import '../../features/analytics/presentation/screens/analytics_dashboard.dart';
 import '../../shared/presentation/screens/error_screen.dart';
 
 /// App router configuration using GoRouter
@@ -60,9 +62,7 @@ class AppRouter {
           GoRoute(
             path: 'inventory',
             name: 'inventory',
-            builder: (context, state) => const Placeholder(
-              child: Text('Inventory Screen'),
-            ),
+            builder: (context, state) => const InventoryManagementScreen(),
           ),
           GoRoute(
             path: 'customers',
@@ -74,9 +74,7 @@ class AppRouter {
           GoRoute(
             path: 'analytics',
             name: 'analytics',
-            builder: (context, state) => const Placeholder(
-              child: Text('Analytics Screen'),
-            ),
+            builder: (context, state) => const AnalyticsDashboard(),
           ),
           GoRoute(
             path: 'settings',
@@ -87,8 +85,6 @@ class AppRouter {
           ),
         ],
       ),
-
-
 
       // Business setup routes
       GoRoute(

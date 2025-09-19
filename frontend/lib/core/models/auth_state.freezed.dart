@@ -22,6 +22,8 @@ mixin _$AuthState {
     required TResult Function() loading,
     required TResult Function(User user, String token) authenticated,
     required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
     required TResult Function(String message) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -31,6 +33,7 @@ mixin _$AuthState {
     TResult? Function()? loading,
     TResult? Function(User user, String token)? authenticated,
     TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
     TResult? Function(String message)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -40,6 +43,7 @@ mixin _$AuthState {
     TResult Function()? loading,
     TResult Function(User user, String token)? authenticated,
     TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) =>
@@ -50,6 +54,8 @@ mixin _$AuthState {
     required TResult Function(LoadingState value) loading,
     required TResult Function(AuthenticatedState value) authenticated,
     required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
     required TResult Function(ErrorState value) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -59,6 +65,8 @@ mixin _$AuthState {
     TResult? Function(LoadingState value)? loading,
     TResult? Function(AuthenticatedState value)? authenticated,
     TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult? Function(ErrorState value)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -68,6 +76,8 @@ mixin _$AuthState {
     TResult Function(LoadingState value)? loading,
     TResult Function(AuthenticatedState value)? authenticated,
     TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult Function(ErrorState value)? error,
     required TResult orElse(),
   }) =>
@@ -133,6 +143,8 @@ class _$InitialStateImpl implements InitialState {
     required TResult Function() loading,
     required TResult Function(User user, String token) authenticated,
     required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -145,6 +157,7 @@ class _$InitialStateImpl implements InitialState {
     TResult? Function()? loading,
     TResult? Function(User user, String token)? authenticated,
     TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -157,6 +170,7 @@ class _$InitialStateImpl implements InitialState {
     TResult Function()? loading,
     TResult Function(User user, String token)? authenticated,
     TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -173,6 +187,8 @@ class _$InitialStateImpl implements InitialState {
     required TResult Function(LoadingState value) loading,
     required TResult Function(AuthenticatedState value) authenticated,
     required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
     required TResult Function(ErrorState value) error,
   }) {
     return initial(this);
@@ -185,6 +201,8 @@ class _$InitialStateImpl implements InitialState {
     TResult? Function(LoadingState value)? loading,
     TResult? Function(AuthenticatedState value)? authenticated,
     TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult? Function(ErrorState value)? error,
   }) {
     return initial?.call(this);
@@ -197,6 +215,8 @@ class _$InitialStateImpl implements InitialState {
     TResult Function(LoadingState value)? loading,
     TResult Function(AuthenticatedState value)? authenticated,
     TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult Function(ErrorState value)? error,
     required TResult orElse(),
   }) {
@@ -253,6 +273,8 @@ class _$LoadingStateImpl implements LoadingState {
     required TResult Function() loading,
     required TResult Function(User user, String token) authenticated,
     required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -265,6 +287,7 @@ class _$LoadingStateImpl implements LoadingState {
     TResult? Function()? loading,
     TResult? Function(User user, String token)? authenticated,
     TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -277,6 +300,7 @@ class _$LoadingStateImpl implements LoadingState {
     TResult Function()? loading,
     TResult Function(User user, String token)? authenticated,
     TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -293,6 +317,8 @@ class _$LoadingStateImpl implements LoadingState {
     required TResult Function(LoadingState value) loading,
     required TResult Function(AuthenticatedState value) authenticated,
     required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
     required TResult Function(ErrorState value) error,
   }) {
     return loading(this);
@@ -305,6 +331,8 @@ class _$LoadingStateImpl implements LoadingState {
     TResult? Function(LoadingState value)? loading,
     TResult? Function(AuthenticatedState value)? authenticated,
     TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult? Function(ErrorState value)? error,
   }) {
     return loading?.call(this);
@@ -317,6 +345,8 @@ class _$LoadingStateImpl implements LoadingState {
     TResult Function(LoadingState value)? loading,
     TResult Function(AuthenticatedState value)? authenticated,
     TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult Function(ErrorState value)? error,
     required TResult orElse(),
   }) {
@@ -418,6 +448,8 @@ class _$AuthenticatedStateImpl implements AuthenticatedState {
     required TResult Function() loading,
     required TResult Function(User user, String token) authenticated,
     required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
     required TResult Function(String message) error,
   }) {
     return authenticated(user, token);
@@ -430,6 +462,7 @@ class _$AuthenticatedStateImpl implements AuthenticatedState {
     TResult? Function()? loading,
     TResult? Function(User user, String token)? authenticated,
     TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
     TResult? Function(String message)? error,
   }) {
     return authenticated?.call(user, token);
@@ -442,6 +475,7 @@ class _$AuthenticatedStateImpl implements AuthenticatedState {
     TResult Function()? loading,
     TResult Function(User user, String token)? authenticated,
     TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -458,6 +492,8 @@ class _$AuthenticatedStateImpl implements AuthenticatedState {
     required TResult Function(LoadingState value) loading,
     required TResult Function(AuthenticatedState value) authenticated,
     required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
     required TResult Function(ErrorState value) error,
   }) {
     return authenticated(this);
@@ -470,6 +506,8 @@ class _$AuthenticatedStateImpl implements AuthenticatedState {
     TResult? Function(LoadingState value)? loading,
     TResult? Function(AuthenticatedState value)? authenticated,
     TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult? Function(ErrorState value)? error,
   }) {
     return authenticated?.call(this);
@@ -482,6 +520,8 @@ class _$AuthenticatedStateImpl implements AuthenticatedState {
     TResult Function(LoadingState value)? loading,
     TResult Function(AuthenticatedState value)? authenticated,
     TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult Function(ErrorState value)? error,
     required TResult orElse(),
   }) {
@@ -547,6 +587,8 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
     required TResult Function() loading,
     required TResult Function(User user, String token) authenticated,
     required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
     required TResult Function(String message) error,
   }) {
     return unauthenticated();
@@ -559,6 +601,7 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
     TResult? Function()? loading,
     TResult? Function(User user, String token)? authenticated,
     TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
     TResult? Function(String message)? error,
   }) {
     return unauthenticated?.call();
@@ -571,6 +614,7 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
     TResult Function()? loading,
     TResult Function(User user, String token)? authenticated,
     TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -587,6 +631,8 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
     required TResult Function(LoadingState value) loading,
     required TResult Function(AuthenticatedState value) authenticated,
     required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
     required TResult Function(ErrorState value) error,
   }) {
     return unauthenticated(this);
@@ -599,6 +645,8 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
     TResult? Function(LoadingState value)? loading,
     TResult? Function(AuthenticatedState value)? authenticated,
     TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult? Function(ErrorState value)? error,
   }) {
     return unauthenticated?.call(this);
@@ -611,6 +659,8 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
     TResult Function(LoadingState value)? loading,
     TResult Function(AuthenticatedState value)? authenticated,
     TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult Function(ErrorState value)? error,
     required TResult orElse(),
   }) {
@@ -623,6 +673,185 @@ class _$UnauthenticatedStateImpl implements UnauthenticatedState {
 
 abstract class UnauthenticatedState implements AuthState {
   const factory UnauthenticatedState() = _$UnauthenticatedStateImpl;
+}
+
+/// @nodoc
+abstract class _$$EmailVerificationRequiredStateImplCopyWith<$Res> {
+  factory _$$EmailVerificationRequiredStateImplCopyWith(
+          _$EmailVerificationRequiredStateImpl value,
+          $Res Function(_$EmailVerificationRequiredStateImpl) then) =
+      __$$EmailVerificationRequiredStateImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String email, String message});
+}
+
+/// @nodoc
+class __$$EmailVerificationRequiredStateImplCopyWithImpl<$Res>
+    extends _$AuthStateCopyWithImpl<$Res, _$EmailVerificationRequiredStateImpl>
+    implements _$$EmailVerificationRequiredStateImplCopyWith<$Res> {
+  __$$EmailVerificationRequiredStateImplCopyWithImpl(
+      _$EmailVerificationRequiredStateImpl _value,
+      $Res Function(_$EmailVerificationRequiredStateImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? email = null,
+    Object? message = null,
+  }) {
+    return _then(_$EmailVerificationRequiredStateImpl(
+      email: null == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
+              as String,
+      message: null == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$EmailVerificationRequiredStateImpl
+    implements EmailVerificationRequiredState {
+  const _$EmailVerificationRequiredStateImpl(
+      {required this.email, required this.message});
+
+  @override
+  final String email;
+  @override
+  final String message;
+
+  @override
+  String toString() {
+    return 'AuthState.emailVerificationRequired(email: $email, message: $message)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$EmailVerificationRequiredStateImpl &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, email, message);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$EmailVerificationRequiredStateImplCopyWith<
+          _$EmailVerificationRequiredStateImpl>
+      get copyWith => __$$EmailVerificationRequiredStateImplCopyWithImpl<
+          _$EmailVerificationRequiredStateImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(User user, String token) authenticated,
+    required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
+    required TResult Function(String message) error,
+  }) {
+    return emailVerificationRequired(email, message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(User user, String token)? authenticated,
+    TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
+    TResult? Function(String message)? error,
+  }) {
+    return emailVerificationRequired?.call(email, message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(User user, String token)? authenticated,
+    TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (emailVerificationRequired != null) {
+      return emailVerificationRequired(email, message);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(InitialState value) initial,
+    required TResult Function(LoadingState value) loading,
+    required TResult Function(AuthenticatedState value) authenticated,
+    required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
+    required TResult Function(ErrorState value) error,
+  }) {
+    return emailVerificationRequired(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(InitialState value)? initial,
+    TResult? Function(LoadingState value)? loading,
+    TResult? Function(AuthenticatedState value)? authenticated,
+    TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
+    TResult? Function(ErrorState value)? error,
+  }) {
+    return emailVerificationRequired?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(InitialState value)? initial,
+    TResult Function(LoadingState value)? loading,
+    TResult Function(AuthenticatedState value)? authenticated,
+    TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
+    TResult Function(ErrorState value)? error,
+    required TResult orElse(),
+  }) {
+    if (emailVerificationRequired != null) {
+      return emailVerificationRequired(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class EmailVerificationRequiredState implements AuthState {
+  const factory EmailVerificationRequiredState(
+      {required final String email,
+      required final String message}) = _$EmailVerificationRequiredStateImpl;
+
+  String get email;
+  String get message;
+  @JsonKey(ignore: true)
+  _$$EmailVerificationRequiredStateImplCopyWith<
+          _$EmailVerificationRequiredStateImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -693,6 +922,8 @@ class _$ErrorStateImpl implements ErrorState {
     required TResult Function() loading,
     required TResult Function(User user, String token) authenticated,
     required TResult Function() unauthenticated,
+    required TResult Function(String email, String message)
+        emailVerificationRequired,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -705,6 +936,7 @@ class _$ErrorStateImpl implements ErrorState {
     TResult? Function()? loading,
     TResult? Function(User user, String token)? authenticated,
     TResult? Function()? unauthenticated,
+    TResult? Function(String email, String message)? emailVerificationRequired,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -717,6 +949,7 @@ class _$ErrorStateImpl implements ErrorState {
     TResult Function()? loading,
     TResult Function(User user, String token)? authenticated,
     TResult Function()? unauthenticated,
+    TResult Function(String email, String message)? emailVerificationRequired,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -733,6 +966,8 @@ class _$ErrorStateImpl implements ErrorState {
     required TResult Function(LoadingState value) loading,
     required TResult Function(AuthenticatedState value) authenticated,
     required TResult Function(UnauthenticatedState value) unauthenticated,
+    required TResult Function(EmailVerificationRequiredState value)
+        emailVerificationRequired,
     required TResult Function(ErrorState value) error,
   }) {
     return error(this);
@@ -745,6 +980,8 @@ class _$ErrorStateImpl implements ErrorState {
     TResult? Function(LoadingState value)? loading,
     TResult? Function(AuthenticatedState value)? authenticated,
     TResult? Function(UnauthenticatedState value)? unauthenticated,
+    TResult? Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult? Function(ErrorState value)? error,
   }) {
     return error?.call(this);
@@ -757,6 +994,8 @@ class _$ErrorStateImpl implements ErrorState {
     TResult Function(LoadingState value)? loading,
     TResult Function(AuthenticatedState value)? authenticated,
     TResult Function(UnauthenticatedState value)? unauthenticated,
+    TResult Function(EmailVerificationRequiredState value)?
+        emailVerificationRequired,
     TResult Function(ErrorState value)? error,
     required TResult orElse(),
   }) {

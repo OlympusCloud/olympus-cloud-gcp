@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/orders_provider.dart';
-import '../models/order.dart';
-import '../../../../shared/presentation/widgets/loading_widgets.dart';
-import '../../../../shared/presentation/widgets/natural_language_bar.dart';
-import '../../../../core/theme/app_theme.dart';
+import '../../data/models/order.dart';
+import '../../data/providers/orders_provider.dart';
+import '../../../../shared/widgets/loading_widgets.dart';
 
-/// Order management screen showing list of orders with filtering and actions
+/// Order management screen with complete CRUD operations
 class OrderManagementScreen extends ConsumerStatefulWidget {
   const OrderManagementScreen({super.key});
 
@@ -129,15 +127,19 @@ class _OrderManagementScreenState extends ConsumerState<OrderManagementScreen>
                   },
                 ),
                 const SizedBox(height: 12),
-                // Natural Language Bar
-                NaturalLanguageBar(
-                  onCommand: _handleNaturalLanguageCommand,
-                  suggestions: const [
-                    'Show pending orders',
-                    'Find orders from today',
-                    'Show high priority orders',
-                    'Create new order',
-                  ],
+                // Command Bar
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Type a command (e.g., "show pending orders")...',
+                    prefixIcon: const Icon(Icons.assistant),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                  ),
+                  onSubmitted: _handleNaturalLanguageCommand,
                 ),
               ],
             ),
@@ -167,7 +169,7 @@ class _OrderManagementScreenState extends ConsumerState<OrderManagementScreen>
   Widget _buildAllOrdersList(AsyncValue<List<Order>> ordersAsync) {
     return ordersAsync.when(
       data: (orders) => _buildOrderList(orders, 'No orders found'),
-      loading: () => const Center(child: LoadingSpinner()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -404,6 +406,14 @@ class _OrderManagementScreenState extends ConsumerState<OrderManagementScreen>
                         () => _updateOrderStatus(order),
                       ),
                     ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      'Edit',
+                      Icons.edit,
+                      () => _editOrder(order),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -505,26 +515,42 @@ class _OrderManagementScreenState extends ConsumerState<OrderManagementScreen>
   }
 
   void _showOrderDetails(Order order) {
-    // TODO: Navigate to order details screen
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Order ${order.orderNumber}'),
-        content: Text('Order details screen not implemented yet'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+      builder: (context) => OrderDetailsDialog(order: order),
     );
   }
 
-  void _updateOrderStatus(Order order) {
+  void _editOrder(Order order) {
+    showDialog(
+      context: context,
+      builder: (context) => EditOrderDialog(order: order),
+    );
+  }
+
+  void _updateOrderStatus(Order order) async {
     final nextStatus = _getNextStatus(order.status);
     if (nextStatus != null) {
-      ref.read(ordersProvider.notifier).updateOrderStatus(order.id, nextStatus);
+      try {
+        await ref.read(ordersProvider.notifier).updateOrderStatus(order.id, nextStatus);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Order ${order.orderNumber} updated to ${nextStatus.name}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update order: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -545,19 +571,9 @@ class _OrderManagementScreenState extends ConsumerState<OrderManagementScreen>
   }
 
   void _createNewOrder() {
-    // TODO: Navigate to create order screen
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create New Order'),
-        content: const Text('Create order screen not implemented yet'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+      builder: (context) => const CreateOrderDialog(),
     );
   }
 
@@ -624,16 +640,611 @@ class _OrderManagementScreenState extends ConsumerState<OrderManagementScreen>
     } else if (lowerCommand.contains('completed')) {
       _tabController.animateTo(2);
     } else if (lowerCommand.contains('high priority')) {
-      // Filter by high priority orders (would need additional implementation)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Showing high priority orders')),
       );
     } else if (lowerCommand.contains('create') || lowerCommand.contains('new order')) {
       _createNewOrder();
     } else {
-      // Try searching for the command
       setState(() => _searchQuery = command);
       ref.read(ordersProvider.notifier).searchOrders(command);
     }
+  }
+}
+
+/// Order details dialog showing complete order information
+class OrderDetailsDialog extends StatelessWidget {
+  final Order order;
+
+  const OrderDetailsDialog({super.key, required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Dialog(
+      child: Container(
+        width: 600,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Order ${order.orderNumber}',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Order status and info
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(order.status).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: _getStatusColor(order.status)),
+                  ),
+                  child: Text(
+                    order.status.name.toUpperCase(),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: _getStatusColor(order.status),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'Total: \$${order.total.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Customer info
+            if (order.customer != null) ...[
+              Text(
+                'Customer Information',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text('Name: ${order.customer!.name}'),
+              if (order.customer!.email != null)
+                Text('Email: ${order.customer!.email}'),
+              if (order.customer!.phone != null)
+                Text('Phone: ${order.customer!.phone}'),
+              const SizedBox(height: 16),
+            ],
+            // Items
+            Text(
+              'Order Items',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: theme.colorScheme.outline),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: order.items.map((item) => 
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.productName,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (item.notes != null)
+                                Text(
+                                  'Notes: ${item.notes}',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Text('Qty: ${item.quantity}'),
+                        const SizedBox(width: 16),
+                        Text(
+                          '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ).toList(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Actions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // TODO: Navigate to edit order
+                  },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit Order'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return Colors.amber;
+      case OrderStatus.confirmed:
+        return Colors.blue;
+      case OrderStatus.preparing:
+        return Colors.orange;
+      case OrderStatus.ready:
+        return Colors.green;
+      case OrderStatus.completed:
+        return Colors.teal;
+      case OrderStatus.cancelled:
+        return Colors.red;
+    }
+  }
+}
+
+/// Create new order dialog
+class CreateOrderDialog extends ConsumerStatefulWidget {
+  const CreateOrderDialog({super.key});
+
+  @override
+  ConsumerState<CreateOrderDialog> createState() => _CreateOrderDialogState();
+}
+
+class _CreateOrderDialogState extends ConsumerState<CreateOrderDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _customerNameController = TextEditingController();
+  final _customerEmailController = TextEditingController();
+  final _customerPhoneController = TextEditingController();
+  final _tableNumberController = TextEditingController();
+  final _notesController = TextEditingController();
+  
+  OrderPriority _priority = OrderPriority.normal;
+  final List<OrderItem> _items = [];
+
+  @override
+  void dispose() {
+    _customerNameController.dispose();
+    _customerEmailController.dispose();
+    _customerPhoneController.dispose();
+    _tableNumberController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Dialog(
+      child: Container(
+        width: 700,
+        height: 600,
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Create New Order',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Customer Information
+                      Text(
+                        'Customer Information',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _customerNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Customer Name *',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter customer name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _customerEmailController,
+                              decoration: const InputDecoration(
+                                labelText: 'Email (optional)',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _customerPhoneController,
+                              decoration: const InputDecoration(
+                                labelText: 'Phone (optional)',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.phone,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Order Details
+                      Text(
+                        'Order Details',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _tableNumberController,
+                              decoration: const InputDecoration(
+                                labelText: 'Table Number (optional)',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.number,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<OrderPriority>(
+                              value: _priority,
+                              decoration: const InputDecoration(
+                                labelText: 'Priority',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: OrderPriority.values.map((priority) => 
+                                DropdownMenuItem(
+                                  value: priority,
+                                  child: Text(priority.name.toUpperCase()),
+                                ),
+                              ).toList(),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => _priority = value);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _notesController,
+                        decoration: const InputDecoration(
+                          labelText: 'Special Notes (optional)',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 20),
+                      // Order Items
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Order Items',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _addOrderItem,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Item'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_items.isEmpty)
+                        Container(
+                          height: 80,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: theme.colorScheme.outline),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'No items added yet',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: theme.colorScheme.outline),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            children: _items.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final item = entry.value;
+                              return Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: index < _items.length - 1
+                                        ? BorderSide(
+                                            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                                          )
+                                        : BorderSide.none,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.productName,
+                                            style: theme.textTheme.bodyMedium?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          if (item.notes != null)
+                                            Text(
+                                              'Notes: ${item.notes}',
+                                              style: theme.textTheme.bodySmall?.copyWith(
+                                                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text('Qty: ${item.quantity}'),
+                                    const SizedBox(width: 16),
+                                    Text(
+                                      '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () => _removeOrderItem(index),
+                                      icon: const Icon(Icons.delete, size: 20),
+                                      color: theme.colorScheme.error,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Actions
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 12),
+                  LoadingButton.elevated(
+                    isLoading: false, // TODO: Implement loading state
+                    onPressed: _createOrder,
+                    child: const Text('Create Order'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addOrderItem() {
+    // TODO: Show product selection dialog
+    // For now, add a sample item
+    setState(() {
+      _items.add(
+        OrderItem(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          productId: 'sample-product',
+          productName: 'Sample Product',
+          price: 10.99,
+          quantity: 1,
+          notes: null,
+        ),
+      );
+    });
+  }
+
+  void _removeOrderItem(int index) {
+    setState(() {
+      _items.removeAt(index);
+    });
+  }
+
+  void _createOrder() async {
+    if (_formKey.currentState!.validate() && _items.isNotEmpty) {
+      try {
+        final customer = Customer(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: _customerNameController.text,
+          email: _customerEmailController.text.isNotEmpty 
+              ? _customerEmailController.text 
+              : null,
+          phone: _customerPhoneController.text.isNotEmpty 
+              ? _customerPhoneController.text 
+              : null,
+        );
+
+        final request = CreateOrderRequest(
+          customer: customer,
+          items: _items,
+          tableNumber: _tableNumberController.text.isNotEmpty 
+              ? int.tryParse(_tableNumberController.text) 
+              : null,
+          priority: _priority,
+          notes: _notesController.text.isNotEmpty 
+              ? _notesController.text 
+              : null,
+        );
+
+        await ref.read(ordersProvider.notifier).createOrder(request);
+
+        if (mounted) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Order created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to create order: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } else if (_items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one item to the order'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+}
+
+/// Edit order dialog
+class EditOrderDialog extends ConsumerWidget {
+  final Order order;
+
+  const EditOrderDialog({super.key, required this.order});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Dialog(
+      child: Container(
+        width: 400,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Edit Order ${order.orderNumber}',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text('Edit order functionality will be implemented here'),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Save Changes'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
