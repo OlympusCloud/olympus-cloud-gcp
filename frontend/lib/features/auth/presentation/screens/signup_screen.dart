@@ -493,8 +493,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Widget _buildLoginLink(ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
       children: [
         Text(
           'Already have an account? ',

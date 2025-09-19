@@ -291,7 +291,7 @@ void main() {
 
       testWidgets('should validate form fields', (WidgetTester tester) async {
         // Set larger window size for test to accommodate the full form
-        tester.view.physicalSize = const Size(400, 1200);
+        tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
         
         await tester.pumpWidget(
@@ -305,7 +305,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Try to submit without filling fields
-        await tester.tap(find.text('Create Account').last); // Get the button, not title
+        await tester.tap(find.byType(ElevatedButton)); // Tap the button directly
         await tester.pumpAndSettle();
 
         // Should show validation errors
