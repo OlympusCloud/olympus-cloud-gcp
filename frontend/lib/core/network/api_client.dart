@@ -89,7 +89,7 @@ class ApiClient {
         responseBody: true,
         logPrint: (obj) {
           // Use print for now, can be replaced with proper logging
-          print('[API] $obj');
+          // print('[API] $obj');
         },
       ),
     );

@@ -19,7 +19,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String _userRole = '';
   String _businessStatus = '';
   String _experienceLevel = '';
-  List<String> _businessGoals = [];
+  final List<String> _businessGoals = [];
 
   final List<Map<String, String>> _roles = [
     {
@@ -211,7 +211,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Text(
             'Let\'s personalize your experience',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              color: theme.colorScheme.onSurface.withAlpha(178),
             ),
             textAlign: TextAlign.center,
           ),
@@ -221,7 +221,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           // Progress indicator
           LinearProgressIndicator(
             value: (_currentStep + 1) / 4,
-            backgroundColor: theme.colorScheme.surfaceVariant,
+            backgroundColor: theme.colorScheme.surfaceContainerHighest,
             valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
           ),
         ],
@@ -288,7 +288,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Text(
               'Select all that apply. We\'ll prioritize relevant features.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
               ),
             ),
             const SizedBox(height: 32),
@@ -352,7 +352,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               Text(
                                 goal['description']!,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
                                 ),
                               ),
                             ],
@@ -363,7 +363,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -391,9 +391,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              subtitle,
+              'subtitle',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
               ),
             ),
             const SizedBox(height: 32),
@@ -425,7 +425,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           decoration: BoxDecoration(
                             color: isSelected 
                                 ? Theme.of(context).colorScheme.primary 
-                                : Theme.of(context).colorScheme.surfaceVariant,
+                                : Theme.of(context).colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -453,7 +453,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               Text(
                                 option['description']!,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                  color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
                                 ),
                               ),
                             ],
@@ -469,7 +469,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

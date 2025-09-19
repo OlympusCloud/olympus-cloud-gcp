@@ -27,7 +27,6 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
   final _businessNameController = TextEditingController();
   final _businessDescriptionController = TextEditingController();
   String _selectedBusinessType = 'restaurant';
-  String _selectedIndustry = 'food_service';
   String _selectedBusinessSize = 'small';
   
   // Location information
@@ -38,7 +37,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
   final _countryController = TextEditingController(text: 'United States');
   
   // Operating hours
-  Map<String, Map<String, String>> _operatingHours = {
+  final Map<String, Map<String, String>> _operatingHours = {
     'monday': {'open': '09:00', 'close': '17:00', 'closed': 'false'},
     'tuesday': {'open': '09:00', 'close': '17:00', 'closed': 'false'},
     'wednesday': {'open': '09:00', 'close': '17:00', 'closed': 'false'},
@@ -49,7 +48,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
   };
   
   // Features and preferences
-  Set<String> _selectedFeatures = {};
+  final Set<String> _selectedFeatures = {};
   bool _enableAnalytics = true;
   bool _enableNotifications = true;
   bool _enableIntegrations = false;
@@ -149,7 +148,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
             preferredSize: const Size.fromHeight(8),
             child: LinearProgressIndicator(
               value: (_currentStep + 1) / 5,
-              backgroundColor: theme.colorScheme.surfaceVariant,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
               valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
             ),
           ),
@@ -202,9 +201,9 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
               color: isActive 
-                  ? theme.colorScheme.primary.withOpacity(0.1)
+                  ? theme.colorScheme.primary.withAlpha(25)
                   : isCompleted 
-                      ? theme.colorScheme.primary.withOpacity(0.05)
+                      ? theme.colorScheme.primary.withAlpha(12)
                       : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
@@ -220,7 +219,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
                   isCompleted ? Icons.check_circle : _getStepIcon(index),
                   color: isActive || isCompleted 
                       ? theme.colorScheme.primary 
-                      : theme.colorScheme.onSurfaceVariant,
+                      : theme.colorScheme.onSurface,
                   size: 20,
                 ),
                 const SizedBox(height: 4),
@@ -229,7 +228,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: isActive || isCompleted 
                         ? theme.colorScheme.primary 
-                        : theme.colorScheme.onSurfaceVariant,
+                        : theme.colorScheme.onSurface,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   ),
                   textAlign: TextAlign.center,
@@ -281,7 +280,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
             Text(
               'This information helps us customize the experience for your industry and business type.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
               ),
             ),
             const SizedBox(height: 32),
@@ -367,7 +366,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
           Text(
             'This helps us provide location-specific features and comply with local regulations.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
             ),
           ),
           const SizedBox(height: 32),
@@ -453,7 +452,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
           Text(
             'Set your operating hours to help customers know when you\'re available.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
             ),
           ),
           const SizedBox(height: 32),
@@ -575,7 +574,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
           Text(
             'Select the features you\'d like to enable. You can always change these later.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
             ),
           ),
           const SizedBox(height: 32),
@@ -597,7 +596,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
                 });
               },
             );
-          }).toList(),
+          }),
           
           const SizedBox(height: 32),
           
@@ -661,7 +660,7 @@ class _BusinessSetupWizardState extends ConsumerState<BusinessSetupWizard> {
           Text(
             'Review your information and click "Complete Setup" to finish.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
             ),
           ),
           const SizedBox(height: 32),

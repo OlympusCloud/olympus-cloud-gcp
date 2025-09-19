@@ -215,7 +215,7 @@ class AppTheme {
         backgroundColor: _primaryColor,
         foregroundColor: Colors.white,
         elevation: 2,
-        shadowColor: _primaryColor.withOpacity(0.3),
+        shadowColor: _primaryColor.withAlpha(77),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -310,7 +310,7 @@ class AppTheme {
   static CardThemeData _getCardTheme(Brightness brightness) {
     return CardThemeData(
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withAlpha(25),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),

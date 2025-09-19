@@ -328,7 +328,7 @@ class AdaptiveNavigation extends StatelessWidget {
         color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withAlpha(25),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),

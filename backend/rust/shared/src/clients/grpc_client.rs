@@ -136,10 +136,7 @@ impl GrpcRetry for GrpcClient {
                 Err(status) => {
                     error!("gRPC request failed: {}", status);
                     let status_code = status.code();
-<<<<<<< HEAD
-=======
                     last_error = Some(status);
->>>>>>> origin/main
 
                     if !matches!(
                         status_code,

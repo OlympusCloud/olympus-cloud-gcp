@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/data/models/user.dart';
 import '../constants/app_constants.dart';
-import 'api_service.dart';
 import 'storage_service.dart';
 
 /// Authentication service provider

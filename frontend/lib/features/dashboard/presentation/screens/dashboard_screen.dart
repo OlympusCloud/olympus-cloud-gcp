@@ -83,7 +83,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withAlpha(25),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -108,7 +108,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               Text(
                 'Restaurant', // TODO: Get from user data
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withAlpha(153),
                 ),
               ),
             ],
@@ -246,7 +246,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   Text(
                     "Here's what's happening with your business today",
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withAlpha(178),
                     ),
                   ),
                 ],
@@ -345,7 +345,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   decoration: BoxDecoration(
                     color: (isPositive 
                         ? Colors.green 
-                        : Colors.red).withOpacity(0.1),
+                        : Colors.red).withAlpha(25),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -368,7 +368,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             Text(
               title,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withAlpha(153),
               ),
             ),
           ],
@@ -433,7 +433,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  color: theme.colorScheme.primary.withAlpha(25),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -453,7 +453,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               Text(
                 subtitle,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withAlpha(153),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -519,7 +519,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary.withOpacity(0.1),
+          color: theme.colorScheme.primary.withAlpha(25),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(

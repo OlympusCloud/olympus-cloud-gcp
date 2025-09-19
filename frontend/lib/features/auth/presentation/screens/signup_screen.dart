@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/router/app_router.dart';
-import '../../../../core/auth/auth_controlle          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurface.withAlpha(179),
-          ),art';
-import '../../../../core/network/api_client.dart';
-import '../../../../shared/presentation/widgets/adaptive_layout.dart';
-import '../../../../shared/presentation/widgets                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(153),
-                ),sponsive_form.dart';
+import 'package:frontend/core/auth/auth_controller.dart';
+import 'package:frontend/core/network/api_client.dart';
+import 'package:frontend/core/router/app_router.dart';
+import 'package:frontend/shared/presentation/widgets/adaptive_layout.dart';
+import 'package:frontend/shared/presentation/widgets/responsive_form.dart';
 
 /// Sign up screen for new user registration
 class SignupScreen extends ConsumerStatefulWidget {
@@ -194,7 +190,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         Text(
           'Transform your business with AI-powered management',
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onBackground.withOpacity(0.7),
+            color: theme.colorScheme.onSurface.withAlpha(178),
           ),
           textAlign: TextAlign.center,
         ),
@@ -496,7 +492,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               child: Text(
                 'Or sign up with',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withAlpha(153),
                 ),
               ),
             ),
@@ -557,7 +553,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           onPressed: () {
             AppRouter.goBack();
           },
-          child: const Text('Sign In'),
+          child: Text(
+            'Login',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ],
     );

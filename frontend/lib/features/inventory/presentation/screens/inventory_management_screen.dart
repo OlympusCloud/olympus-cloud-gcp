@@ -34,7 +34,6 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final productsAsync = ref.watch(productsProvider);
     final activeProducts = ref.watch(activeProductsProvider);
     final lowStockProducts = ref.watch(lowStockProductsProvider);
     final outOfStockProducts = ref.watch(outOfStockProductsProvider);
@@ -50,7 +49,7 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
           controller: _tabController,
           indicatorColor: theme.colorScheme.primary,
           labelColor: theme.colorScheme.primary,
-          unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          unselectedLabelColor: theme.colorScheme.onSurface.withAlpha(153),
           tabs: [
             Tab(
               text: 'All (${activeProducts.length})',
@@ -115,7 +114,7 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
               color: theme.colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: theme.shadowColor.withValues(alpha: 0.1),
+                  color: theme.shadowColor.withAlpha(26),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -225,9 +224,9 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withAlpha(26),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withAlpha(77)),
       ),
       child: Column(
         children: [
@@ -243,7 +242,7 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
           Text(
             title,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              color: theme.colorScheme.onSurface.withAlpha(179),
             ),
           ),
         ],
@@ -260,13 +259,13 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
             Icon(
               Icons.inventory_2_outlined,
               size: 64,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
             ),
             const SizedBox(height: 16),
             Text(
               emptyMessage,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(179),
               ),
             ),
           ],
@@ -311,7 +310,7 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
                     child: Text(
                       product.name,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -342,7 +341,7 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.1),
+                          color: statusColor.withAlpha(26),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: statusColor),
                         ),
@@ -366,13 +365,13 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
                     Icon(
                       Icons.qr_code,
                       size: 16,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      color: theme.colorScheme.onSurface.withAlpha(153),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'SKU: ${product.sku}',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                        color: theme.colorScheme.onSurface.withAlpha(204),
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -405,7 +404,7 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
                       '\$${product.pricing.salePrice!.toStringAsFixed(2)}',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         decoration: TextDecoration.lineThrough,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurface.withAlpha(153),
                       ),
                     ),
                   ],
@@ -660,7 +659,6 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
               ),
               items: [
                 const DropdownMenuItem<ProductCategory?>(
-                  value: null,
                   child: Text('All Categories'),
                 ),
                 ...ProductCategory.values.map((category) => DropdownMenuItem(
@@ -681,7 +679,6 @@ class _InventoryManagementScreenState extends ConsumerState<InventoryManagementS
               ),
               items: [
                 const DropdownMenuItem<ProductStatus?>(
-                  value: null,
                   child: Text('All Statuses'),
                 ),
                 ...ProductStatus.values.map((status) => DropdownMenuItem(
@@ -807,7 +804,7 @@ class ProductDetailsDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(product.status).withValues(alpha: 0.1),
+                    color: _getStatusColor(product.status).withAlpha(26),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: _getStatusColor(product.status)),
                   ),
@@ -1316,19 +1313,31 @@ class _StockAdjustmentDialogState extends ConsumerState<StockAdjustmentDialog> {
             Row(
               children: [
                 Expanded(
-                  child: RadioListTile<bool>(
-                    title: const Text('Add'),
-                    value: true,
-                    groupValue: _isAddition,
-                    onChanged: (value) => setState(() => _isAddition = value ?? true),
+                  child: InkWell(
+                    onTap: () => setState(() => _isAddition = true),
+                    child: Row(
+                      children: [
+                        Radio<bool>(
+                          value: true,
+                          onChanged: (value) => setState(() => _isAddition = value ?? true),
+                        ),
+                        const Text('Add'),
+                      ],
+                    ),
                   ),
                 ),
                 Expanded(
-                  child: RadioListTile<bool>(
-                    title: const Text('Remove'),
-                    value: false,
-                    groupValue: _isAddition,
-                    onChanged: (value) => setState(() => _isAddition = value ?? true),
+                  child: InkWell(
+                    onTap: () => setState(() => _isAddition = false),
+                    child: Row(
+                      children: [
+                        Radio<bool>(
+                          value: false,
+                          onChanged: (value) => setState(() => _isAddition = value ?? true),
+                        ),
+                        const Text('Remove'),
+                      ],
+                    ),
                   ),
                 ),
               ],

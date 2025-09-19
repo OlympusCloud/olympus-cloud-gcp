@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/inventory/presentation/screens/inventory_management_screen.dart';
+import 'package:frontend/features/inventory/models/product.dart'; 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/inventory/presentation/screens/inventory_management_screen.dart';
 import 'package:frontend/features/inventory/models/product.dart';
 import 'package:frontend/features/inventory/providers/products_provider.dart';
 

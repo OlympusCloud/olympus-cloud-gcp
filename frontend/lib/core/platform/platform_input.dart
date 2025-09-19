@@ -148,7 +148,7 @@ class PlatformInput {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(uiConstants.borderRadius),
         borderSide: BorderSide(
-          color: theme.colorScheme.outline.withOpacity(0.5),
+          color: theme.colorScheme.outline.withAlpha(128),
           width: 1.0,
         ),
       ),

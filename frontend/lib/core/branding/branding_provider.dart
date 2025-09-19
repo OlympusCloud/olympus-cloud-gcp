@@ -50,7 +50,7 @@ class BrandingNotifier extends StateNotifier<IndustryBranding> {
   }
 
   /// Update text theme for brightness changes (deprecated - theme handles this)
-  @deprecated
+  @Deprecated('Theme provider now handles brightness changes automatically.')
   void updateTextTheme(Brightness brightness) {
     // No longer needed - theme provider handles brightness changes
   }

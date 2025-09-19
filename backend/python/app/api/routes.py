@@ -258,11 +258,6 @@ async def get_cohort_analytics(
         "month",
         description="Granularity for cohort grouping",
     ),
-<<<<<<< HEAD
-    periods: int = Query(6, ge=1, le=12, description="Number of retention periods"),
-    start_date: Optional[date] = Query(None, description="Optional custom start date"),
-    end_date: Optional[date] = Query(None, description="Optional custom end date"),
-=======
     periods: int = Query(
         6,
         ge=1,
@@ -277,7 +272,6 @@ async def get_cohort_analytics(
         None,
         description="Optional custom end date",
     ),
->>>>>>> origin/main
     cohort_service: CohortAnalyticsService = Depends(get_cohort_service),
 ) -> CohortAnalyticsResponse:
     """Return customer cohort retention metrics."""

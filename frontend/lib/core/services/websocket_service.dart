@@ -56,10 +56,7 @@ class WebSocketService {
 
       // Start heartbeat
       _startHeartbeat();
-
-      print('WebSocket connected successfully');
     } catch (e) {
-      print('WebSocket connection failed: $e');
       _isConnected = false;
       _connectionStatusController.add(ConnectionStatus.disconnected);
       _scheduleReconnect();
@@ -77,8 +74,6 @@ class WebSocketService {
     
     _isConnected = false;
     _connectionStatusController.add(ConnectionStatus.disconnected);
-    
-    print('WebSocket disconnected');
   }
 
   /// Send a message through WebSocket
@@ -86,8 +81,6 @@ class WebSocketService {
     if (_isConnected && _channel != null) {
       final jsonMessage = json.encode(message);
       _channel!.sink.add(jsonMessage);
-    } else {
-      print('Cannot send message: WebSocket not connected');
     }
   }
 
@@ -111,16 +104,16 @@ class WebSocketService {
           // Heartbeat response - connection is alive
           break;
         default:
-          print('Unknown message type: $type');
+          // print('Unknown message type: $type');
       }
     } catch (e) {
-      print('Error parsing WebSocket message: $e');
+      // print('Error parsing WebSocket message: $e');
     }
   }
 
   /// Handle WebSocket errors
-  static void _handleError(error) {
-    print('WebSocket error: $error');
+  static void _handleError(dynamic error) {
+    // print('WebSocket error: $error');
     _isConnected = false;
     _connectionStatusController.add(ConnectionStatus.error);
     _scheduleReconnect();
@@ -128,7 +121,7 @@ class WebSocketService {
 
   /// Handle WebSocket disconnection
   static void _handleDisconnection() {
-    print('WebSocket disconnected');
+    // print('WebSocket disconnected');
     _isConnected = false;
     _connectionStatusController.add(ConnectionStatus.disconnected);
     _stopHeartbeat();
@@ -163,7 +156,7 @@ class WebSocketService {
     _connectionStatusController.add(ConnectionStatus.reconnecting);
     
     _reconnectTimer = Timer(_reconnectDelay, () {
-      print('Attempting to reconnect... (attempt $_reconnectAttempts)');
+      // print('Attempting to reconnect... (attempt $_reconnectAttempts)');
       connect();
     });
   }

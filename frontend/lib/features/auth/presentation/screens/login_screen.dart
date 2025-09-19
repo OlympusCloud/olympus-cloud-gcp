@@ -123,7 +123,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
 
     return AdaptiveLayout(
       child: Scaffold(
@@ -182,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withAlpha(25),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Icon(
@@ -207,7 +206,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         Text(
           'Sign in to continue to your business dashboard',
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onBackground.withOpacity(0.7),
+            color: theme.colorScheme.onSurface.withAlpha(178),
           ),
           textAlign: TextAlign.center,
         ),
@@ -348,7 +347,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 );
               },
-              child: const Text('Forgot password?'),
+              child: Text(
+                'Forgot Password?',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.secondary.withAlpha(204),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
           
@@ -384,7 +389,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Text(
                 'Or continue with',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.6),
+                  color: theme.colorScheme.onSurface.withAlpha(153),
                 ),
               ),
             ),
@@ -445,7 +450,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           onPressed: () {
             AppRouter.navigateToNamed(RouteNames.signup);
           },
-          child: const Text('Sign Up'),
+          child: Text(
+            'Sign Up',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ],
     );
@@ -459,7 +470,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Text(
         'Need help? Contact support',
         style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onBackground.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withAlpha(153),
         ),
       ),
     );

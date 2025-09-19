@@ -134,7 +134,7 @@ class AuthController extends _$AuthController {
       await _authApi.logout();
     } catch (e) {
       // Continue with logout even if API call fails
-      print('Logout API call failed: $e');
+      // print('Logout API call failed: $e');
     }
     
     // Clear local storage

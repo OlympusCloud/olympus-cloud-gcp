@@ -45,7 +45,6 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isDesktop = size.width > 1200;
     final isTablet = size.width > 800 && size.width <= 1200;
     final isMobile = size.width <= 800;
 
@@ -80,7 +79,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withAlpha(13),
                     blurRadius: 10,
                     offset: const Offset(2, 0),
                   ),
@@ -187,7 +186,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
                       Text(
                         branding.tagline,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          color: theme.colorScheme.onSurface.withAlpha(178),
                         ),
                       ),
                     ],
@@ -215,10 +214,10 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: branding.primaryColor.withOpacity(0.1),
+                color: branding.primaryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: branding.primaryColor.withOpacity(0.2),
+                  color: branding.primaryColor.withAlpha(51),
                 ),
               ),
               child: Row(
@@ -271,7 +270,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
             duration: const Duration(milliseconds: 200),
             child: ListTile(
               selected: isSelected,
-              selectedTileColor: branding.primaryColor.withOpacity(0.1),
+              selectedTileColor: branding.primaryColor.withAlpha(25),
               selectedColor: branding.primaryColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -285,7 +284,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
                 size: 24,
                 color: isSelected 
                     ? branding.primaryColor 
-                    : theme.colorScheme.onSurface.withOpacity(0.7),
+                    : theme.colorScheme.onSurface.withAlpha(178),
               ),
               title: isExpanded 
                   ? Text(
@@ -318,7 +317,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                color: theme.colorScheme.surfaceContainerHighest.withAlpha(76),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -348,7 +347,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
                         Text(
                           user.email,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                            color: theme.colorScheme.onSurface.withAlpha(178),
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -430,7 +429,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       selectedItemColor: branding.primaryColor,
-      unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
+      unselectedItemColor: theme.colorScheme.onSurface.withAlpha(153),
       currentIndex: _getSelectedBottomNavIndex(bottomNavItems),
       onTap: (index) => _navigateToItem(bottomNavItems[index]),
       items: bottomNavItems.map((item) {
@@ -490,7 +489,7 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
                 Text(
                   branding.tagline,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withAlpha(230),
                   ),
                 ),
                 const Spacer(),
@@ -534,12 +533,12 @@ class _RestaurantNavigationLayoutState extends ConsumerState<RestaurantNavigatio
                 
                 return ListTile(
                   selected: isSelected,
-                  selectedTileColor: branding.primaryColor.withOpacity(0.1),
+                  selectedTileColor: branding.primaryColor.withAlpha(25),
                   leading: Icon(
                     item.icon,
                     color: isSelected 
                         ? branding.primaryColor 
-                        : theme.colorScheme.onSurface.withOpacity(0.7),
+                        : theme.colorScheme.onSurface.withAlpha(178),
                   ),
                   title: Text(
                     item.label,

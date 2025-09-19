@@ -234,8 +234,6 @@ class CohortAnalyticsResponse(BaseModel):
     processing_time_ms: float
     data_freshness: str  # "real-time", "5 minutes ago", etc.
     cache_hit: bool = False
-<<<<<<< HEAD
-
 class CohortPeriodMetrics(BaseModel):
     """Metrics for a single retention period within a cohort."""
 
@@ -265,5 +263,3 @@ class CohortAnalyticsResponse(BaseModel):
     average_retention_rate: float = Field(ge=0.0, le=1.0)
     best_cohort: Optional[str] = None
     period_labels: List[str] = Field(default_factory=list)
-=======
->>>>>>> origin/main

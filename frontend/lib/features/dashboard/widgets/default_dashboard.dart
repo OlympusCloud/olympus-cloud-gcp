@@ -302,7 +302,7 @@ class DefaultDashboard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withAlpha((255 * 0.1).round()),
+                color: Colors.blue.withAlpha(51),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: Colors.blue, size: 24),
@@ -409,7 +409,7 @@ class DefaultDashboard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.grey.withAlpha((255 * 0.1).round()),
+                color: Colors.grey.withAlpha(26),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: Colors.grey[700], size: 20),
@@ -547,8 +547,8 @@ class DefaultDashboard extends ConsumerWidget {
                               text = '';
                               break;
                           }
-                          return SideTitleWidget(
-                            space: 4.0,
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
                             child: Text(text, style: style),
                           );
                         },
