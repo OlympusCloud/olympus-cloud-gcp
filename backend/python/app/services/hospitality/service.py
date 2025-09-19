@@ -204,6 +204,12 @@ class HospitalityService:
             for row in room_rows
         ]
 
+        housekeeping_total_tasks = sum(item.tasks_completed + item.overdue_tasks for item in housekeeping_summaries)
+        housekeeping_completion = self._safe_div(
+            sum(item.tasks_completed for item in housekeeping_summaries),
+            housekeeping_total_tasks,
+        ) if housekeeping_total_tasks else 0.0
+
         return HospitalityAnalytics(
             tenant_id=UUID(tenant_id),
             location_id=UUID(location_id) if location_id else None,
@@ -220,12 +226,7 @@ class HospitalityService:
             upcoming_check_ins=upcoming_checkins,
             upcoming_check_outs=upcoming_checkouts,
             service_request_volume=sum(item.total_requests for item in service_summaries),
-            housekeeping_completion_rate=self._clamp_rate(
-                self._safe_div(
-                    sum(item.tasks_completed for item in housekeeping_summaries),
-                    sum(item.tasks_completed + item.overdue_tasks for item in housekeeping_summaries) or 0,
-                )
-            ),
+            housekeeping_completion_rate=self._clamp_rate(housekeeping_completion),
             top_rooms=room_performance,
             service_requests=service_summaries,
             housekeeping=housekeeping_summaries,

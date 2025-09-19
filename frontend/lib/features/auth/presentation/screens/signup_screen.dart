@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/auth/auth_controller.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../shared/presentation/widgets/adaptive_layout.dart';
 import '../../../../shared/presentation/widgets/responsive_form.dart';
 
@@ -54,28 +56,46 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Implement user registration with Rust backend
-      // final result = await ref.read(authServiceProvider).register(
-      //   firstName: _firstNameController.text.trim(),
-      //   lastName: _lastNameController.text.trim(),
-      //   email: _emailController.text.trim(),
-      //   password: _passwordController.text,
-      //   businessName: _businessNameController.text.trim(),
-      //   businessType: _selectedBusinessType,
-      // );
-      
-      // Simulate signup for now
-      await Future.delayed(const Duration(seconds: 2));
+      // Use the auth controller to register
+      await ref.read(authControllerProvider.notifier).register(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        // TODO: Handle tenant creation for business
+        // tenantId: _businessTenantId,
+      );
       
       if (mounted) {
-        // Navigate to business setup
-        AppRouter.navigateToNamedAndClearStack(RouteNames.businessSetup);
+        // Navigate to onboarding to set up business details
+        AppRouter.navigateToNamedAndClearStack(RouteNames.onboarding);
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Registration failed';
+        
+        // Handle specific API exceptions
+        if (e is ApiException) {
+          switch (e.type) {
+            case ApiExceptionType.badRequest:
+              errorMessage = e.message.contains('email') 
+                  ? 'Email already exists' 
+                  : e.message;
+              break;
+            case ApiExceptionType.network:
+              errorMessage = 'Network error. Please check your connection.';
+              break;
+            case ApiExceptionType.timeout:
+              errorMessage = 'Request timed out. Please try again.';
+              break;
+            default:
+              errorMessage = e.message;
+          }
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Registration failed: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

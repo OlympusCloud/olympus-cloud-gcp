@@ -2,6 +2,16 @@ use std::sync::Arc;
 use tokio;
 use tracing_subscriber;
 
+mod batch;
+mod cache;
+mod compression;
+mod config;
+mod graphql;
+mod health;
+mod security;
+mod versioning;
+mod websocket;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing

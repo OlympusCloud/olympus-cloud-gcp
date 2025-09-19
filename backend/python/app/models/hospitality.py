@@ -60,7 +60,6 @@ class HospitalityAnalytics(BaseModel):
     location_id: Optional[UUID]
     generated_at: datetime
 
-    # Core KPIs
     occupancy_rate: float = Field(ge=0.0, le=1.0)
     average_daily_rate: float
     revenue_per_available_room: float
@@ -70,14 +69,12 @@ class HospitalityAnalytics(BaseModel):
     cancellations: int
     guest_satisfaction_score: float = Field(ge=0.0, le=5.0)
 
-    # Operational metrics
     average_stay_length: float
     upcoming_check_ins: int
     upcoming_check_outs: int
     service_request_volume: int
     housekeeping_completion_rate: float = Field(ge=0.0, le=1.0)
 
-    # Detailed breakdowns
     top_rooms: List[RoomPerformance] = Field(default_factory=list)
     service_requests: List[ServiceRequestSummary] = Field(default_factory=list)
     housekeeping: List[HousekeepingSummary] = Field(default_factory=list)

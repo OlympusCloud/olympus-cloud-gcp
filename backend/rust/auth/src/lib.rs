@@ -1,9 +1,18 @@
 pub mod config;
 pub mod error;
+pub mod event_handlers;
 pub mod handlers;
 pub mod middleware;
 pub mod models;
 pub mod services;
+
+// Re-export event handlers for easy access
+pub use event_handlers::{
+    UserAuthenticationHandler,
+    SecurityEventHandler,
+    AuthAuditLogHandler,
+    AuthEventHandlerFactory,
+};
 
 use axum::{
     routing::{get, post},
