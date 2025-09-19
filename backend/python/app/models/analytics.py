@@ -14,6 +14,9 @@ class AnalyticsTimeframe(str, Enum):
     THIS_MONTH = "this_month"
     LAST_MONTH = "last_month"
     YEAR_TO_DATE = "year_to_date"
+    THIS_QUARTER = "this_quarter"
+    THIS_YEAR = "this_year"
+    CUSTOM = "custom"
 
 
 class AnalyticsMetrics(BaseModel):

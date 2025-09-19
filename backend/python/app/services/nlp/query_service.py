@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, Optional
 
 from app.core.logging import logger
-from app.models.nlp import NLPQueryInterpretation
+from app.models.nlp import NLPInterpretation
 
 _METRIC_KEYWORDS: dict[str, tuple[str, ...]] = {
     "revenue": ("revenue", "sales", "income", "turnover"),
@@ -26,20 +26,15 @@ _TIMEFRAME_KEYWORDS: dict[str, tuple[str, ...]] = {
 _GROUP_BY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "location": ("by location", "per location", "each store", "each location"),
     "channel": ("by channel", "per channel", "each channel"),
-    "product": ("by product", "per product", "each product", "sku"),
+    "product": ("product", "products", "by product", "per product", "each product", "sku"),
 }
 
 
 class NaturalLanguageQueryService:
     """Translate natural language analytics questions into structured queries."""
 
-    async def interpret(self, query: str) -> NLPQueryInterpretation:
-        """Return a lightweight interpretation of the query.
-
-        This heuristic approach identifies the metric, timeframe, and grouping requests
-        so downstream services can respond while a full NLP pipeline is under
-        construction.
-        """
+    async def interpret(self, query: str) -> dict[str, Any]:
+        """Return a lightweight interpretation of the query."""
 
         logger.info("analytics.nlp.interpret", extra={"query": query})
         normalized = query.lower()
@@ -59,7 +54,7 @@ class NaturalLanguageQueryService:
             confidence += 0.1
         confidence = min(confidence, 0.95)
 
-        return NLPQueryInterpretation(
+        interpretation = NLPInterpretation(
             intent=intent,
             metric=metric,
             timeframe=timeframe,
@@ -68,6 +63,8 @@ class NaturalLanguageQueryService:
             confidence=round(confidence, 2),
             raw=query,
         )
+
+        return interpretation.model_dump()
 
     def _detect_metric(self, text: str) -> str:
         for metric, keywords in _METRIC_KEYWORDS.items():
@@ -88,8 +85,8 @@ class NaturalLanguageQueryService:
                 groups.append(group)
         return groups
 
-    def _detect_limit(self, text: str) -> int | None:
-        match = re.search(r"top\\s+(\\d+)", text)
+    def _detect_limit(self, text: str) -> Optional[int]:
+        match = re.search(r"top\s+(\d+)", text)
         if match:
             return int(match.group(1))
         return None

@@ -1,20 +1,21 @@
 # Python Business Logic - OpenAI Codex Agent
 
 ## Overview
-This service delivers Olympus Cloud's analytics, AI/ML, and natural language experiences. It aggregates operational data, powers dashboards, and interprets conversational queries for decision makers.
+This is the Python service responsible for analytics, AI/ML capabilities, natural language processing, and business intelligence features.
 
 ## Owner
-**OpenAI Codex** – Python business logic & analytics
+**OpenAI Codex** - Responsible for Python business logic and analytics
 
 ## Features
-- Real-time analytics pipelines
-- Natural language query interpretation
-- Recommendation and forecasting foundations
-- BigQuery data warehousing integrations
-- Event-driven architecture (Redis pub/sub)
-- Async PostgreSQL access with SQLAlchemy
+- Real-time analytics engine
+- Natural language processing
+- Recommendation system
+- Predictive analytics
+- BigQuery integration
+- Event-driven analytics
 
 ## Quick Start
+
 ```bash
 # Create virtual environment
 python3 -m venv venv
@@ -26,35 +27,35 @@ pip install -r requirements.txt
 # Run in development
 uvicorn main:app --reload --port 8001
 
-# Run tests (ensure pytest is installed)
+# Run tests (ensure pytest is installed in your environment)
 python -m pytest
 ```
 
 ## Service Ports
-- **Python Analytics API**: 8001
-- **OpenAPI docs**: 8001/docs
+- **Python Analytics**: 8001
+- **API Docs**: 8001/docs
 
 ## Integration Points
-- **PostgreSQL** via async SQLAlchemy engine (operational analytics)
-- **BigQuery** for warehousing and long-term analytics
-- **Redis** pub/sub for domain event ingestion
-- **Go API Gateway** (port 8080) as upstream consumer
+- **PostgreSQL**: Direct connection for analytics queries
+- **BigQuery**: Data warehousing and batch analytics
+- **Redis**: Subscribe to domain events
+- **Go API Gateway**: Receives forwarded analytics requests
 
 ## Directory Structure
 ```
 backend/python/
 ├── app/
-│   ├── api/               # API routers and dependency wiring
-│   ├── core/              # Config, logging, lifespan, database helpers
-│   ├── models/            # Pydantic schemas (events, DTOs)
-│   ├── services/          # Business logic modules
-│   │   ├── analytics/     # Metric aggregation & BigQuery helpers
-│   │   ├── events/        # Redis subscriber orchestration
-│   │   ├── ml/            # ML & forecasting pipelines (future)
-│   │   └── nlp/           # Natural language query service
-│   └── utils/             # Shared utilities (placeholder)
-├── tests/                # Async API and service tests
-├── main.py               # FastAPI entry point
+│   ├── api/               # API endpoints (e.g. /api/health)
+│   ├── core/              # Configuration, logging, lifespan management
+│   ├── models/            # Pydantic models and schemas
+│   ├── services/          # Business logic
+│   │   ├── analytics/     # Analytics engine and BigQuery helpers
+│   │   ├── events/        # Redis event subscribers
+│   │   ├── ml/            # Machine learning pipelines
+│   │   └── nlp/           # Natural language services
+│   └── utils/             # Shared utilities
+├── tests/                # Async API tests
+├── main.py              # FastAPI entry point
 └── requirements.txt
 ```
 
@@ -74,9 +75,6 @@ OPENAI_API_KEY=your-api-key
 - `events.payment.processed` – Revenue tracking
 - `events.inventory.updated` – Stock health monitoring
 
-## Analytics Dashboard Filters
-- `GET /api/analytics/dashboard/{tenant_id}?timeframe=` supports `all_time`, `today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `year_to_date`.
-
 ## Current Implementation Highlights
 - Modular FastAPI application with shared startup/shutdown lifecycle
 - Redis pub/sub subscriber wiring analytics processor
@@ -87,9 +85,9 @@ OPENAI_API_KEY=your-api-key
 - `/api/health` endpoint exposing runtime status including Redis connectivity
 
 ## Next Steps for OpenAI Codex
-1. Model concrete analytics schemas and persistence strategy
-2. Persist events in PostgreSQL and stream to BigQuery for warehousing
-3. Expand Redis processing pipelines with background workers
-4. Integrate Vertex AI / OpenAI for advanced NLP interpretation
-5. Implement recommendation and forecasting services
-6. Add integration tests covering event ingestion and cross-service flows
+1. Expand analytics data models with concrete schema mappings
+2. Persist and aggregate events inside PostgreSQL and BigQuery
+3. Implement Redis event handler pipelines and background tasks
+4. Build NLP service for natural language queries
+5. Create recommendation engine foundation
+6. Add integration tests covering event ingestion and analytics APIs
