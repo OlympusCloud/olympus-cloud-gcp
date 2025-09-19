@@ -11,9 +11,12 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
+use sqlx::Type;
 
 /// Table status in a restaurant
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum TableStatus {
     Available,
     Occupied,
@@ -69,7 +72,9 @@ pub struct OrderItemModifier {
 }
 
 /// Type of modifier
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum ModifierType {
     Addition,
     Removal,
@@ -79,7 +84,9 @@ pub enum ModifierType {
 }
 
 /// Kitchen status for order items
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum KitchenStatus {
     Pending,
     InPreparation,
@@ -118,7 +125,9 @@ pub struct RestaurantOrder {
 }
 
 /// Type of restaurant order
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum RestaurantOrderType {
     DineIn,
     Takeout,
@@ -127,7 +136,9 @@ pub enum RestaurantOrderType {
 }
 
 /// Restaurant-specific order status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum RestaurantOrderStatus {
     Open,
     Fired,        // Sent to kitchen
@@ -139,7 +150,9 @@ pub enum RestaurantOrderStatus {
 }
 
 /// Payment status
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum PaymentStatus {
     Pending,
     PartiallyPaid,
@@ -167,12 +180,14 @@ pub struct KitchenDisplayItem {
 }
 
 /// Priority level for kitchen items
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Type)]
+#[sqlx(type_name = "text")]
+#[sqlx(rename_all = "PascalCase")]
 pub enum KitchenPriority {
-    Low = 0,
-    Normal = 1,
-    High = 2,
-    Rush = 3,
+    Low,
+    Normal,
+    High,
+    Rush,
 }
 
 /// Request to update table status

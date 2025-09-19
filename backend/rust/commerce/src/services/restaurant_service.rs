@@ -397,10 +397,10 @@ impl RestaurantService {
                 oi.name as item_name,
                 oi.quantity,
                 oi.special_instructions,
-                oi.kitchen_status as "kitchen_status: KitchenStatus",
+                oi.kitchen_status,
                 o.created_at as ordered_at,
                 oi.fired_at,
-                oi.ready_at + INTERVAL '15 minutes' as estimated_ready_time
+                COALESCE(oi.ready_at, o.created_at + INTERVAL '15 minutes') as estimated_ready_time
             FROM commerce.restaurant_orders o
             JOIN commerce.restaurant_order_items oi ON o.id = oi.order_id
             LEFT JOIN commerce.restaurant_tables t ON o.table_id = t.id
@@ -418,20 +418,31 @@ impl RestaurantService {
 
         let display_items = items
             .into_iter()
-            .map(|row| KitchenDisplayItem {
-                order_id: row.order_id,
-                order_number: row.order_number,
-                table_number: row.table_number,
-                item_id: row.item_id,
-                item_name: row.item_name,
-                quantity: row.quantity,
-                modifiers: vec![], // Would be loaded from modifiers table
-                special_instructions: row.special_instructions,
-                status: row.kitchen_status,
-                ordered_at: row.ordered_at,
-                fired_at: row.fired_at,
-                estimated_ready_time: row.estimated_ready_time,
-                priority: KitchenPriority::Normal, // Would be calculated based on timing
+            .map(|row| {
+                let status = match row.kitchen_status.as_str() {
+                    "Pending" => KitchenStatus::Pending,
+                    "InPreparation" => KitchenStatus::InPreparation,
+                    "Ready" => KitchenStatus::Ready,
+                    "Served" => KitchenStatus::Served,
+                    "Cancelled" => KitchenStatus::Cancelled,
+                    _ => KitchenStatus::Pending,
+                };
+
+                KitchenDisplayItem {
+                    order_id: row.order_id,
+                    order_number: row.order_number,
+                    table_number: row.table_number,
+                    item_id: row.item_id,
+                    item_name: row.item_name,
+                    quantity: row.quantity,
+                    modifiers: vec![], // Would be loaded from modifiers table
+                    special_instructions: row.special_instructions,
+                    status,
+                    ordered_at: row.ordered_at,
+                    fired_at: row.fired_at,
+                    estimated_ready_time: row.estimated_ready_time,
+                    priority: KitchenPriority::Normal, // Would be calculated based on timing
+                }
             })
             .collect();
 
@@ -445,6 +456,14 @@ impl RestaurantService {
         item_id: Uuid,
         request: UpdateKitchenStatusRequest,
     ) -> Result<()> {
+        let status_str = match request.status {
+            KitchenStatus::Pending => "Pending",
+            KitchenStatus::InPreparation => "InPreparation",
+            KitchenStatus::Ready => "Ready",
+            KitchenStatus::Served => "Served",
+            KitchenStatus::Cancelled => "Cancelled",
+        };
+
         sqlx::query!(
             r#"
             UPDATE commerce.restaurant_order_items
@@ -460,7 +479,7 @@ impl RestaurantService {
             "#,
             item_id,
             tenant_id,
-            request.status as KitchenStatus
+            status_str
         )
         .execute(&self.db)
         .await?;

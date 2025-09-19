@@ -18,6 +18,9 @@ pub mod simple_handlers;
 #[cfg(test)]
 pub mod tests;
 
+#[cfg(test)]
+pub mod restaurant_integration_test;
+
 use std::sync::Arc;
 use axum::{
     routing::{get, post, put},
