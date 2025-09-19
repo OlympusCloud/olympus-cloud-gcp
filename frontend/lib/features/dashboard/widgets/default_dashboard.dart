@@ -548,7 +548,6 @@ class DefaultDashboard extends ConsumerWidget {
                               break;
                           }
                           return SideTitleWidget(
-                            axisSide: meta.axisSide,
                             space: 4.0,
                             child: Text(text, style: style),
                           );

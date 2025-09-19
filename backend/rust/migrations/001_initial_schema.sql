@@ -256,14 +256,15 @@ CREATE TABLE inventory (
     last_counted_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT unique_inventory UNIQUE(product_id, location_id),
-    CONSTRAINT unique_variant_inventory UNIQUE(variant_id, location_id) WHERE variant_id IS NOT NULL
+    CONSTRAINT unique_inventory UNIQUE(product_id, location_id)
 );
 
 -- Create indexes for inventory
 CREATE INDEX idx_inventory_product ON inventory(product_id);
 CREATE INDEX idx_inventory_location ON inventory(location_id);
 CREATE INDEX idx_inventory_available ON inventory(quantity_available);
+-- Partial unique index for variant inventory
+CREATE UNIQUE INDEX idx_unique_variant_inventory ON inventory(variant_id, location_id) WHERE variant_id IS NOT NULL;
 
 -- Inventory adjustments log
 CREATE TABLE inventory_adjustments (

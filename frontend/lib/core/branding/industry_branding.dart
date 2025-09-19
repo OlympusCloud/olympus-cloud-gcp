@@ -76,7 +76,7 @@ class IndustryBranding {
       // Card theme
       cardTheme: CardThemeData(
         elevation: 2,
-        shadowColor: colorScheme.primary.withOpacity(0.1),
+        shadowColor: colorScheme.primary.withAlpha((255 * 0.1).round()),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -89,7 +89,7 @@ class IndustryBranding {
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
           elevation: 2,
-          shadowColor: colorScheme.primary.withOpacity(0.3),
+          shadowColor: colorScheme.primary.withAlpha((255 * 0.3).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -120,7 +120,7 @@ class IndustryBranding {
           size: 24,
         ),
         unselectedIconTheme: IconThemeData(
-          color: colorScheme.onSurface.withOpacity(0.6),
+          color: colorScheme.onSurface.withAlpha((255 * 0.6).round()),
           size: 24,
         ),
         selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
@@ -128,7 +128,7 @@ class IndustryBranding {
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-          color: colorScheme.onSurface.withOpacity(0.6),
+          color: colorScheme.onSurface.withAlpha((255 * 0.6).round()),
         ),
       ),
 
@@ -136,7 +136,7 @@ class IndustryBranding {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: colorScheme.surface,
         selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
+        unselectedItemColor: colorScheme.onSurface.withAlpha((255 * 0.6).round()),
         selectedLabelStyle: textTheme.labelSmall?.copyWith(
           fontWeight: FontWeight.w600,
         ),
