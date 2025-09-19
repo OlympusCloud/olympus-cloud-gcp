@@ -42,6 +42,9 @@ dotenvy.workspace = true
 async-trait = "0.1"
 futures.workspace = true
 
+# Phase 5 Event System Dependencies
+sha2 = "0.10"  # For event checksums
+
 [dev-dependencies]
 tokio.workspace = true
 rstest.workspace = true

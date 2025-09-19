@@ -10,10 +10,13 @@ from app.api.dependencies import (
     get_analytics_service,
     get_crm_service,
     get_enhanced_analytics_service,
+    get_events_service,
+    get_hospitality_service,
     get_inventory_service,
     get_nlp_service,
     get_recommendation_service,
     get_restaurant_service,
+    get_retail_service,
     get_snapshot_service,
 )
 from app.core.settings import get_settings
@@ -28,6 +31,9 @@ from app.models.inventory import StockMovement
 from app.models.nlp import NLPQueryResponse
 from app.models.recommendations import RecommendationResponse
 from app.models.restaurant import RestaurantAnalytics, RestaurantRecommendation
+from app.models.retail import RetailAnalytics, RetailRecommendation
+from app.models.hospitality import HospitalityAnalytics, HospitalityRecommendation
+from app.models.events_industry import EventsAnalytics, EventsRecommendation
 from app.models.snapshots import (
     MetricsSnapshot,
     SnapshotHistoryRequest,
@@ -41,6 +47,9 @@ from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 from app.services.restaurant.service import RestaurantService
+from app.services.retail.service import RetailService
+from app.services.hospitality.service import HospitalityService
+from app.services.events_industry.service import EventsService
 
 api_router = APIRouter()
 
@@ -401,3 +410,236 @@ async def get_table_status(
 ):
     """Get current table status distribution."""
     return await restaurant_service.get_table_status(tenant_id, location_id)
+
+@api_router.get(
+    "/retail/analytics",
+    tags=["retail"],
+    response_model=RetailAnalytics,
+)
+async def get_retail_analytics(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    date_range: Optional[str] = Query(None, description="Predefined range selector"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
+    to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
+    retail_service: RetailService = Depends(get_retail_service),
+) -> RetailAnalytics:
+    """Return retail analytics including channel and promotion performance."""
+
+    timeframe = _resolve_timeframe(date_range)
+
+    if timeframe == AnalyticsTimeframe.CUSTOM:
+        if not (from_date and to_date):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date and to_date are required when date_range is custom",
+            )
+        if from_date > to_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date must be before or equal to to_date",
+            )
+
+    return await retail_service.get_retail_analytics(
+        tenant_id,
+        timeframe,
+        location_id=location_id,
+        start_date=from_date,
+        end_date=to_date,
+    )
+
+
+@api_router.get(
+    "/retail/promotions",
+    tags=["retail"],
+    response_model=List[RetailRecommendation],
+)
+async def get_retail_recommendations(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    date_range: Optional[str] = Query(None, description="Predefined range selector"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
+    to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
+    retail_service: RetailService = Depends(get_retail_service),
+) -> List[RetailRecommendation]:
+    """Generate retail-specific promotional recommendations."""
+
+    timeframe = _resolve_timeframe(date_range)
+
+    if timeframe == AnalyticsTimeframe.CUSTOM:
+        if not (from_date and to_date):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date and to_date are required when date_range is custom",
+            )
+        if from_date > to_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date must be before or equal to to_date",
+            )
+
+    return await retail_service.generate_promotions(
+        tenant_id,
+        timeframe,
+        location_id=location_id,
+        start_date=from_date,
+        end_date=to_date,
+    )
+
+
+@api_router.get(
+    "/hospitality/analytics",
+    tags=["hospitality"],
+    response_model=HospitalityAnalytics,
+)
+async def get_hospitality_analytics(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    date_range: Optional[str] = Query(None, description="Predefined range selector"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
+    to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
+    hospitality_service: HospitalityService = Depends(get_hospitality_service),
+) -> HospitalityAnalytics:
+    """Return hospitality analytics including room, booking, and service metrics."""
+
+    timeframe = _resolve_timeframe(date_range)
+
+    if timeframe == AnalyticsTimeframe.CUSTOM:
+        if not (from_date and to_date):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date and to_date are required when date_range is custom",
+            )
+        if from_date > to_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date must be before or equal to to_date",
+            )
+
+    return await hospitality_service.get_hospitality_analytics(
+        tenant_id,
+        timeframe,
+        location_id=location_id,
+        start_date=from_date,
+        end_date=to_date,
+    )
+
+
+@api_router.get(
+    "/hospitality/recommendations",
+    tags=["hospitality"],
+    response_model=List[HospitalityRecommendation],
+)
+async def get_hospitality_recommendations(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    date_range: Optional[str] = Query(None, description="Predefined range selector"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
+    to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
+    hospitality_service: HospitalityService = Depends(get_hospitality_service),
+) -> List[HospitalityRecommendation]:
+    """Generate hospitality-specific operational recommendations."""
+
+    timeframe = _resolve_timeframe(date_range)
+
+    if timeframe == AnalyticsTimeframe.CUSTOM:
+        if not (from_date and to_date):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date and to_date are required when date_range is custom",
+            )
+        if from_date > to_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date must be before or equal to to_date",
+            )
+
+    return await hospitality_service.generate_recommendations(
+        tenant_id,
+        timeframe,
+        location_id=location_id,
+        start_date=from_date,
+        end_date=to_date,
+    )
+
+
+@api_router.get(
+    "/events/analytics",
+    tags=["events"],
+    response_model=EventsAnalytics,
+)
+async def get_events_analytics(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    date_range: Optional[str] = Query(None, description="Predefined range selector"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
+    to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
+    events_service: EventsService = Depends(get_events_service),
+) -> EventsAnalytics:
+    """Return events analytics including ticket and vendor performance."""
+
+    timeframe = _resolve_timeframe(date_range)
+
+    if timeframe == AnalyticsTimeframe.CUSTOM:
+        if not (from_date and to_date):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date and to_date are required when date_range is custom",
+            )
+        if from_date > to_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date must be before or equal to to_date",
+            )
+
+    start_dt = datetime.combine(from_date, datetime.min.time()) if from_date else None
+    end_dt = datetime.combine(to_date, datetime.max.time()) if to_date else None
+
+    return await events_service.get_events_analytics(
+        tenant_id,
+        timeframe,
+        location_id=location_id,
+        start_date=start_dt,
+        end_date=end_dt,
+    )
+
+
+@api_router.get(
+    "/events/recommendations",
+    tags=["events"],
+    response_model=List[EventsRecommendation],
+)
+async def get_events_recommendations(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    date_range: Optional[str] = Query(None, description="Predefined range selector"),
+    location_id: Optional[str] = Query(None, description="Optional location filter"),
+    from_date: Optional[date] = Query(None, description="Custom range start (if date_range=custom)"),
+    to_date: Optional[date] = Query(None, description="Custom range end (if date_range=custom)"),
+    events_service: EventsService = Depends(get_events_service),
+) -> List[EventsRecommendation]:
+    """Generate events-specific operational recommendations."""
+
+    timeframe = _resolve_timeframe(date_range)
+
+    if timeframe == AnalyticsTimeframe.CUSTOM:
+        if not (from_date and to_date):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date and to_date are required when date_range is custom",
+            )
+        if from_date > to_date:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="from_date must be before or equal to to_date",
+            )
+
+    start_dt = datetime.combine(from_date, datetime.min.time()) if from_date else None
+    end_dt = datetime.combine(to_date, datetime.max.time()) if to_date else None
+
+    return await events_service.generate_recommendations(
+        tenant_id,
+        timeframe,
+        location_id=location_id,
+        start_date=start_dt,
+        end_date=end_dt,
+    )
