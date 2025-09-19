@@ -118,18 +118,22 @@ impl ConfigurationService {
         ).await?;
 
         // Publish domain event
-        let event = DomainEvent::builder()
-            .data(serde_json::json!({
-                "config_id": config_id,
-                "scope": request.scope,
-                "scope_id": request.scope_id,
-                "key": request.key,
-                "category": request.category,
-                "is_sensitive": request.is_sensitive,
-                "created_by": created_by
-            }))
-            .source_service("platform")
-            .build();
+        let event = DomainEvent::builder(
+            "ConfigurationCreated".to_string(),
+            request.scope_id.unwrap_or_else(|| Uuid::new_v4()), // Use scope_id as tenant context
+            "platform".to_string(),
+            created_by,
+        )
+        .data(serde_json::json!({
+            "config_id": config_id,
+            "scope": request.scope,
+            "scope_id": request.scope_id,
+            "key": request.key,
+            "category": request.category,
+            "is_sensitive": request.is_sensitive,
+            "created_by": created_by
+        }))?
+        .build();
 
         if let Err(e) = self.event_publisher.publish(&event).await {
             tracing::warn!("Failed to publish ConfigurationCreated event: {}", e);
@@ -158,7 +162,7 @@ impl ConfigurationService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to get configuration: {}", e)))?;
+        .map_err(Error::Database)?;
 
         match config_row {
             Some(row) => {
@@ -199,7 +203,7 @@ impl ConfigurationService {
         )
         .fetch_optional(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to get configuration by key: {}", e)))?;
+        .map_err(Error::Database)?;
 
         match config_row {
             Some(row) => {
@@ -268,7 +272,7 @@ impl ConfigurationService {
             )
             .fetch_optional(self.db.as_ref())
             .await
-            .map_err(|e| Error::Database(format!("Failed to update configuration: {}", e)))?;
+            .map_err(Error::Database)?;
 
             match config_row {
                 Some(row) => {
@@ -287,18 +291,22 @@ impl ConfigurationService {
                     ).await?;
 
                     // Publish domain event
-                    let event = DomainEvent::builder()
-                        .data(serde_json::json!({
-                            "config_id": config_id,
-                            "scope": config.scope,
-                            "scope_id": config.scope_id,
-                            "key": config.key,
-                            "updated_fields": ["value"],
-                            "is_sensitive": config.is_sensitive,
-                            "updated_by": updated_by
-                        }))
-                        .source_service("platform")
-                        .build();
+                    let event = DomainEvent::builder(
+                        "ConfigurationUpdated".to_string(),
+                        config.scope_id.unwrap_or_else(|| Uuid::new_v4()), // Use a default UUID if no scope_id
+                        "platform".to_string(),
+                        updated_by,
+                    )
+                    .data(serde_json::json!({
+                        "config_id": config_id,
+                        "scope": config.scope,
+                        "scope_id": config.scope_id,
+                        "key": config.key,
+                        "updated_fields": ["value"],
+                        "is_sensitive": config.is_sensitive,
+                        "updated_by": updated_by
+                    }))?
+                    .build();
 
                     if let Err(e) = self.event_publisher.publish(&event).await {
                         tracing::warn!("Failed to publish ConfigurationUpdated event: {}", e);
@@ -344,7 +352,7 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to delete configuration: {}", e)))?
+        .map_err(Error::Database)?
         .rows_affected();
 
         if rows_affected > 0 {
@@ -361,16 +369,20 @@ impl ConfigurationService {
             ).await?;
 
             // Publish domain event
-            let event = DomainEvent::builder()
-                .data(serde_json::json!({
-                    "config_id": config_id,
-                    "scope": current_config.scope,
-                    "scope_id": current_config.scope_id,
-                    "key": current_config.key,
-                    "deleted_by": deleted_by
-                }))
-                .source_service("platform")
-                .build();
+            let event = DomainEvent::builder(
+                "ConfigurationDeleted".to_string(),
+                current_config.scope_id.unwrap_or_else(|| Uuid::new_v4()), // Use scope_id as tenant context
+                "platform".to_string(),
+                deleted_by,
+            )
+            .data(serde_json::json!({
+                "config_id": config_id,
+                "scope": current_config.scope,
+                "scope_id": current_config.scope_id,
+                "key": current_config.key,
+                "deleted_by": deleted_by
+            }))?
+            .build();
 
             if let Err(e) = self.event_publisher.publish(&event).await {
                 tracing::warn!("Failed to publish ConfigurationDeleted event: {}", e);
@@ -431,14 +443,14 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to search configurations: {}", e)))?;
+        .map_err(Error::Database)?;
 
         let total_count = query!(
             "SELECT COUNT(*) as count FROM platform.configurations WHERE deleted_at IS NULL"
         )
         .fetch_one(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to count configurations: {}", e)))?
+        .map_err(Error::Database)?
         .count
         .unwrap_or(0);
 
@@ -484,7 +496,7 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to get configurations by scope: {}", e)))?;
+        .map_err(Error::Database)?;
 
         let mut result = HashMap::new();
         for row in config_rows {
@@ -532,7 +544,7 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to get audit history: {}", e)))?;
+        .map_err(Error::Database)?;
 
         let audits = audit_rows
             .into_iter()
@@ -588,7 +600,7 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
-        .map_err(|e| Error::Database(format!("Failed to create audit record: {}", e)))?;
+        .map_err(Error::Database)?;
 
         Ok(())
     }
@@ -619,7 +631,7 @@ impl ConfigurationService {
                 .fetch_optional(self.db.as_ref())
                 .await
         }
-        .map_err(|e| Error::Database(format!("Failed to check config key uniqueness: {}", e)))?;
+        .map_err(Error::Database)?;
 
         if exists.is_some() {
             return Err(Error::Validation("Configuration key already exists in this scope".to_string()));
