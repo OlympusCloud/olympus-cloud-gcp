@@ -35,6 +35,14 @@ from app.models.retail import RetailAnalytics, RetailRecommendation
 from app.models.hospitality import HospitalityAnalytics, HospitalityRecommendation
 import app.models.events_industry as events_models
 from app.models.events_industry import EventsAnalytics, EventsRecommendation
+
+
+class _EventsModelsShim:
+    EventsAnalytics = EventsAnalytics
+    EventsRecommendation = EventsRecommendation
+
+
+events_models = _EventsModelsShim()
 EventsAnalytics = events_models.EventsAnalytics
 EventsRecommendation = events_models.EventsRecommendation
 EventsAnalytics = events_models.EventsAnalytics
