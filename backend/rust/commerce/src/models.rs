@@ -393,6 +393,19 @@ pub enum InventoryAdjustmentType {
     Recount,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum InventoryAdjustmentReason {
+    Sale,
+    Return,
+    Damage,
+    Theft,
+    Recount,
+    Transfer,
+    Promotion,
+    Waste,
+    Other,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InventoryItem {
     pub id: Uuid,
