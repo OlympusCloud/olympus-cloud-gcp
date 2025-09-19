@@ -205,6 +205,9 @@ void main() {
       });
 
       testWidgets('should handle social login buttons', (WidgetTester tester) async {
+        // Set a larger screen size for this test
+        await tester.binding.setSurfaceSize(const Size(800, 1000));
+        
         await tester.pumpWidget(
           UncontrolledProviderScope(
             container: container,

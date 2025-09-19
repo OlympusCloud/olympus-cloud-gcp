@@ -116,39 +116,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 32), // Replace Spacer with fixed height
+                  const SizedBox(height: 16), // Reduced from 32
                   
                   // Header
                   _buildHeader(theme),
                   
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24), // Reduced from 48
                   
                   // Natural Language Toggle
                   _buildNaturalLanguageToggle(theme),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16), // Reduced from 24
                   
                   // Login Form or Natural Language Input
                   _showNaturalLanguageInput
                       ? _buildNaturalLanguageInput(theme)
                       : _buildLoginForm(theme),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16), // Reduced from 24
                   
                   // Social Login Options
                   _buildSocialLogin(theme),
                   
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 16), // Reduced from 32
                   
                   // Sign Up Link
                   _buildSignUpLink(theme),
                   
-                  const SizedBox(height: 32), // Replace Spacer with fixed height
+                  const SizedBox(height: 16), // Reduced from 32
                   
                   // Help Link
                   _buildHelpLink(theme),
                   
-                  const SizedBox(height: 32), // Add bottom spacing
+                  const SizedBox(height: 16), // Reduced from 32
                 ],
               ),
             ),
@@ -391,7 +391,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   );
                 },
                 icon: const Icon(Icons.g_mobiledata, size: 24),
-                label: const Text('Google'),
+                label: const Text('Continue with Google'),
               ),
             ),
             
@@ -400,15 +400,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: Implement Microsoft login
+                  // TODO: Implement Apple login
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Microsoft login not yet implemented'),
+                      content: Text('Apple login not yet implemented'),
                     ),
                   );
                 },
-                icon: const Icon(Icons.window, size: 24),
-                label: const Text('Microsoft'),
+                icon: const Icon(Icons.apple, size: 24),
+                label: const Text('Continue with Apple'),
               ),
             ),
           ],
