@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from datetime import date
-from typing import Any, Optional
+from datetime import date, datetime
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
 from app.api.dependencies import (
     get_analytics_service,
+    get_enhanced_analytics_service,
     get_nlp_service,
     get_recommendation_service,
     get_snapshot_service,
@@ -15,6 +16,10 @@ from app.api.dependencies import (
 from app.core.settings import get_settings
 from app.core.state import RuntimeState
 from app.models.analytics import AnalyticsDashboardResponse, AnalyticsTimeframe
+from app.models.enhanced_analytics import (
+    EnhancedAnalyticsResponse,
+    AnalyticsFilter
+)
 from app.models.nlp import NLPQueryResponse
 from app.models.recommendations import RecommendationResponse
 from app.models.snapshots import (
@@ -23,6 +28,7 @@ from app.models.snapshots import (
     SnapshotHistoryResponse
 )
 from app.services.analytics.service import AnalyticsService
+from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
@@ -252,3 +258,33 @@ async def backfill_snapshots(
         "snapshots_created": snapshots_created,
         "days_back": days_back
     }
+
+
+@api_router.get(
+    "/analytics/enhanced/dashboard",
+    tags=["analytics"],
+    response_model=EnhancedAnalyticsResponse
+)
+async def get_enhanced_dashboard(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_ids: Optional[List[str]] = Query(None, description="Location filters"),
+    timeframe: AnalyticsTimeframe = Query(AnalyticsTimeframe.THIS_MONTH, description="Analysis timeframe"),
+    start_date: Optional[datetime] = Query(None, description="Custom start date"),
+    end_date: Optional[datetime] = Query(None, description="Custom end date"),
+    include_trends: bool = Query(True, description="Include trend analysis"),
+    include_forecasts: bool = Query(False, description="Include predictive analytics"),
+    enhanced_service: EnhancedAnalyticsService = Depends(get_enhanced_analytics_service),
+) -> EnhancedAnalyticsResponse:
+    """Get comprehensive dashboard with enhanced metrics and insights."""
+    
+    analytics_filter = AnalyticsFilter(
+        tenant_id=tenant_id,
+        location_ids=location_ids,
+        timeframe=timeframe,
+        start_date=start_date,
+        end_date=end_date,
+        include_trends=include_trends,
+        include_forecasts=include_forecasts
+    )
+    
+    return await enhanced_service.get_enhanced_dashboard(analytics_filter)
