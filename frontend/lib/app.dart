@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/branding/branding_provider.dart';
 import 'core/constants/app_constants.dart';
 import 'core/platform/platform_info.dart';
 import 'core/platform/platform_performance.dart';
@@ -18,18 +19,23 @@ class OlympusApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDarkMode = ref.watch(isDarkModeProvider);
+    final branding = ref.watch(brandingProvider);
+    
+    // Get industry-specific theme
+    final theme = ref.watch(brandingThemeProvider(false));
+    final darkTheme = ref.watch(brandingThemeProvider(true));
 
     return PerformanceMonitor(
       enabled: AppConstants.isDebugMode,
       child: KeyboardShortcutHandler(
         shortcuts: _getKeyboardShortcuts(),
         child: MaterialApp.router(
-          title: AppConstants.appName,
+          title: branding.brandName,
           debugShowCheckedModeBanner: false,
           
-          // Theme Configuration
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          // Dynamic theme based on industry branding
+          theme: theme,
+          darkTheme: darkTheme,
           themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
           
           // Internationalization

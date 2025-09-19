@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
+import '../../features/onboarding/industry_selection_screen.dart';
 import '../../features/business_setup/presentation/screens/business_setup_wizard.dart';
+import '../../features/dashboard/adaptive_dashboard.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/orders/presentation/screens/order_management_screen.dart';
@@ -47,11 +49,18 @@ class AppRouter {
         builder: (context, state) => const OnboardingScreen(),
       ),
 
+      // Industry selection route
+      GoRoute(
+        path: '/industry-selection',
+        name: 'industrySelection',
+        builder: (context, state) => const IndustrySelectionScreen(),
+      ),
+
       // Main app routes (protected)
       GoRoute(
         path: '/dashboard',
         name: 'dashboard',
-        builder: (context, state) => const DashboardScreen(),
+        builder: (context, state) => const AdaptiveDashboard(),
         routes: [
           // Dashboard sub-routes will be added here
           GoRoute(
