@@ -96,7 +96,7 @@ impl EventPublisher {
         redis::cmd("PUBLISH")
             .arg(&channel)
             .arg(&payload)
-            .query_async(&mut self.redis)
+            .query_async::<_, ()>(&mut self.redis)
             .await?;
 
         // Also publish to tenant-specific channel
@@ -104,7 +104,7 @@ impl EventPublisher {
         redis::cmd("PUBLISH")
             .arg(&tenant_channel)
             .arg(&payload)
-            .query_async(&mut self.redis)
+            .query_async::<_, ()>(&mut self.redis)
             .await?;
 
         Ok(())

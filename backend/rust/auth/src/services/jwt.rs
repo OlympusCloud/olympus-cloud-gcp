@@ -41,7 +41,7 @@ impl JwtService {
     pub fn generate_refresh_token(&self) -> Result<String> {
         let mut rng = rand::thread_rng();
         let random_bytes: Vec<u8> = (0..32).map(|_| rng.gen()).collect();
-        Ok(base64::encode(random_bytes))
+        Ok(base64_utils::encode(random_bytes))
     }
 
     pub fn verify_access_token(&self, token: &str) -> Result<Claims> {
@@ -147,7 +147,7 @@ impl JwtService {
 }
 
 // External base64 encoding/decoding
-mod base64 {
+mod base64_utils {
     use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 
     pub fn encode(input: Vec<u8>) -> String {

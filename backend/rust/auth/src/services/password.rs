@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn test_password_hashing_and_verification() {
         let service = PasswordService::new();
-        let password = "SecurePassword123!";
+        let password = "UniqueTestPass123!";
 
         let hash = service.hash_password(password).unwrap();
         assert!(!hash.is_empty());
@@ -136,8 +136,8 @@ mod tests {
         // Too short
         assert!(service.hash_password("Short1!").is_err());
 
-        // No uppercase
-        assert!(service.hash_password("lowercase123!").is_err());
+        // No uppercase  
+        assert!(service.hash_password("nouppercase123!").is_err());
 
         // Common password
         assert!(service.hash_password("Password123!").is_err());

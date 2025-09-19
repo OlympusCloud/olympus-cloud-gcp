@@ -128,7 +128,7 @@ pub struct Address {
 pub struct PhoneNumber {
     #[validate(length(min = 1, max = 5))]
     pub country_code: String,
-    #[validate(length(min = 7, max = 15))]
+    #[validate(length(min = 1, max = 20))]
     pub number: String,
     pub extension: Option<String>,
 }

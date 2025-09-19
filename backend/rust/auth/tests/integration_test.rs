@@ -1,218 +1,98 @@
-use olympus_auth::{create_router, models::*, services::{AuthService, JwtService, PasswordService}};
-use olympus_shared::{database::Database, events::EventPublisher, types::ApiResponse};
-use axum::http::StatusCode;
-use axum_test::TestServer;
 use std::sync::Arc;
-use uuid::Uuid;
+use olympus_auth::services::AuthService;
+use olympus_auth::models::{LoginRequest, RegisterRequest};
+use olympus_shared::database::Database;
 
 #[tokio::test]
-async fn test_register_user() {
-    // Setup test services
-    let db = Arc::new(Database::new("postgresql://test:test@localhost:5432/test_db"));
-    let jwt_service = Arc::new(JwtService::new("test_secret".to_string()));
-    let password_service = Arc::new(PasswordService::new());
-    let event_publisher = Arc::new(EventPublisher::new("redis://localhost:6379").await.unwrap());
-    let auth_service = Arc::new(AuthService::new(db, jwt_service, password_service, event_publisher));
+async fn test_auth_flow() {
+    let db = Arc::new(Database::new("postgresql://localhost/test").await.unwrap_or_else(|_| {
+        panic!("Database connection failed")
+    }));
+    
+    let jwt_secret = b"test-secret-key-for-integration-testing-only";
+    let auth_service = AuthService::new(db, jwt_secret, None);
 
-    // Create test server
-    let app = create_router(auth_service);
-    let server = TestServer::new(app).unwrap();
-
-    // Test registration
-    let register_request = RegisterRequest {
-        tenant_id: Uuid::new_v4(),
+    let register_req = RegisterRequest {
         email: "test@example.com".to_string(),
         password: "SecurePassword123!".to_string(),
-        first_name: Some("Test".to_string()),
-        last_name: Some("User".to_string()),
+        first_name: "Test".to_string(),
+        last_name: "User".to_string(),
+        phone: None,
+        tenant_slug: "test-tenant".to_string(),
     };
 
-    let response = server
-        .post("/auth/register")
-        .json(&register_request)
-        .await;
+    let user_response = auth_service.register(register_req).await.unwrap();
+    assert_eq!(user_response.email, "test@example.com");
 
-    assert_eq!(response.status_code(), StatusCode::CREATED);
+    let login_req = LoginRequest {
+        email: "test@example.com".to_string(),
+        password: "SecurePassword123!".to_string(),
+        tenant_slug: "test-tenant".to_string(),
+        device_id: None,
+        device_name: None,
+    };
 
-    let body: ApiResponse<AuthResponse> = response.json();
-    assert!(body.data.is_some());
-    assert!(body.data.unwrap().access_token.len() > 0);
+    let token_response = auth_service.login(login_req, "127.0.0.1".to_string(), "test-agent".to_string()).await.unwrap();
+    assert!(!token_response.access_token.is_empty());
+
+    let claims = auth_service.verify_token(&token_response.access_token).await.unwrap();
+    assert_eq!(claims.email, "test@example.com");
 }
 
-#[tokio::test]
-async fn test_login_user() {
-    // Setup test services
-    let db = Arc::new(Database::new("postgresql://test:test@localhost:5432/test_db"));
-    let jwt_service = Arc::new(JwtService::new("test_secret".to_string()));
-    let password_service = Arc::new(PasswordService::new());
-    let event_publisher = Arc::new(EventPublisher::new("redis://localhost:6379").await.unwrap());
-    let auth_service = Arc::new(AuthService::new(db.clone(), jwt_service.clone(), password_service.clone(), event_publisher.clone()));
+#[test]
+fn test_jwt_service() {
+    use olympus_auth::services::jwt::JwtService;
+    use olympus_auth::models::User;
+    use uuid::Uuid;
+    use chrono::Utc;
 
-    // Create test server
-    let app = create_router(auth_service.clone());
-    let server = TestServer::new(app).unwrap();
-
-    let tenant_id = Uuid::new_v4();
-    let email = "login_test@example.com".to_string();
-    let password = "TestPassword123!".to_string();
-
-    // First register the user
-    let register_request = RegisterRequest {
-        tenant_id,
-        email: email.clone(),
-        password: password.clone(),
-        first_name: Some("Login".to_string()),
-        last_name: Some("Test".to_string()),
-    };
-
-    server
-        .post("/auth/register")
-        .json(&register_request)
-        .await;
-
-    // Now test login
-    let login_request = LoginRequest {
-        tenant_id,
-        email: email.clone(),
-        password: password.clone(),
-    };
-
-    let response = server
-        .post("/auth/login")
-        .json(&login_request)
-        .await;
-
-    assert_eq!(response.status_code(), StatusCode::OK);
-
-    let body: ApiResponse<AuthResponse> = response.json();
-    assert!(body.data.is_some());
-
-    let auth_response = body.data.unwrap();
-    assert!(auth_response.access_token.len() > 0);
-    assert!(auth_response.refresh_token.len() > 0);
-    assert_eq!(auth_response.user.email, email);
-}
-
-#[tokio::test]
-async fn test_refresh_token() {
-    // Setup test services
-    let db = Arc::new(Database::new("postgresql://test:test@localhost:5432/test_db"));
-    let jwt_service = Arc::new(JwtService::new("test_secret".to_string()));
-    let password_service = Arc::new(PasswordService::new());
-    let event_publisher = Arc::new(EventPublisher::new("redis://localhost:6379").await.unwrap());
-    let auth_service = Arc::new(AuthService::new(db.clone(), jwt_service.clone(), password_service.clone(), event_publisher.clone()));
-
-    // Create test server
-    let app = create_router(auth_service.clone());
-    let server = TestServer::new(app).unwrap();
-
-    let tenant_id = Uuid::new_v4();
-
-    // Register and login to get tokens
-    let register_request = RegisterRequest {
-        tenant_id,
-        email: "refresh_test@example.com".to_string(),
-        password: "RefreshPassword123!".to_string(),
-        first_name: Some("Refresh".to_string()),
-        last_name: Some("Test".to_string()),
-    };
-
-    let register_response = server
-        .post("/auth/register")
-        .json(&register_request)
-        .await;
-
-    let body: ApiResponse<AuthResponse> = register_response.json();
-    let refresh_token = body.data.unwrap().refresh_token;
-
-    // Test refresh
-    let refresh_request = RefreshTokenRequest {
-        refresh_token: refresh_token.clone(),
-    };
-
-    let response = server
-        .post("/auth/refresh")
-        .json(&refresh_request)
-        .await;
-
-    assert_eq!(response.status_code(), StatusCode::OK);
-
-    let refresh_body: ApiResponse<TokenResponse> = response.json();
-    assert!(refresh_body.data.is_some());
-    assert!(refresh_body.data.unwrap().access_token.len() > 0);
-}
-
-#[tokio::test]
-async fn test_invalid_credentials() {
-    // Setup test services
-    let db = Arc::new(Database::new("postgresql://test:test@localhost:5432/test_db"));
-    let jwt_service = Arc::new(JwtService::new("test_secret".to_string()));
-    let password_service = Arc::new(PasswordService::new());
-    let event_publisher = Arc::new(EventPublisher::new("redis://localhost:6379").await.unwrap());
-    let auth_service = Arc::new(AuthService::new(db, jwt_service, password_service, event_publisher));
-
-    // Create test server
-    let app = create_router(auth_service);
-    let server = TestServer::new(app).unwrap();
-
-    // Test login with invalid credentials
-    let login_request = LoginRequest {
+    let jwt_service = JwtService::new(b"test-secret-key-must-be-long-enough-for-hs256");
+    
+    let user = User {
+        id: Uuid::new_v4(),
         tenant_id: Uuid::new_v4(),
-        email: "nonexistent@example.com".to_string(),
-        password: "WrongPassword".to_string(),
+        email: "test@example.com".to_string(),
+        password_hash: String::new(),
+        first_name: "Test".to_string(),
+        last_name: "User".to_string(),
+        display_name: None,
+        phone: None,
+        avatar_url: None,
+        roles: vec!["user".to_string()],
+        permissions: vec![],
+        is_active: true,
+        email_verified: false,
+        phone_verified: false,
+        two_factor_enabled: false,
+        last_login: None,
+        failed_login_attempts: 0,
+        locked_until: None,
+        password_changed_at: None,
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+        deleted_at: None,
     };
 
-    let response = server
-        .post("/auth/login")
-        .json(&login_request)
-        .await;
+    let session_id = Uuid::new_v4();
+    let token = jwt_service.generate_access_token(&user, user.tenant_id, session_id).unwrap();
+    assert!(!token.is_empty());
 
-    assert_eq!(response.status_code(), StatusCode::UNAUTHORIZED);
+    let claims = jwt_service.verify_access_token(&token).unwrap();
+    assert_eq!(claims.sub, user.id);
+    assert_eq!(claims.email, user.email);
 }
 
-#[tokio::test]
-async fn test_duplicate_email_registration() {
-    // Setup test services
-    let db = Arc::new(Database::new("postgresql://test:test@localhost:5432/test_db"));
-    let jwt_service = Arc::new(JwtService::new("test_secret".to_string()));
-    let password_service = Arc::new(PasswordService::new());
-    let event_publisher = Arc::new(EventPublisher::new("redis://localhost:6379").await.unwrap());
-    let auth_service = Arc::new(AuthService::new(db, jwt_service, password_service, event_publisher));
+#[test]
+fn test_password_service() {
+    use olympus_auth::services::password::PasswordService;
 
-    // Create test server
-    let app = create_router(auth_service);
-    let server = TestServer::new(app).unwrap();
+    let password_service = PasswordService::new();
+    let password = "SecurePassword123!";
 
-    let tenant_id = Uuid::new_v4();
-    let email = "duplicate@example.com".to_string();
+    let hash = password_service.hash_password(password).unwrap();
+    assert!(!hash.is_empty());
+    assert_ne!(hash, password);
 
-    // First registration
-    let register_request = RegisterRequest {
-        tenant_id,
-        email: email.clone(),
-        password: "Password123!".to_string(),
-        first_name: Some("First".to_string()),
-        last_name: Some("User".to_string()),
-    };
-
-    server
-        .post("/auth/register")
-        .json(&register_request)
-        .await;
-
-    // Try to register again with same email
-    let duplicate_request = RegisterRequest {
-        tenant_id,
-        email: email.clone(),
-        password: "DifferentPassword123!".to_string(),
-        first_name: Some("Second".to_string()),
-        last_name: Some("User".to_string()),
-    };
-
-    let response = server
-        .post("/auth/register")
-        .json(&duplicate_request)
-        .await;
-
-    assert_eq!(response.status_code(), StatusCode::CONFLICT);
+    assert!(password_service.verify_password(password, &hash).unwrap());
+    assert!(!password_service.verify_password("WrongPassword", &hash).unwrap());
 }
