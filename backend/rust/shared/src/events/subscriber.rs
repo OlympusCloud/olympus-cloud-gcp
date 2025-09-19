@@ -13,14 +13,11 @@ use crate::{Error, Result};
 use async_trait::async_trait;
 use futures::StreamExt;
 use redis::aio::ConnectionManager;
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
-use std::sync::{atomic::AtomicU64, Arc};
+use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock, Semaphore};
 use tokio::time::{sleep, timeout, Duration, Instant};
 use tracing::{debug, error, info, warn, instrument};
-use uuid::Uuid;
-use std::sync::atomic::Ordering;
 
 /// Enhanced event handler trait for processing both legacy and versioned events
 #[async_trait]
@@ -282,7 +279,7 @@ impl EventSubscriber {
 
         // Start subscription task
         tokio::spawn(async move {
-            let mut subscriber = Self::create_enhanced_subscriber(redis.clone(), &config).await;
+            let subscriber = Self::create_enhanced_subscriber(redis.clone(), &config).await;
 
             if let Err(e) = subscriber {
                 error!("Failed to create enhanced subscriber: {}", e);
@@ -332,7 +329,7 @@ impl EventSubscriber {
 
     /// Create enhanced Redis subscriber with consumer groups
     async fn create_enhanced_subscriber(
-        redis: ConnectionManager,
+        _redis: ConnectionManager,
         config: &SubscriptionConfig,
     ) -> Result<redis::aio::PubSub> {
         let client = redis::Client::open("redis://localhost:6379")

@@ -89,7 +89,6 @@ pub mod go_gateway {
 /// Python Analytics Service integration types
 pub mod python_analytics {
     use super::*;
-    use rust_decimal::Decimal;
     use std::collections::HashMap;
 
     /// Analytics event to send to Python service

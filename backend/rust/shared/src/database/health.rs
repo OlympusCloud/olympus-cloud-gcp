@@ -9,7 +9,6 @@
 
 use sqlx::{PgPool, Row};
 use std::time::{Duration, Instant};
-use tracing::info;
 use serde::{Deserialize, Serialize};
 
 use super::DbResult;

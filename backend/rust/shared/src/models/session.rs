@@ -7,7 +7,7 @@
 // Date: 2025-01-18
 // ============================================================================
 
-use super::{TenantScoped, ValidateEntity};
+use super::ValidateEntity;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};

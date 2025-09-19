@@ -162,7 +162,11 @@ impl ConfigurationService {
         )
         .fetch_optional(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to get configuration: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         match config_row {
             Some(row) => {
@@ -203,7 +207,11 @@ impl ConfigurationService {
         )
         .fetch_optional(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to get configuration by key: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         match config_row {
             Some(row) => {
@@ -272,7 +280,11 @@ impl ConfigurationService {
             )
             .fetch_optional(self.db.as_ref())
             .await
+<<<<<<< HEAD
+            .map_err(|e| Error::Database(format!("Failed to update configuration: {}", e)))?;
+=======
             .map_err(Error::Database)?;
+>>>>>>> origin/main
 
             match config_row {
                 Some(row) => {
@@ -352,7 +364,11 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to delete configuration: {}", e)))?
+=======
         .map_err(Error::Database)?
+>>>>>>> origin/main
         .rows_affected();
 
         if rows_affected > 0 {
@@ -443,14 +459,22 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to search configurations: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         let total_count = query!(
             "SELECT COUNT(*) as count FROM platform.configurations WHERE deleted_at IS NULL"
         )
         .fetch_one(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to count configurations: {}", e)))?
+=======
         .map_err(Error::Database)?
+>>>>>>> origin/main
         .count
         .unwrap_or(0);
 
@@ -496,7 +520,11 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to get configurations by scope: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         let mut result = HashMap::new();
         for row in config_rows {
@@ -544,7 +572,11 @@ impl ConfigurationService {
         )
         .fetch_all(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to get audit history: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         let audits = audit_rows
             .into_iter()
@@ -600,7 +632,11 @@ impl ConfigurationService {
         )
         .execute(self.db.as_ref())
         .await
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to create audit record: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         Ok(())
     }
@@ -631,7 +667,11 @@ impl ConfigurationService {
                 .fetch_optional(self.db.as_ref())
                 .await
         }
+<<<<<<< HEAD
+        .map_err(|e| Error::Database(format!("Failed to check config key uniqueness: {}", e)))?;
+=======
         .map_err(Error::Database)?;
+>>>>>>> origin/main
 
         if exists.is_some() {
             return Err(Error::Validation("Configuration key already exists in this scope".to_string()));

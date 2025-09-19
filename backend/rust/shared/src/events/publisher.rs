@@ -11,12 +11,12 @@
 use super::{DomainEvent, EventConfig, VersionedDomainEvent};
 use crate::{Error, Result};
 use redis::aio::ConnectionManager;
-use redis::{AsyncCommands, RedisError};
+use redis::RedisError;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::{atomic::AtomicU64, Arc};
 use tokio::sync::{mpsc, Mutex, RwLock};
-use tokio::time::{sleep, timeout, Duration, Instant};
+use tokio::time::{sleep, Duration, Instant};
 use tracing::{debug, error, info, warn, instrument};
 use uuid::Uuid;
 use std::sync::atomic::Ordering;
@@ -716,7 +716,7 @@ impl EventPublisher {
         }
 
         // Process each aggregate group in order
-        for (aggregate_key, mut group_events) in aggregate_groups {
+        for (_aggregate_key, mut group_events) in aggregate_groups {
             // Sort by sequence number for versioned events
             group_events.sort_by_key(|e| e.event.sequence_number());
 
@@ -786,8 +786,8 @@ impl EventPublisher {
         metrics_guard.events_published += successful_events;
         metrics_guard.events_failed += failed_events;
         metrics_guard.events_duplicated += duplicate_events;
-        metrics_guard.average_batch_size = ((metrics_guard.average_batch_size * 0.9) + (successful_events as f64 * 0.1));
-        metrics_guard.average_publish_latency_ms = ((metrics_guard.average_publish_latency_ms * 0.9) + (batch_duration.as_millis() as f64 * 0.1));
+        metrics_guard.average_batch_size = (metrics_guard.average_batch_size * 0.9) + (successful_events as f64 * 0.1);
+        metrics_guard.average_publish_latency_ms = (metrics_guard.average_publish_latency_ms * 0.9) + (batch_duration.as_millis() as f64 * 0.1);
 
         // Update queue depth
         let queue_size = {

@@ -9,20 +9,17 @@
 // ============================================================================
 
 use async_trait::async_trait;
-use shared::events::{
-    EventHandler, EventContainer, HandlerPriority, HandlerHealth,
-    UserRegisteredEvent, UserLoggedInEvent, UserLoggedOutEvent,
-    PasswordChangedEvent, EmailVerifiedEvent, AccountLockedEvent,
-    MfaEnrolledEvent, TenantCreatedEvent, UserRoleChangedEvent,
-    auth_events, platform_events,
+use olympus_shared::events::{
+    EventHandler, EventContainer,
+    UserRegisteredEvent, UserLoggedInEvent, TenantCreatedEvent, UserRoleChangedEvent, AccountLockedEvent,
+    auth_events, platform_events
 };
-use shared::{Error, Result};
+use olympus_shared::events::subscriber::{HandlerPriority, HandlerHealth};
+use olympus_shared::{Error, Result};
 use tracing::{info, warn, error, debug, instrument};
-use uuid::Uuid;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use serde_json::Value;
 
 // ============================================================================
 // USER AUTHENTICATION EVENT HANDLER
@@ -245,7 +242,7 @@ impl EventHandler for UserAuthenticationHandler {
 /// Handles security-related events for monitoring and alerting
 pub struct SecurityEventHandler {
     name: String,
-    suspicious_activity_threshold: u32,
+    suspicious_activity_threshold: i32,
     processed_count: AtomicU64,
 }
 

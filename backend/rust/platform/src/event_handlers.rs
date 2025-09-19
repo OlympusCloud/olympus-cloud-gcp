@@ -8,12 +8,26 @@
 // Note: Simplified version for initial compilation - to be expanded later
 // ============================================================================
 
+<<<<<<< HEAD
+use async_trait::async_trait;
+use olympus_shared::events::{
+    EventHandler, EventContainer,
+    TenantCreatedEvent, TenantSubscriptionChangedEvent, UserRoleChangedEvent,
+    LocationCreatedEvent, FeatureFlagChangedEvent, UserRegisteredEvent,
+    UserLoggedInEvent, OrderCreatedEvent, PaymentProcessedEvent,
+    platform_events, auth_events, commerce_events,
+};
+use olympus_shared::events::subscriber::{HandlerPriority, HandlerHealth};
+use olympus_shared::{Error, Result};
+use tracing::{info, warn, error, debug, instrument};
+=======
 use olympus_shared::events::{
     EventHandler, EventContainer, HandlerPriority, HandlerHealth,
     DomainEvent, VersionedDomainEvent,
 };
 use olympus_shared::{Error, Result};
 use tracing::{info, warn, error, debug};
+>>>>>>> origin/main
 use uuid::Uuid;
 
 /// Basic tenant event handler for platform coordination

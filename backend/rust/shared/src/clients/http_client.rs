@@ -1,6 +1,5 @@
 //! HTTP client for inter-service communication
 
-use async_trait::async_trait;
 use reqwest::{Client, RequestBuilder, Response};
 use serde::{de::DeserializeOwned, Serialize};
 use std::collections::HashMap;
