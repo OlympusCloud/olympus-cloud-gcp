@@ -59,6 +59,16 @@ tags:
     description: Analytics and reporting
   - name: Natural Language
     description: Natural language processing
+  - name: GraphQL
+    description: GraphQL API for complex queries
+  - name: WebSocket
+    description: Real-time updates via WebSocket
+  - name: Caching
+    description: Cache management and statistics
+  - name: Batch Operations
+    description: Bulk operations for efficient processing
+  - name: System
+    description: System health and monitoring
 
 paths:
   # ==========================================
@@ -1848,6 +1858,355 @@ components:
         created_at:
           type: string
           format: date-time
+
+  # ==========================================
+  # Advanced Features - Phase 9
+  # ==========================================
+
+  /graphql:
+    post:
+      tags:
+        - GraphQL
+      summary: GraphQL endpoint for complex queries
+      description: |
+        GraphQL endpoint supporting complex queries for analytics, products, orders.
+        Supports subscriptions for real-time updates.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: GraphQL query string
+                  example: |
+                    query GetAnalytics($tenantId: ID!, $startDate: DateTime!, $endDate: DateTime!) {
+                      analytics(tenantId: $tenantId, startDate: $startDate, endDate: $endDate) {
+                        revenue {
+                          total
+                          averageOrderValue
+                          orderCount
+                        }
+                        topProducts {
+                          id
+                          name
+                          quantitySold
+                          revenue
+                        }
+                      }
+                    }
+                variables:
+                  type: object
+                  description: GraphQL variables
+                  example:
+                    tenantId: "123e4567-e89b-12d3-a456-426614174000"
+                    startDate: "2024-01-01T00:00:00Z"
+                    endDate: "2024-01-31T23:59:59Z"
+                operationName:
+                  type: string
+                  description: GraphQL operation name
+      responses:
+        '200':
+          description: GraphQL response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: GraphQL query results
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                        locations:
+                          type: array
+                        path:
+                          type: array
+
+  /ws:
+    get:
+      tags:
+        - WebSocket
+      summary: WebSocket connection for real-time updates
+      description: |
+        Establish WebSocket connection for real-time updates.
+        Supports subscriptions to order updates, inventory changes, and notifications.
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [Upgrade]
+        - name: Upgrade
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [websocket]
+      responses:
+        '101':
+          description: Switching protocols to WebSocket
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+
+  /cache/stats:
+    get:
+      tags:
+        - Caching
+      summary: Get cache statistics
+      description: Retrieve cache performance statistics and metrics
+      responses:
+        '200':
+          description: Cache statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hits:
+                    type: integer
+                    description: Total cache hits
+                  misses:
+                    type: integer
+                    description: Total cache misses
+                  sets:
+                    type: integer
+                    description: Total cache sets
+                  deletes:
+                    type: integer
+                    description: Total cache deletes
+                  errors:
+                    type: integer
+                    description: Total cache errors
+                  hitRate:
+                    type: number
+                    format: float
+                    description: Cache hit rate (0.0 to 1.0)
+
+  /cache/invalidate:
+    delete:
+      tags:
+        - Caching
+      summary: Invalidate cache entries
+      description: Invalidate cache entries by pattern or specific keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pattern:
+                  type: string
+                  description: Cache key pattern to invalidate
+                  example: "tenant:123:*"
+                keys:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific cache keys to invalidate
+      responses:
+        '200':
+          description: Cache invalidated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invalidated:
+                    type: integer
+                    description: Number of cache entries invalidated
+
+  /batch/products:
+    post:
+      tags:
+        - Batch Operations
+      summary: Bulk product operations
+      description: |
+        Perform bulk operations on products (create, update, delete, update inventory).
+        Supports concurrent processing with progress tracking.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Unique operation ID
+                      operation_type:
+                        type: string
+                        enum: [create, update, delete, update_inventory]
+                      data:
+                        type: object
+                        description: Operation-specific data
+                options:
+                  type: object
+                  properties:
+                    continue_on_error:
+                      type: boolean
+                      default: true
+                    max_concurrency:
+                      type: integer
+                      default: 10
+                    timeout_seconds:
+                      type: integer
+                      default: 300
+      responses:
+        '200':
+          description: Batch operation results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        success:
+                          type: boolean
+                        data:
+                          type: object
+                        error:
+                          type: string
+                        duration_ms:
+                          type: integer
+                  summary:
+                    type: object
+                    properties:
+                      total_operations:
+                        type: integer
+                      successful_operations:
+                        type: integer
+                      failed_operations:
+                        type: integer
+                      total_duration_ms:
+                        type: integer
+                      average_duration_ms:
+                        type: integer
+
+  /batch/{batch_id}/status:
+    get:
+      tags:
+        - Batch Operations
+      summary: Get batch operation status
+      description: Retrieve the current status of a batch operation
+      parameters:
+        - name: batch_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Batch operation status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  started_at:
+                    type: string
+                    format: date-time
+                  total_operations:
+                    type: integer
+                  completed_operations:
+                    type: integer
+                  failed_operations:
+                    type: integer
+                  status:
+                    type: string
+                    enum: [pending, running, completed, failed, cancelled]
+
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check endpoint
+      description: Check the health status of all services and dependencies
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  version:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                          response_time_ms:
+                            type: integer
+                      redis:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                          response_time_ms:
+                            type: integer
+                      auth_service:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                          response_time_ms:
+                            type: integer
+
+  /health/live:
+    get:
+      tags:
+        - System
+      summary: Liveness probe
+      description: Simple liveness check for Kubernetes/container orchestration
+      responses:
+        '200':
+          description: Service is live
+
+  /health/ready:
+    get:
+      tags:
+        - System
+      summary: Readiness probe
+      description: Readiness check indicating service can handle requests
+      responses:
+        '200':
+          description: Service is ready to handle requests
+        '503':
+          description: Service is not ready
 
 # ==========================================
 # Webhooks
