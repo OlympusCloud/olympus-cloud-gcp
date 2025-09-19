@@ -39,6 +39,9 @@ tracing.workspace = true
 # Validation
 validator.workspace = true
 
+# Decimal arithmetic
+rust_decimal.workspace = true
+
 [dev-dependencies]
 rstest.workspace = true
 mockall.workspace = true
