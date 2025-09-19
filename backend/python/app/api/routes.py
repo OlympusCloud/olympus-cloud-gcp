@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from app.api.dependencies import (
     get_analytics_service,
+    get_crm_service,
     get_enhanced_analytics_service,
     get_nlp_service,
     get_recommendation_service,
@@ -16,6 +17,7 @@ from app.api.dependencies import (
 from app.core.settings import get_settings
 from app.core.state import RuntimeState
 from app.models.analytics import AnalyticsDashboardResponse, AnalyticsTimeframe
+from app.models.crm import Campaign
 from app.models.enhanced_analytics import (
     EnhancedAnalyticsResponse,
     AnalyticsFilter
@@ -30,6 +32,7 @@ from app.models.snapshots import (
 from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
+from app.services.crm.service import CRMService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 
@@ -288,3 +291,28 @@ async def get_enhanced_dashboard(
     )
     
     return await enhanced_service.get_enhanced_dashboard(analytics_filter)
+
+
+@api_router.get(
+    "/crm/segments",
+    tags=["crm"]
+)
+async def get_customer_segments(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    crm_service: CRMService = Depends(get_crm_service),
+):
+    """Get customer segmentation analysis."""
+    return await crm_service.segment_customers(tenant_id)
+
+
+@api_router.post(
+    "/crm/campaigns",
+    tags=["crm"],
+    status_code=status.HTTP_201_CREATED
+)
+async def create_campaign(
+    campaign: Campaign,
+    crm_service: CRMService = Depends(get_crm_service),
+) -> Campaign:
+    """Create a new marketing campaign."""
+    return await crm_service.create_campaign(campaign)

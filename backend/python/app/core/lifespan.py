@@ -15,6 +15,7 @@ from app.services.analytics.processor import EventProcessor
 from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
+from app.services.crm.service import CRMService
 from app.services.events.subscriber import EventSubscriber
 from app.services.ml.recommendation import RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
@@ -61,6 +62,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     
     if not hasattr(app.state, "enhanced_analytics_service"):
         app.state.enhanced_analytics_service = EnhancedAnalyticsService(session_factory, analytics_service)
+    
+    if not hasattr(app.state, "crm_service"):
+        app.state.crm_service = CRMService(session_factory)
 
     processor = EventProcessor(analytics_service)
     app.state.event_processor = processor
