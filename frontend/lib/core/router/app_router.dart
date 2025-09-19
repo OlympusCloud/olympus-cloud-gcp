@@ -8,6 +8,7 @@ import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/orders/presentation/screens/order_management_screen.dart';
 import '../../features/inventory/presentation/screens/inventory_management_screen.dart';
+import '../../features/analytics/presentation/screens/analytics_dashboard.dart';
 // Watch imports removed to resolve compilation errors
 import '../../shared/presentation/screens/error_screen.dart';
 
@@ -74,9 +75,7 @@ class AppRouter {
           GoRoute(
             path: 'analytics',
             name: 'analytics',
-            builder: (context, state) => const Placeholder(
-              child: Text('Analytics Screen'),
-            ),
+            builder: (context, state) => const AnalyticsDashboard(),
           ),
           GoRoute(
             path: 'settings',
