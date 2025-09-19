@@ -6,6 +6,8 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/business_setup/presentation/screens/business_setup_wizard.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
+import '../../features/orders/presentation/screens/order_management_screen.dart';
+import '../../features/inventory/presentation/screens/inventory_management_screen.dart';
 // Watch imports removed to resolve compilation errors
 import '../../shared/presentation/screens/error_screen.dart';
 
@@ -55,16 +57,12 @@ class AppRouter {
           GoRoute(
             path: 'orders',
             name: 'orders',
-            builder: (context, state) => const Placeholder(
-              child: Text('Orders Screen'),
-            ),
+            builder: (context, state) => const OrderManagementScreen(),
           ),
           GoRoute(
             path: 'inventory',
             name: 'inventory',
-            builder: (context, state) => const Placeholder(
-              child: Text('Inventory Screen'),
-            ),
+            builder: (context, state) => const InventoryManagementScreen(),
           ),
           GoRoute(
             path: 'customers',
