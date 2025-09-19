@@ -13,7 +13,7 @@ class BrandingNotifier extends StateNotifier<IndustryBranding> {
   /// Load branding configuration from storage
   Future<void> _loadSavedBranding() async {
     try {
-      final savedIndustryType = await StorageService.getString('industry_type');
+      final savedIndustryType = StorageService.getSetting<String>('industry_type');
       if (savedIndustryType != null) {
         final branding = IndustryBrandings.getBranding(savedIndustryType);
         state = branding.copyWith(
@@ -40,8 +40,8 @@ class BrandingNotifier extends StateNotifier<IndustryBranding> {
       );
       
       // Save to storage
-      await StorageService.setString('industry_type', industryType);
-      await StorageService.setString('brand_name', branding.brandName);
+      await StorageService.saveSetting('industry_type', industryType);
+      await StorageService.saveSetting('brand_name', branding.brandName);
       
       debugPrint('Industry branding set to: ${branding.brandName}');
     } catch (e) {
@@ -49,14 +49,10 @@ class BrandingNotifier extends StateNotifier<IndustryBranding> {
     }
   }
 
-  /// Update text theme for brightness changes
+  /// Update text theme for brightness changes (deprecated - theme handles this)
+  @deprecated
   void updateTextTheme(Brightness brightness) {
-    state = state.copyWith(
-      textTheme: IndustryBrandings.createTextTheme(
-        state.industryType,
-        brightness,
-      ),
-    );
+    // No longer needed - theme provider handles brightness changes
   }
 
   /// Check if a module is enabled for current industry
@@ -140,12 +136,13 @@ final customSettingProvider = Provider.family<dynamic, String>((ref, key) {
 final industryThemeProvider = Provider.family<ThemeData, Brightness>((ref, brightness) {
   final branding = ref.watch(brandingProvider);
   
-  // Update text theme for current brightness
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    ref.read(brandingProvider.notifier).updateTextTheme(brightness);
-  });
+  // Create theme with proper text theme for brightness
+  final textTheme = IndustryBrandings.createTextTheme(
+    branding.industryType,
+    brightness,
+  );
   
-  return branding.buildTheme(brightness);
+  return branding.copyWith(textTheme: textTheme).buildTheme(brightness);
 });
 
 /// Provider for primary color based on current theme mode

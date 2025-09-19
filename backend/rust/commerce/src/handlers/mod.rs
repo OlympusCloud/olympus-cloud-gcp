@@ -10,7 +10,11 @@
 pub mod products;
 pub mod orders;
 pub mod payments;
+pub mod restaurant;
+pub mod websocket;
 
 pub use products::*;
 pub use orders::*;
 pub use payments::*;
+pub use restaurant::*;
+pub use websocket::*;
