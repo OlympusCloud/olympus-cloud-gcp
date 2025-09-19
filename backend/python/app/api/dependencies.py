@@ -1,5 +1,6 @@
 from fastapi import HTTPException, Request, status
 
+from app.services.analytics.anomaly import AnomalyDetectionService
 from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
@@ -86,6 +87,16 @@ def get_forecasting_service(request: Request) -> ForecastingService:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Forecasting service unavailable",
+        )
+    return service
+
+
+def get_anomaly_service(request: Request) -> AnomalyDetectionService:
+    service = getattr(request.app.state, "anomaly_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Anomaly detection service unavailable",
         )
     return service
 

@@ -10,6 +10,7 @@ from app.core.logging import logger
 from app.core.redis import create_redis_client
 from app.core.settings import get_settings
 from app.core.state import RuntimeState
+from app.services.analytics.anomaly import AnomalyDetectionService
 from app.services.analytics.bigquery import BigQueryClient
 from app.services.analytics.processor import EventProcessor
 from app.services.analytics.service import AnalyticsService
@@ -67,30 +68,27 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     
     if not hasattr(app.state, "snapshot_service"):
         app.state.snapshot_service = SnapshotService(session_factory, analytics_service)
-    
+
     if not hasattr(app.state, "enhanced_analytics_service"):
         app.state.enhanced_analytics_service = EnhancedAnalyticsService(session_factory, analytics_service)
-    
+
     if not hasattr(app.state, "cohort_service"):
         app.state.cohort_service = CohortAnalyticsService(session_factory)
-    
+
     if not hasattr(app.state, "forecasting_service"):
         app.state.forecasting_service = ForecastingService(session_factory)
-    
+
+    if not hasattr(app.state, "anomaly_service"):
+        app.state.anomaly_service = AnomalyDetectionService(session_factory)
+
     if not hasattr(app.state, "crm_service"):
         app.state.crm_service = CRMService(session_factory)
-    
+
     if not hasattr(app.state, "inventory_service"):
         app.state.inventory_service = InventoryService(session_factory)
-    
+
     if not hasattr(app.state, "restaurant_service"):
         app.state.restaurant_service = RestaurantService(session_factory)
-    
-    if not hasattr(app.state, "retail_service"):
-        app.state.retail_service = RetailService(session_factory)
-
-    if not hasattr(app.state, "hospitality_service"):
-        app.state.hospitality_service = HospitalityService(session_factory)
 
     if not hasattr(app.state, "retail_service"):
         app.state.retail_service = RetailService(session_factory)

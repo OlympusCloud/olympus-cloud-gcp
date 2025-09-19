@@ -123,6 +123,10 @@ Build a production-ready Python analytics and machine learning platform that pro
   - Behavioral cohort segmentation
   - Churn prediction by cohort
   - Lifecycle value calculation
+- [x] **Anomaly detection** (`app/services/analytics/anomaly.py`)
+  - Revenue anomaly detection
+  - Threshold-based alert scoring
+  - API exposure for dashboards
 
 - [ ] **A/B testing framework** (`app/services/analytics/ab_testing.py`)
   - Experiment design and setup

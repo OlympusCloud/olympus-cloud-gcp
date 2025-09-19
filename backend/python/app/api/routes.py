@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from app.api import nlp_routes
 from app.api.dependencies import (
     get_analytics_service,
+    get_anomaly_service,
     get_cohort_service,
     get_crm_service,
     get_enhanced_analytics_service,
@@ -57,6 +58,7 @@ from app.models.snapshots import (
     SnapshotHistoryRequest,
     SnapshotHistoryResponse
 )
+from app.services.analytics.anomaly import AnomalyDetectionService
 from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
@@ -91,6 +93,15 @@ def _end_of_day(value: Optional[date]) -> Optional[datetime]:
 
 class NLPQueryRequest(BaseModel):
     query: str = Field(min_length=1, max_length=500, description="Natural language analytics question")
+
+
+class AnalyticsAnomaly(BaseModel):
+    """Represents an anomalous metric observation."""
+
+    timestamp: datetime = Field(description="Timestamp of the anomalous observation")
+    value: float = Field(description="Observed metric value")
+    z_score: float = Field(description="Standard score indicating deviation")
+    severity: float = Field(description="Absolute z-score for ranking anomalies")
 
 
 _DATE_RANGE_ALIASES: dict[str, AnalyticsTimeframe] = {
@@ -254,11 +265,6 @@ async def get_cohort_analytics(
         "month",
         description="Granularity for cohort grouping",
     ),
-<<<<<<< HEAD
-    periods: int = Query(6, ge=1, le=12, description="Number of retention periods"),
-    start_date: Optional[date] = Query(None, description="Optional custom start date"),
-    end_date: Optional[date] = Query(None, description="Optional custom end date"),
-=======
     periods: int = Query(
         6,
         ge=1,
@@ -273,7 +279,6 @@ async def get_cohort_analytics(
         None,
         description="Optional custom end date",
     ),
->>>>>>> origin/main
     cohort_service: CohortAnalyticsService = Depends(get_cohort_service),
 ) -> CohortAnalyticsResponse:
     """Return customer cohort retention metrics."""
@@ -318,6 +323,36 @@ async def get_revenue_forecast(
         start_date=start_dt,
         end_date=end_dt,
     )
+
+
+@api_router.get(
+    "/analytics/anomalies",
+    tags=["analytics"],
+    response_model=List[AnalyticsAnomaly],
+)
+async def get_revenue_anomalies(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    start_date: Optional[date] = Query(None, description="Optional custom start date"),
+    end_date: Optional[date] = Query(None, description="Optional custom end date"),
+    threshold: float = Query(2.5, ge=0.5, le=10.0, description="Z-score threshold for anomaly detection"),
+    anomaly_service: AnomalyDetectionService = Depends(get_anomaly_service),
+) -> List[AnalyticsAnomaly]:
+    """Detect revenue anomalies for the provided tenant."""
+
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="start_date must be before or equal to end_date",
+        )
+
+    anomalies = await anomaly_service.detect_revenue_anomalies(
+        tenant_id,
+        start_date=_start_of_day(start_date),
+        end_date=_end_of_day(end_date),
+        threshold=threshold,
+    )
+
+    return [AnalyticsAnomaly(**item) for item in anomalies]
 
 
 @api_router.post(
