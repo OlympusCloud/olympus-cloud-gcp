@@ -23,8 +23,8 @@ pub enum AuthError {
     #[error("Account is locked")]
     AccountLocked,
 
-    #[error("Invalid token")]
-    InvalidToken,
+    #[error("Invalid token: {0}")]
+    InvalidToken(String),
 
     #[error("Token expired")]
     TokenExpired,
@@ -68,7 +68,7 @@ impl AuthError {
             AuthError::InvalidCredentials
             | AuthError::WeakPassword(_)
             | AuthError::Validation(_) => 400,
-            AuthError::InvalidToken | AuthError::TokenExpired | AuthError::TokenRevoked => 401,
+            AuthError::InvalidToken(_) | AuthError::TokenExpired | AuthError::TokenRevoked => 401,
             AuthError::AccountInactive | AuthError::TenantInactive | AuthError::AccountLocked => 403,
             AuthError::UserNotFound | AuthError::TenantNotFound => 404,
             AuthError::EmailAlreadyExists => 409,
