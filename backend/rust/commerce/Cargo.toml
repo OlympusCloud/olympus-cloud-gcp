@@ -39,9 +39,8 @@ tracing.workspace = true
 # Validation
 validator.workspace = true
 
-# Commerce specific
-rust_decimal = "1.33"
-rust_decimal_macros = "1.33"
+# Decimal arithmetic
+rust_decimal.workspace = true
 
 [dev-dependencies]
 rstest.workspace = true
