@@ -382,7 +382,7 @@ impl EventPublisher {
             attempts: 0,
             first_attempt_at: Instant::now(),
             last_attempt_at: None,
-            priority,
+            priority: priority.clone(),
         };
 
         // Insert event in priority order

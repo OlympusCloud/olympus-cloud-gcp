@@ -883,11 +883,21 @@ impl LoggingEventHandler {
 
 #[async_trait]
 impl EventHandler for LoggingEventHandler {
-    async fn handle(&self, event: &DomainEvent) -> Result<()> {
-        info!(
-            "Handler '{}' processing event: {} (type: {}, tenant: {})",
-            self.name, event.id, event.event_type, event.tenant_id
-        );
+    async fn handle(&self, event: &EventContainer) -> Result<()> {
+        match event {
+            EventContainer::Legacy(event) => {
+                info!(
+                    "Handler '{}' processing legacy event: {} (type: {}, tenant: {})",
+                    self.name, event.id, event.event_type, event.tenant_id
+                );
+            }
+            EventContainer::Versioned(event) => {
+                info!(
+                    "Handler '{}' processing versioned event: {} (type: {}, tenant: {})",
+                    self.name, event.event.id, event.event.event_type, event.event.tenant_id
+                );
+            }
+        }
 
         // Simulate some processing time
         sleep(Duration::from_millis(10)).await;
@@ -924,7 +934,8 @@ mod tests {
         )
         .build();
 
-        assert!(handler.handle(&event).await.is_ok());
+        let event_container = EventContainer::Legacy(event);
+        assert!(handler.handle(&event_container).await.is_ok());
         assert_eq!(handler.name(), "test_handler");
         assert!(handler.event_types().contains(&"TestEvent".to_string()));
     }

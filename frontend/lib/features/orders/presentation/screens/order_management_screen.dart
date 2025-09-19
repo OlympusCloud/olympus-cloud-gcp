@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/order.dart';
-import '../../data/providers/orders_provider.dart';
+import '../../models/order.dart';
+import '../../providers/orders_provider.dart';
 import '../../../../shared/widgets/loading_widgets.dart';
 
 /// Order management screen with complete CRUD operations
