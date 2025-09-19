@@ -411,6 +411,7 @@ async def get_table_status(
     """Get current table status distribution."""
     return await restaurant_service.get_table_status(tenant_id, location_id)
 
+
 @api_router.get(
     "/retail/analytics",
     tags=["retail"],

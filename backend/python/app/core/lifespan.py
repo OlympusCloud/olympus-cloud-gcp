@@ -76,6 +76,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     
     if not hasattr(app.state, "restaurant_service"):
         app.state.restaurant_service = RestaurantService(session_factory)
+    
+    if not hasattr(app.state, "retail_service"):
+        app.state.retail_service = RetailService(session_factory)
+
+    if not hasattr(app.state, "hospitality_service"):
+        app.state.hospitality_service = HospitalityService(session_factory)
 
     if not hasattr(app.state, "retail_service"):
         app.state.retail_service = RetailService(session_factory)
