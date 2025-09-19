@@ -102,7 +102,13 @@ class _OutlinedLoadingButton extends LoadingButton {
     required this.child,
     this.style,
     this.loadingColor,
-  });
+  }) : super(
+         isLoading: isLoading,
+         onPressed: onPressed,
+         child: child,
+         style: style,
+         loadingColor: loadingColor,
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +148,13 @@ class _TextLoadingButton extends LoadingButton {
     required this.child,
     this.style,
     this.loadingColor,
-  });
+  }) : super(
+         isLoading: isLoading,
+         onPressed: onPressed,
+         child: child,
+         style: style,
+         loadingColor: loadingColor,
+       );
 
   @override
   Widget build(BuildContext context) {
