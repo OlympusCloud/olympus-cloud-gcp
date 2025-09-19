@@ -136,8 +136,8 @@ mod tests {
         // Too short
         assert!(service.hash_password("Short1!").is_err());
 
-        // No uppercase  
-        assert!(service.hash_password("nouppercase123!").is_err());
+        // Only lowercase and digits (2 criteria, needs 3)
+        assert!(service.hash_password("onlylowercase123").is_err());
 
         // Common password
         assert!(service.hash_password("Password123!").is_err());
