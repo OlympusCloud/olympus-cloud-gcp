@@ -393,6 +393,19 @@ pub enum InventoryAdjustmentType {
     Recount,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum InventoryAdjustmentReason {
+    Sale,
+    Return,
+    Damage,
+    Theft,
+    Recount,
+    Transfer,
+    Promotion,
+    Waste,
+    Other,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InventoryItem {
     pub id: Uuid,
@@ -862,4 +875,195 @@ pub struct BulkOrderResult {
 pub struct BulkOrderError {
     pub order_id: Uuid,
     pub error_message: String,
+}
+
+// ============================================================================
+// PAYMENT PROCESSING MODELS
+// ============================================================================
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "payment_gateway", rename_all = "lowercase")]
+pub enum PaymentGateway {
+    Stripe,
+    Square,
+    PayPal,
+    Manual,
+    Cash,
+    Card,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "payment_transaction_status", rename_all = "lowercase")]
+pub enum PaymentTransactionStatus {
+    Pending,
+    Processing,
+    Authorized,
+    Captured,
+    Completed,
+    Failed,
+    Cancelled,
+    Refunded,
+    PartiallyRefunded,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "payment_type", rename_all = "lowercase")]
+pub enum PaymentType {
+    Sale,
+    Authorization,
+    Capture,
+    Refund,
+    PartialRefund,
+    Void,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "payment_method_type", rename_all = "lowercase")]
+pub enum PaymentMethodType {
+    Card,
+    BankAccount,
+    Cash,
+    Check,
+    GiftCard,
+    Wallet,
+    Other,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct PaymentTransaction {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub order_id: Uuid,
+    pub payment_method_id: Option<Uuid>,
+    pub gateway: PaymentGateway,
+    pub gateway_payment_id: Option<String>,
+    pub gateway_customer_id: Option<String>,
+    pub amount: Decimal,
+    pub currency: String,
+    pub status: PaymentTransactionStatus,
+    pub payment_type: PaymentType,
+    pub metadata: Option<serde_json::Value>,
+    pub error_message: Option<String>,
+    pub processed_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct StoredPaymentMethod {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub customer_id: Option<Uuid>,
+    pub gateway: PaymentGateway,
+    pub gateway_method_id: Option<String>,
+    pub method_type: PaymentMethodType,
+    pub display_name: String,
+    pub last_four: Option<String>,
+    pub brand: Option<String>,
+    pub exp_month: Option<i32>,
+    pub exp_year: Option<i32>,
+    pub is_default: bool,
+    pub metadata: Option<serde_json::Value>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct CreatePaymentRequest {
+    pub order_id: Uuid,
+    pub amount: Decimal,
+    pub currency: String,
+    pub gateway: PaymentGateway,
+    pub payment_method_id: Option<Uuid>,
+    pub payment_type: PaymentType,
+    pub metadata: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProcessPaymentRequest {
+    pub payment_id: Uuid,
+    pub gateway_payment_id: Option<String>,
+    pub gateway_customer_id: Option<String>,
+    pub action: PaymentAction,
+    pub amount: Option<Decimal>,
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PaymentAction {
+    Authorize,
+    Capture,
+    Cancel,
+    Refund,
+    PartialRefund,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PaymentResponse {
+    pub payment: PaymentTransaction,
+    pub success: bool,
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "refund_status", rename_all = "lowercase")]
+pub enum RefundStatus {
+    Pending,
+    Processing,
+    Completed,
+    Failed,
+    Cancelled,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct Refund {
+    pub id: Uuid,
+    pub tenant_id: Uuid,
+    pub payment_id: Uuid,
+    pub gateway_refund_id: Option<String>,
+    pub amount: Decimal,
+    pub currency: String,
+    pub status: RefundStatus,
+    pub reason: String,
+    pub metadata: Option<serde_json::Value>,
+    pub error_message: Option<String>,
+    pub processed_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct RefundRequest {
+    pub payment_id: Uuid,
+    pub amount: Decimal,
+    #[validate(length(min = 1, max = 500))]
+    pub reason: String,
+    pub metadata: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PaymentSummary {
+    pub total_payments: i64,
+    pub total_amount: Decimal,
+    pub successful_payments: i64,
+    pub failed_payments: i64,
+    pub pending_payments: i64,
+    pub refunded_amount: Decimal,
+    pub average_payment: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct CreatePaymentMethodRequest {
+    pub customer_id: Option<Uuid>,
+    pub gateway: PaymentGateway,
+    pub gateway_method_id: Option<String>,
+    pub method_type: PaymentMethodType,
+    #[validate(length(min = 1, max = 255))]
+    pub display_name: String,
+    pub last_four: Option<String>,
+    pub brand: Option<String>,
+    pub exp_month: Option<i32>,
+    pub exp_year: Option<i32>,
+    pub is_default: bool,
+    pub metadata: Option<serde_json::Value>,
 }

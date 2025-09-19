@@ -7,12 +7,16 @@
 // Date: 2025-01-18
 // ============================================================================
 
+pub mod event_handlers;
 pub mod models;
 pub mod services;
 pub mod handlers;
 pub mod simple_models;
 pub mod simple_service;
 pub mod simple_handlers;
+
+#[cfg(test)]
+pub mod tests;
 
 use std::sync::Arc;
 use axum::{
@@ -26,8 +30,8 @@ use sqlx::PgPool;
 
 use olympus_shared::database::DbPool;
 use olympus_shared::events::EventPublisher;
-use crate::handlers::{create_product_router, create_order_router};
-use crate::services::{CatalogService, OrderService};
+use crate::handlers::{create_product_router, create_order_router, inventory_routes};
+use crate::services::{CatalogService, InventoryService, OrderService};
 use simple_service::SimpleCommerceService;
 use simple_handlers::*;
 
@@ -51,6 +55,11 @@ pub fn create_router(config: CommerceConfig) -> Router {
         config.event_publisher.clone(),
     ));
 
+    let inventory_service = Arc::new(InventoryService::new(
+        (*config.db).clone(),
+        config.event_publisher.clone(),
+    ));
+
     Router::new()
         // Health check
         .route("/health", get(health_check))
@@ -60,6 +69,9 @@ pub fn create_router(config: CommerceConfig) -> Router {
 
         // Order management routes
         .nest("/api/v1/commerce", create_order_router(order_service.clone()))
+
+        // Inventory management routes
+        .nest("/api/v1/commerce/inventory", inventory_routes().with_state((*inventory_service).clone()))
 
         // Middleware stack
         .layer(
@@ -113,6 +125,12 @@ pub async fn health_check() -> &'static str {
 }
 
 // Re-export important types
+pub use event_handlers::{
+    OrderLifecycleHandler,
+    InventoryManagementHandler,
+    CommerceAnalyticsHandler,
+    CommerceEventHandlerFactory,
+};
 pub use handlers::*;
 pub use models::*;
 pub use services::*;

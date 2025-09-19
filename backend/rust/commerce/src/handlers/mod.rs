@@ -9,6 +9,8 @@
 
 pub mod products;
 pub mod orders;
+pub mod payments;
 
 pub use products::*;
 pub use orders::*;
+pub use payments::*;

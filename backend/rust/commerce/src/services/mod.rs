@@ -7,8 +7,13 @@
 // Date: 2025-01-18
 // ============================================================================
 
+pub mod analytics;
 pub mod catalog;
 pub mod order;
+pub mod payment_service;
+pub mod gateways;
 
+pub use analytics::AnalyticsService;
 pub use catalog::CatalogService;
 pub use order::OrderService;
+pub use payment_service::PaymentService;

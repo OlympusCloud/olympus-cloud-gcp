@@ -23,6 +23,7 @@ from app.services.nlp.query_service import NaturalLanguageQueryService
 from app.services.restaurant.service import RestaurantService
 from app.services.retail.service import RetailService
 from app.services.hospitality.service import HospitalityService
+from app.services.events_industry.service import EventsService
 
 EVENT_CHANNEL_PATTERNS = [
     "events.user.*",
@@ -81,6 +82,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     if not hasattr(app.state, "hospitality_service"):
         app.state.hospitality_service = HospitalityService(session_factory)
+
+    if not hasattr(app.state, "retail_service"):
+        app.state.retail_service = RetailService(session_factory)
+
+    if not hasattr(app.state, "hospitality_service"):
+        app.state.hospitality_service = HospitalityService(session_factory)
+
+    if not hasattr(app.state, "events_service"):
+        app.state.events_service = EventsService(session_factory)
 
     processor = EventProcessor(analytics_service)
     app.state.event_processor = processor

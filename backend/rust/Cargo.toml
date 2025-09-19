@@ -73,14 +73,44 @@ wiremock = "0.5"
 # Validation
 validator = { version = "0.16", features = ["derive"] }
 
-# HTTP client (for testing)
+# HTTP client
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# gRPC
+tonic = "0.10"
+prost = "0.12"
+prost-types = "0.12"
+
+# Monitoring & Metrics
+prometheus = "0.13"
+metrics = "0.22"
+metrics-prometheus = "0.6"
+
+# Circuit breaker and retry
+backoff = "0.4"
+
+# Async trait
+async-trait = "0.1"
 
 # Additional dependencies
 base64 = "0.22"
 sha2 = "0.10"
+lazy_static = "1.4"
 axum-extra = { version = "0.9", features = ["typed-header"] }
 rust_decimal = { version = "1.32", features = ["serde-with-str"] }
+regex = "1.10"
+form_urlencoded = "1.2"
+
+# GraphQL
+async-graphql = { version = "7.0", features = ["chrono", "uuid", "decimal"] }
+async-stream = "0.3"
+
+# Bytes handling
+bytes = "1.5"
+
+# Compression
+flate2 = "1.0"
+brotli = "3.4"
 
 [dependencies]
 # Local crates
