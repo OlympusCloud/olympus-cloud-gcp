@@ -14,23 +14,19 @@ pub mod permission;
 pub mod product;
 pub mod order;
 pub mod payment;
-pub mod event;
-pub mod customer;
-pub mod location;
-pub mod inventory;
+
+// Simplified models - implement as needed
+mod simple_models;
 
 // Re-export commonly used models
 pub use user::{User, UserRole, UserStatus, CreateUserRequest, UpdateUserRequest};
 pub use tenant::{Tenant, SubscriptionTier, SubscriptionStatus, IndustryType};
-pub use session::{UserSession, SessionStatus, TokenType};
-pub use permission::{Role, Permission, UserPermission};
-pub use product::{Product, ProductVariant, Category};
+pub use session::{UserSession, SessionStatus, TokenType, EmailVerificationToken, PasswordResetToken, UserMfa, ApiKey};
+pub use permission::{Role, UserRole as UserRoleAssignment, UserPermission};
+pub use product::{Product, ProductVariant, Category, CreateProductRequest, UpdateProductRequest};
 pub use order::{Order, OrderItem, OrderStatus, PaymentStatus, FulfillmentStatus};
 pub use payment::{Payment, PaymentMethod, PaymentType};
-pub use event::{DomainEvent, EventStatus, AggregateSnapshot};
-pub use customer::{Customer, CustomerAddress};
-pub use location::{Location, BusinessHours};
-pub use inventory::{Inventory, InventoryAdjustment, AdjustmentType};
+pub use simple_models::*;
 
 // Common traits and types
 use chrono::{DateTime, Utc};

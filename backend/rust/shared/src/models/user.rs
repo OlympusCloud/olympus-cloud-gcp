@@ -260,7 +260,6 @@ pub struct CreateUserRequest {
     #[validate(url)]
     pub avatar_url: Option<String>,
 
-    #[validate(phone)]
     pub phone: Option<String>,
 
     pub preferences: Option<serde_json::Value>,
@@ -288,7 +287,6 @@ pub struct UpdateUserRequest {
     #[validate(url)]
     pub avatar_url: Option<String>,
 
-    #[validate(phone)]
     pub phone: Option<String>,
 
     pub status: Option<UserStatus>,
@@ -346,10 +344,11 @@ pub struct UserSummary {
 
 impl From<User> for UserSummary {
     fn from(user: User) -> Self {
+        let display_name = user.display_name();
         Self {
             id: user.id,
             email: user.email,
-            display_name: user.display_name(),
+            display_name,
             status: user.status,
             email_verified: user.email_verified,
             last_login_at: user.last_login_at,

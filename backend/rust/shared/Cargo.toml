@@ -29,6 +29,11 @@ validator.workspace = true
 # Authentication
 jsonwebtoken.workspace = true
 
+# Additional dependencies
+rust_decimal.workspace = true
+rand.workspace = true
+tokio.workspace = true
+
 [dev-dependencies]
 tokio.workspace = true
 rstest.workspace = true

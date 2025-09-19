@@ -409,7 +409,7 @@ impl ValidateEntity for Tenant {
 /// Request model for creating a new tenant
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct CreateTenantRequest {
-    #[validate(length(min = 3, max = 100), regex = "^[a-z0-9-]+$")]
+    #[validate(length(min = 3, max = 100))]
     pub slug: String,
 
     #[validate(length(min = 1, max = 255))]
@@ -486,12 +486,13 @@ pub struct TenantSummary {
 
 impl From<Tenant> for TenantSummary {
     fn from(tenant: Tenant) -> Self {
+        let industry = tenant.get_industry_type();
         Self {
             id: tenant.id,
             slug: tenant.slug,
             name: tenant.name,
             display_name: tenant.display_name,
-            industry: tenant.get_industry_type(),
+            industry,
             subscription_tier: tenant.subscription_tier,
             subscription_status: tenant.subscription_status,
             is_active: tenant.is_active,
