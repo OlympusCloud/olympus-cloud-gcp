@@ -7,11 +7,13 @@
 // Date: 2025-01-18
 // ============================================================================
 
+pub mod domain;
 pub mod publisher;
 pub mod subscriber;
 pub mod types;
 
-pub use publisher::{EventPublisher, PublishError};
+pub use domain::*;
+pub use publisher::{EventPublisher, PublishError, EventContainer, EventPriority, PublisherMetrics};
 pub use subscriber::{EventSubscriber, EventHandler, SubscriptionConfig};
 pub use types::*;
 
@@ -186,7 +188,7 @@ impl DomainEventBuilder {
     }
 }
 
-/// Event publishing configuration
+/// Enhanced event publishing configuration for Phase 5
 #[derive(Debug, Clone)]
 pub struct EventConfig {
     pub redis_url: String,
@@ -196,6 +198,18 @@ pub struct EventConfig {
     pub batch_timeout: std::time::Duration,
     pub enable_dead_letter_queue: bool,
     pub dead_letter_topic: String,
+
+    // Phase 5 enhancements
+    pub max_events_per_second: Option<f64>,
+    pub max_event_size: Option<usize>,
+    pub max_queue_size: Option<usize>,
+    pub deduplication_window: Option<std::time::Duration>,
+    pub max_retry_duration: Option<std::time::Duration>,
+    pub source_service: Option<String>,
+    pub environment: Option<String>,
+    pub enable_compression: Option<bool>,
+    pub enable_encryption: Option<bool>,
+    pub encryption_key: Option<String>,
 }
 
 impl Default for EventConfig {
@@ -208,6 +222,18 @@ impl Default for EventConfig {
             batch_timeout: std::time::Duration::from_secs(5),
             enable_dead_letter_queue: true,
             dead_letter_topic: "events.dead_letter".to_string(),
+
+            // Phase 5 defaults
+            max_events_per_second: Some(1000.0),
+            max_event_size: Some(1_048_576), // 1MB
+            max_queue_size: Some(10000),
+            deduplication_window: Some(std::time::Duration::from_secs(3600)), // 1 hour
+            max_retry_duration: Some(std::time::Duration::from_secs(300)), // 5 minutes
+            source_service: Some("olympus-cloud".to_string()),
+            environment: Some("development".to_string()),
+            enable_compression: Some(false),
+            enable_encryption: Some(false),
+            encryption_key: None,
         }
     }
 }
