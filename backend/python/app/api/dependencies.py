@@ -4,6 +4,7 @@ from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
 from app.services.crm.service import CRMService
+from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 
@@ -58,5 +59,15 @@ def get_crm_service(request: Request) -> CRMService:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="CRM service unavailable",
+        )
+    return service
+
+
+def get_inventory_service(request: Request) -> InventoryService:
+    service = getattr(request.app.state, "inventory_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Inventory service unavailable",
         )
     return service

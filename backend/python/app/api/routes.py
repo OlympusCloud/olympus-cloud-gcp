@@ -10,6 +10,7 @@ from app.api.dependencies import (
     get_analytics_service,
     get_crm_service,
     get_enhanced_analytics_service,
+    get_inventory_service,
     get_nlp_service,
     get_recommendation_service,
     get_snapshot_service,
@@ -22,6 +23,7 @@ from app.models.enhanced_analytics import (
     EnhancedAnalyticsResponse,
     AnalyticsFilter
 )
+from app.models.inventory import StockMovement
 from app.models.nlp import NLPQueryResponse
 from app.models.recommendations import RecommendationResponse
 from app.models.snapshots import (
@@ -33,6 +35,7 @@ from app.services.analytics.service import AnalyticsService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
 from app.services.crm.service import CRMService
+from app.services.inventory.service import InventoryService
 from app.services.ml.recommendation import RecommendationContext, RecommendationService
 from app.services.nlp.query_service import NaturalLanguageQueryService
 
@@ -316,3 +319,29 @@ async def create_campaign(
 ) -> Campaign:
     """Create a new marketing campaign."""
     return await crm_service.create_campaign(campaign)
+
+
+@api_router.get(
+    "/inventory/report",
+    tags=["inventory"]
+)
+async def get_inventory_report(
+    tenant_id: str = Query(..., description="Tenant identifier"),
+    location_id: Optional[str] = Query(None, description="Location filter"),
+    inventory_service: InventoryService = Depends(get_inventory_service),
+):
+    """Get comprehensive inventory report with forecasts."""
+    return await inventory_service.get_inventory_report(tenant_id, location_id)
+
+
+@api_router.post(
+    "/inventory/movements",
+    tags=["inventory"],
+    status_code=status.HTTP_201_CREATED
+)
+async def track_stock_movement(
+    movement: StockMovement,
+    inventory_service: InventoryService = Depends(get_inventory_service),
+) -> StockMovement:
+    """Track inventory stock movement."""
+    return await inventory_service.track_stock_movement(movement)
