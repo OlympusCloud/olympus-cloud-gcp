@@ -12,9 +12,11 @@ pub mod orders;
 pub mod payments;
 pub mod restaurant;
 pub mod websocket;
+pub mod customer_security;
 
 pub use products::*;
 pub use orders::*;
 pub use payments::*;
 pub use restaurant::*;
 pub use websocket::*;
+pub use customer_security::*;

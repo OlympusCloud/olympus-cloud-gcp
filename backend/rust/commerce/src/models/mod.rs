@@ -8,5 +8,7 @@
 // ============================================================================
 
 pub mod restaurant;
+pub mod customer_security;
 
 pub use restaurant::*;
+pub use customer_security::*;
