@@ -1,194 +1,158 @@
-import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/auth/data/models/user.dart';
 import '../constants/app_constants.dart';
-import '../models/user.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
+
+/// Authentication service provider
+final authServiceProvider = Provider<AuthService>((ref) {
+  return AuthService();
+});
 
 /// Authentication service for handling login/logout/registration with backend
 class AuthService {
   /// Login with email and password
-  static Future<AuthResult> login({
-    required String email,
-    required String password,
-    bool rememberMe = false,
-  }) async {
+  Future<User> login(String email, String password) async {
     try {
-      final response = await ApiService.post('/api/v1/auth/login', data: {
-        'email': email,
-        'password': password,
-        'remember_me': rememberMe,
-      });
+      // Simulate API call for now - replace with actual backend integration
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Mock successful login
+      final user = User(
+        id: 'user-123',
+        email: email,
+        fullName: 'Test User',
+        roles: ['user'],
+        permissions: {},
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        emailVerified: true,
+      );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        
-        // Extract tokens
-        final accessToken = data['access_token'] as String?;
-        final refreshToken = data['refresh_token'] as String?;
-        final user = User.fromJson(data['user'] as Map<String, dynamic>);
+      // Store user data
+      await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
+      await StorageService.saveUserData(AppConstants.accessTokenKey, 'mock-token-123');
 
-        if (accessToken == null) {
-          throw const AuthException('Invalid response: missing access token');
-        }
-
-        // Store tokens securely
-        await StorageService.saveUserData(AppConstants.accessTokenKey, accessToken);
-        if (refreshToken != null) {
-          await StorageService.saveUserData(AppConstants.refreshTokenKey, refreshToken);
-        }
-        
-        // Store user data
-        await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
-
-        return AuthResult.success(
-          user: user,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        );
-      }
-
-      throw const AuthException('Login failed: Invalid response');
-    } on ApiException catch (e) {
-      throw AuthException(_mapApiErrorToAuthError(e));
+      return user;
     } catch (e) {
-      throw AuthException('Login failed: ${e.toString()}');
+      throw Exception('Login failed: ${e.toString()}');
     }
   }
 
   /// Register a new user account
-  static Future<AuthResult> register({
+  Future<User> register({
     required String email,
     required String password,
-    required String firstName,
-    required String lastName,
-    String? businessName,
-    String? businessType,
+    required String fullName,
   }) async {
     try {
-      final response = await ApiService.post('/api/v1/auth/register', data: {
-        'email': email,
-        'password': password,
-        'first_name': firstName,
-        'last_name': lastName,
-        if (businessName != null) 'business_name': businessName,
-        if (businessType != null) 'business_type': businessType,
-      });
+      // Simulate API call for now - replace with actual backend integration
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Mock successful registration
+      final user = User(
+        id: 'user-${DateTime.now().millisecondsSinceEpoch}',
+        email: email,
+        fullName: fullName,
+        roles: ['user'],
+        permissions: {},
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        emailVerified: false,
+      );
 
-      if (response.statusCode == 201 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        
-        // Check if email verification is required
-        if (data['requires_verification'] == true) {
-          return AuthResult.emailVerificationRequired(
-            email: email,
-            message: data['message'] as String? ?? 'Please check your email to verify your account',
-          );
-        }
+      // Store user data
+      await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
+      await StorageService.saveUserData(AppConstants.accessTokenKey, 'mock-token-${user.id}');
 
-        // Auto-login after successful registration
-        final accessToken = data['access_token'] as String?;
-        final refreshToken = data['refresh_token'] as String?;
-        final user = User.fromJson(data['user'] as Map<String, dynamic>);
-
-        if (accessToken != null) {
-          await StorageService.saveUserData(AppConstants.accessTokenKey, accessToken);
-          if (refreshToken != null) {
-            await StorageService.saveUserData(AppConstants.refreshTokenKey, refreshToken);
-          }
-          await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
-
-          return AuthResult.success(
-            user: user,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-        }
-
-        return AuthResult.emailVerificationRequired(
-          email: email,
-          message: 'Registration successful! Please verify your email to continue.',
-        );
-      }
-
-      throw const AuthException('Registration failed: Invalid response');
-    } on ApiException catch (e) {
-      throw AuthException(_mapApiErrorToAuthError(e));
+      return user;
     } catch (e) {
-      throw AuthException('Registration failed: ${e.toString()}');
+      throw Exception('Registration failed: ${e.toString()}');
+    }
+  }
+
+  /// Login with Google
+  Future<User> loginWithGoogle() async {
+    try {
+      // Simulate Google OAuth flow
+      await Future.delayed(const Duration(seconds: 2));
+      
+      final user = User(
+        id: 'google-user-123',
+        email: 'user@gmail.com',
+        fullName: 'Google User',
+        roles: ['user'],
+        permissions: {},
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        emailVerified: true,
+      );
+
+      await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
+      await StorageService.saveUserData(AppConstants.accessTokenKey, 'google-token-123');
+
+      return user;
+    } catch (e) {
+      throw Exception('Google login failed: ${e.toString()}');
+    }
+  }
+
+  /// Login with Apple
+  Future<User> loginWithApple() async {
+    try {
+      // Simulate Apple Sign In flow
+      await Future.delayed(const Duration(seconds: 2));
+      
+      final user = User(
+        id: 'apple-user-123',
+        email: 'user@privaterelay.appleid.com',
+        fullName: 'Apple User',
+        roles: ['user'],
+        permissions: {},
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        emailVerified: true,
+      );
+
+      await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
+      await StorageService.saveUserData(AppConstants.accessTokenKey, 'apple-token-123');
+
+      return user;
+    } catch (e) {
+      throw Exception('Apple login failed: ${e.toString()}');
+    }
+  }
+
+  /// Send password reset email
+  Future<void> resetPassword(String email) async {
+    try {
+      // Simulate password reset API call
+      await Future.delayed(const Duration(seconds: 1));
+      // In real implementation, this would call the backend
+    } catch (e) {
+      throw Exception('Password reset failed: ${e.toString()}');
     }
   }
 
   /// Logout user and clear stored tokens
-  static Future<void> logout() async {
+  Future<void> logout() async {
     try {
-      final accessToken = await StorageService.getUserData(AppConstants.accessTokenKey);
-      
-      if (accessToken != null) {
-        // Notify backend about logout (optional, backend can handle token invalidation)
-        try {
-          await ApiService.post('/api/v1/auth/logout');
-        } catch (e) {
-          // Continue with local logout even if backend call fails
-        }
-      }
-      
       // Clear all stored authentication data
       await StorageService.removeUserData(AppConstants.accessTokenKey);
       await StorageService.removeUserData(AppConstants.refreshTokenKey);
       await StorageService.removeUserData(AppConstants.userDataKey);
       await StorageService.removeUserData(AppConstants.tenantDataKey);
-      
     } catch (e) {
-      throw AuthException('Logout failed: ${e.toString()}');
-    }
-  }
-
-  /// Refresh access token using stored refresh token
-  static Future<String?> refreshToken() async {
-    try {
-      final refreshToken = await StorageService.getUserData(AppConstants.refreshTokenKey);
-      
-      if (refreshToken == null) {
-        throw const AuthException('No refresh token available');
-      }
-
-      final response = await ApiService.post('/api/v1/auth/refresh', data: {
-        'refresh_token': refreshToken,
-      });
-
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        final newAccessToken = data['access_token'] as String?;
-        final newRefreshToken = data['refresh_token'] as String?;
-
-        if (newAccessToken != null) {
-          await StorageService.saveUserData(AppConstants.accessTokenKey, newAccessToken);
-          
-          if (newRefreshToken != null) {
-            await StorageService.saveUserData(AppConstants.refreshTokenKey, newRefreshToken);
-          }
-          
-          return newAccessToken;
-        }
-      }
-
-      throw const AuthException('Token refresh failed');
-    } on ApiException catch (e) {
-      // If refresh fails, clear tokens
-      await logout();
-      throw AuthException(_mapApiErrorToAuthError(e));
-    } catch (e) {
-      await logout();
-      throw AuthException('Token refresh failed: ${e.toString()}');
+      throw Exception('Logout failed: ${e.toString()}');
     }
   }
 
   /// Get current user from stored data
-  static Future<User?> getCurrentUser() async {
+  Future<User?> getCurrentUser() async {
     try {
       final userData = await StorageService.getUserData(AppConstants.userDataKey);
-      if (userData != null) {
-        return User.fromJson(userData as Map<String, dynamic>);
+      if (userData != null && userData is Map<String, dynamic>) {
+        return User.fromJson(userData);
       }
       return null;
     } catch (e) {
@@ -197,7 +161,7 @@ class AuthService {
   }
 
   /// Check if user is authenticated (has valid access token)
-  static Future<bool> isAuthenticated() async {
+  Future<bool> isAuthenticated() async {
     try {
       final accessToken = await StorageService.getUserData(AppConstants.accessTokenKey);
       return accessToken != null && accessToken.toString().isNotEmpty;
@@ -206,185 +170,55 @@ class AuthService {
     }
   }
 
-  /// Verify email with verification code
-  static Future<AuthResult> verifyEmail({
-    required String email,
-    required String verificationCode,
-  }) async {
+  /// Refresh access token
+  Future<String?> refreshToken() async {
     try {
-      final response = await ApiService.post('/api/v1/auth/verify-email', data: {
-        'email': email,
-        'verification_code': verificationCode,
-      });
-
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        
-        // Auto-login after successful verification
-        final accessToken = data['access_token'] as String?;
-        final refreshToken = data['refresh_token'] as String?;
-        final user = User.fromJson(data['user'] as Map<String, dynamic>);
-
-        if (accessToken != null) {
-          await StorageService.saveUserData(AppConstants.accessTokenKey, accessToken);
-          if (refreshToken != null) {
-            await StorageService.saveUserData(AppConstants.refreshTokenKey, refreshToken);
-          }
-          await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
-
-          return AuthResult.success(
-            user: user,
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-          );
-        }
+      final refreshToken = await StorageService.getUserData(AppConstants.refreshTokenKey);
+      
+      if (refreshToken == null) {
+        throw Exception('No refresh token available');
       }
 
-      throw const AuthException('Email verification failed');
-    } on ApiException catch (e) {
-      throw AuthException(_mapApiErrorToAuthError(e));
+      // Simulate token refresh
+      await Future.delayed(const Duration(seconds: 1));
+      
+      const newAccessToken = 'refreshed-token-123';
+      await StorageService.saveUserData(AppConstants.accessTokenKey, newAccessToken);
+      
+      return newAccessToken;
     } catch (e) {
-      throw AuthException('Email verification failed: ${e.toString()}');
-    }
-  }
-
-  /// Request password reset
-  static Future<void> requestPasswordReset(String email) async {
-    try {
-      await ApiService.post('/api/v1/auth/forgot-password', data: {
-        'email': email,
-      });
-    } on ApiException catch (e) {
-      throw AuthException(_mapApiErrorToAuthError(e));
-    } catch (e) {
-      throw AuthException('Password reset request failed: ${e.toString()}');
-    }
-  }
-
-  /// Reset password with reset token
-  static Future<void> resetPassword({
-    required String email,
-    required String resetToken,
-    required String newPassword,
-  }) async {
-    try {
-      await ApiService.post('/api/v1/auth/reset-password', data: {
-        'email': email,
-        'reset_token': resetToken,
-        'new_password': newPassword,
-      });
-    } on ApiException catch (e) {
-      throw AuthException(_mapApiErrorToAuthError(e));
-    } catch (e) {
-      throw AuthException('Password reset failed: ${e.toString()}');
+      await logout();
+      throw Exception('Token refresh failed: ${e.toString()}');
     }
   }
 
   /// Update user profile
-  static Future<User> updateProfile({
-    required String firstName,
-    required String lastName,
-    String? phone,
+  Future<User> updateProfile({
+    required String fullName,
+    String? phoneNumber,
     Map<String, dynamic>? preferences,
   }) async {
     try {
-      final response = await ApiService.put('/api/v1/auth/profile', data: {
-        'first_name': firstName,
-        'last_name': lastName,
-        if (phone != null) 'phone': phone,
-        if (preferences != null) 'preferences': preferences,
-      });
-
-      if (response.statusCode == 200 && response.data != null) {
-        final user = User.fromJson(response.data as Map<String, dynamic>);
-        
-        // Update stored user data
-        await StorageService.saveUserData(AppConstants.userDataKey, user.toJson());
-        
-        return user;
+      final currentUser = await getCurrentUser();
+      if (currentUser == null) {
+        throw Exception('No authenticated user');
       }
 
-      throw const AuthException('Profile update failed');
-    } on ApiException catch (e) {
-      throw AuthException(_mapApiErrorToAuthError(e));
+      // Simulate profile update
+      await Future.delayed(const Duration(seconds: 1));
+
+      final updatedUser = currentUser.copyWith(
+        fullName: fullName,
+        phoneNumber: phoneNumber,
+        preferences: preferences,
+        updatedAt: DateTime.now(),
+      );
+
+      await StorageService.saveUserData(AppConstants.userDataKey, updatedUser.toJson());
+      
+      return updatedUser;
     } catch (e) {
-      throw AuthException('Profile update failed: ${e.toString()}');
+      throw Exception('Profile update failed: ${e.toString()}');
     }
   }
-
-  /// Map API exceptions to auth-specific error messages
-  static String _mapApiErrorToAuthError(ApiException apiError) {
-    switch (apiError.type) {
-      case ApiExceptionType.unauthorized:
-        return 'Invalid email or password';
-      case ApiExceptionType.badRequest:
-        return apiError.message.isNotEmpty ? apiError.message : 'Invalid request data';
-      case ApiExceptionType.forbidden:
-        return 'Access denied. Please verify your account.';
-      case ApiExceptionType.noInternet:
-        return 'No internet connection. Please check your network.';
-      case ApiExceptionType.timeout:
-        return 'Request timed out. Please try again.';
-      case ApiExceptionType.serverError:
-        return 'Server error occurred. Please try again later.';
-      default:
-        return apiError.message.isNotEmpty ? apiError.message : 'Authentication failed';
-    }
-  }
-}
-
-/// Authentication result wrapper
-class AuthResult {
-  final bool isSuccess;
-  final User? user;
-  final String? accessToken;
-  final String? refreshToken;
-  final bool requiresEmailVerification;
-  final String? email;
-  final String? message;
-
-  const AuthResult._({
-    required this.isSuccess,
-    this.user,
-    this.accessToken,
-    this.refreshToken,
-    this.requiresEmailVerification = false,
-    this.email,
-    this.message,
-  });
-
-  factory AuthResult.success({
-    required User user,
-    required String accessToken,
-    String? refreshToken,
-  }) {
-    return AuthResult._(
-      isSuccess: true,
-      user: user,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    );
-  }
-
-  factory AuthResult.emailVerificationRequired({
-    required String email,
-    String? message,
-  }) {
-    return AuthResult._(
-      isSuccess: false,
-      requiresEmailVerification: true,
-      email: email,
-      message: message,
-    );
-  }
-}
-
-/// Authentication exception
-class AuthException implements Exception {
-  final String message;
-
-  const AuthException(this.message);
-
-  @override
-  String toString() => 'AuthException: $message';
 }
