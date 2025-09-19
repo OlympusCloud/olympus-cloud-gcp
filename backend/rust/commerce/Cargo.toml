@@ -43,6 +43,10 @@ validator.workspace = true
 rust_decimal = "1.33"
 rust_decimal_macros = "1.33"
 
+[features]
+default = []
+mock-queries = []
+
 [dev-dependencies]
 rstest.workspace = true
 mockall.workspace = true

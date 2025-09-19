@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use chrono::{DateTime, Utc};
 use validator::Validate;
-use olympus_shared::types::{Money, Currency};
+use olympus_shared::types::Money;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {

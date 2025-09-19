@@ -23,7 +23,7 @@ impl Database {
         &self.pool
     }
 
-    pub async fn begin_transaction(&self) -> Result<DbTransaction> {
+    pub async fn begin_transaction(&self) -> Result<DbTransaction<'_>> {
         Ok(self.pool.begin().await?)
     }
 
