@@ -4,6 +4,7 @@ from app.services.analytics.service import AnalyticsService
 from app.services.analytics.ab_testing import ABTestingService
 from app.services.analytics.enhanced_service import EnhancedAnalyticsService
 from app.services.analytics.snapshots import SnapshotService
+from app.services.ml.churn import ChurnPredictionService
 from app.services.analytics.cohort import CohortAnalyticsService
 from app.services.analytics.forecasting import ForecastingService
 from app.services.crm.service import CRMService
@@ -40,6 +41,17 @@ def get_enhanced_nlp_service(request: Request) -> EnhancedNLPService:
         )
     return service
 
+
+
+
+def get_churn_service(request: Request) -> ChurnPredictionService:
+    service = getattr(request.app.state, "churn_service", None)
+    if service is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Churn prediction service unavailable",
+        )
+    return service
 
 def get_recommendation_service(request: Request) -> RecommendationService:
     service = getattr(request.app.state, "recommendation_service", None)
