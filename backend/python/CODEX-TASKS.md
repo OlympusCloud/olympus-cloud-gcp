@@ -117,7 +117,7 @@ Build a production-ready Python analytics and machine learning platform that pro
   - Report template management
 
 #### Task 2.3: Advanced Analytics
-- [ ] **Cohort analysis** (`app/services/analytics/cohort.py`)
+- [x] **Cohort analysis** (`app/services/analytics/cohort.py`)
   - Customer retention analysis
   - Revenue cohort analysis
   - Behavioral cohort segmentation
@@ -153,7 +153,7 @@ Build a production-ready Python analytics and machine learning platform that pro
   - Segment-based targeting
 
 #### Task 3.2: Predictive Analytics
-- [ ] **Demand forecasting** (`app/services/ml/forecasting.py`)
+- [x] **Demand forecasting** (`app/services/analytics/forecasting.py`)
   ```python
   # Forecasting features:
   # - Sales demand prediction

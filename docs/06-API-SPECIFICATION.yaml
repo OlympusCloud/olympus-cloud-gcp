@@ -803,6 +803,106 @@ paths:
           $ref: '#/components/responses/BadRequest'
 
 
+  /analytics/cohorts:
+    get:
+      tags:
+        - Analytics
+      summary: Get cohort retention analytics
+      operationId: getCohortAnalytics
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          description: Tenant identifier (UUID)
+          schema:
+            type: string
+            format: uuid
+        - name: granularity
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+          description: Cohort grouping granularity
+        - name: periods
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+          description: Number of retention periods to return
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Optional custom start date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Optional custom end date
+      responses:
+        '200':
+          description: Cohort analytics response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CohortAnalyticsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+  /analytics/forecast:
+    get:
+      tags:
+        - Analytics
+      summary: Get revenue forecast
+      operationId: getRevenueForecast
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          description: Tenant identifier (UUID)
+          schema:
+            type: string
+            format: uuid
+        - name: periods
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+          description: Number of future periods to predict
+        - name: granularity
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+          description: Aggregation level for the forecast
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Optional limit for historical range
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Optional limit for historical range
+      responses:
+        '200':
+          description: Forecast data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
   /analytics/recommendations:
     get:
       tags:
